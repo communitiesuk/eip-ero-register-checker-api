@@ -1,6 +1,0 @@
-spring.datasource:
-  url: set_by_MySQLContainerConfiguration
-  username: root
-  password: password
-spring.liquibase:
-  contexts: ddl

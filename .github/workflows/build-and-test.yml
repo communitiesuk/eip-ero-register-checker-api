@@ -5,8 +5,6 @@ on: [push]
 jobs:
   build-and-test-api:
     runs-on: ubuntu-latest
-    env:
-      AWS_REGION: ${{ secrets.AWS_REGION }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -17,8 +15,6 @@ jobs:
           distribution: corretto
           java-version: 17
           cache: gradle
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
       - name: Run gradle `check` to lint source code and run tests
         run: ./gradlew clean check --no-daemon
       - name: Save logs on test failure
@@ -26,6 +22,4 @@ jobs:
         if: failure()
         with:
           name: Test logs
-          path: |
-            eip-ero-register-checker-api/build/reports/tests/test
-            eip-ero-register-checker-api/build/test-results/test
+          path: build/reports/tests/test

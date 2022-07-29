@@ -23,6 +23,8 @@ jobs:
           distribution: corretto
           java-version: 17
           cache: gradle
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
       - name: Run gradle `check` to lint source code and run tests
         run: ./gradlew clean check --no-daemon
       - name: Save logs on test failure

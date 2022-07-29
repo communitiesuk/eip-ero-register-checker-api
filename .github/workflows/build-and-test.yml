@@ -3,12 +3,6 @@ name: Build and Test
 on: [push]
 
 jobs:
-  build-and-test-ui:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      # TODO - Add steps to build and test the nextjs application(s)
   build-and-test-api:
     runs-on: ubuntu-latest
     env:

@@ -35,6 +35,8 @@ class RegisterCheckerHeaderAuthenticationFilter : RequestHeaderAuthenticationFil
             val authToken = PreAuthenticatedAuthenticationToken(requestHeaderValue, requestHeaderValue, AUTHORITIES)
             logger.info("Setting authenticated auth token $authToken to context ")
             SecurityContextHolder.getContext().authentication = authToken
+        } else {
+            logger.error("$clientCertSerialHeader header not present in request header")
         }
 
         filterChain?.doFilter(servletRequest, servletResponse)

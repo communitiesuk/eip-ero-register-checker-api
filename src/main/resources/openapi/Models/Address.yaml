@@ -1,0 +1,28 @@
+title: Address
+type: object
+description: 'Address may contains UPRN unless address manually entered (5-10%), format matches IER naming to align with OS PLaces.'
+properties:
+  street:
+    type: string
+    maxLength: 255
+  property:
+    type: string
+    maxLength: 255
+  locality:
+    type: string
+    maxLength: 255
+  town:
+    type: string
+    maxLength: 255
+  area:
+    type: string
+    maxLength: 255
+  postcode:
+    type: string
+    maxLength: 10
+  uprn:
+    type: string
+    maxLength: 12
+required:
+  - street
+  - postcode

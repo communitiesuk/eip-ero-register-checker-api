@@ -1,0 +1,11 @@
+title: CardIssuingPreferences
+type: object
+properties:
+  isProblemWithRegisteredAddress:
+    type: boolean
+    default: true
+  problemReason:
+    type: string
+    maxLength: 500
+required:
+  - isProblemWithRegisteredAddress

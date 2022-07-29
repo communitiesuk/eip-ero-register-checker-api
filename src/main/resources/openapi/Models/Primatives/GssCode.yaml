@@ -1,0 +1,4 @@
+type: string
+title: Identifier
+minLength: 9
+maxLength: 9

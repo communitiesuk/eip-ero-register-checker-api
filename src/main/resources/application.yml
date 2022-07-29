@@ -1,0 +1,8 @@
+spring.datasource:
+  url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/ero_management
+  username: ${MYSQL_USER}
+  password: ${MYSQL_PASSWORD}
+spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.MySQL8Dialect
+spring.liquibase:
+  change-log: classpath:db/changelog/db.changelog-master.xml
+  contexts: ${LIQUIBASE_CONTEXTS}

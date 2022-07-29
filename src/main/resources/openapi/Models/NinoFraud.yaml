@@ -1,0 +1,11 @@
+title: NinoFraud
+type: object
+properties:
+  gssCode:
+    $ref: ./Primatives/GssCode.yaml
+  ninoCount:
+    type: integer
+    description: The count the nino has been used at this gssCode
+required:
+  - gssCode
+  - ninoCount

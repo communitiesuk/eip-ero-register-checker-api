@@ -1,0 +1,7 @@
+title: NinoMatch
+type: object
+properties:
+  fraud:
+    $ref: ./NinoFraud.yaml
+  match:
+    $ref: ./NinoMatchStatus.yaml

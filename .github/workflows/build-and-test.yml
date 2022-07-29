@@ -32,6 +32,6 @@ jobs:
         if: failure()
         with:
           name: Test logs
-          path: | 
-            register-checker-api/build/reports/tests/test
-            register-checker-api/build/test-results/test
+          path: |
+            eip-ero-register-checker-api/build/reports/tests/test
+            eip-ero-register-checker-api/build/test-results/test

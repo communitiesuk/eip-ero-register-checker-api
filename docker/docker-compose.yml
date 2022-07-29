@@ -8,7 +8,7 @@ services:
       - ./sql:/sql
     ports:
       - 3306:3306
-    #command: --init-file /sql/init.sql
+    command: --init-file /sql/init.sql
     environment:
       MYSQL_ROOT_PASSWORD: rootPassword
       MYSQL_USER: eipUser
@@ -22,9 +22,9 @@ services:
     networks:
       - dluhc
 
-  register-checker-api:
-    image: register-checker-api:latest
-    container_name: register-checker-api
+  eip-ero-register-checker-api:
+    image: eip-ero-register-checker-api:latest
+    container_name: eip-ero-register-checker-api
     environment:
       AWS_REGION: eu-west-2
       MYSQL_HOST: database

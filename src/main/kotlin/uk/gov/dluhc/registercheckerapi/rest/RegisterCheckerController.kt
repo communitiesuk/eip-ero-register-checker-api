@@ -12,6 +12,6 @@ class RegisterCheckerController {
 
     @GetMapping("/registercheck")
     @PreAuthorize("isAuthenticated()")
-    fun getEmsEroIdentifier(@RequestHeader(name = "CLIENT_CERT_SERIAL_HEADER") certSerialHeader: String): ResponseEntity<String> =
+    fun getEmsEroIdentifier(@RequestHeader(name = "client-cert-serial") certSerialHeader: String): ResponseEntity<String> =
         ResponseEntity<String>(certSerialHeader, HttpStatus.OK)
 }

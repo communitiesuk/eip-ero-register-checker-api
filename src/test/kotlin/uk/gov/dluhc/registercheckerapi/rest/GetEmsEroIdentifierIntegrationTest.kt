@@ -19,7 +19,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
     fun `should return OK given valid header key is present`() {
         webTestClient.get()
             .uri("/registercheck")
-            .header("CLIENT_CERT_SERIAL_HEADER", "132131312321312")
+            .header("client-cert-serial", "132131312321312")
             .exchange()
             .expectStatus()
             .isOk

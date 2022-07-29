@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletRequest
 
 class RegisterCheckerHeaderAuthenticationFilter : RequestHeaderAuthenticationFilter() {
 
-    private val clientCertSerialHeader = "CLIENT_CERT_SERIAL_HEADER"
+    private val clientCertSerialHeader = "client-cert-serial"
 
     init {
         setPrincipalRequestHeader(clientCertSerialHeader)

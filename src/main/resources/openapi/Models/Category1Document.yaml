@@ -1,0 +1,11 @@
+title: Category 1 Documents
+type: string
+description: Category 1 Documents
+enum:
+  - birth-certificate
+  - marriage-or-civil-partnership-certificate
+  - adoption-certificate
+  - firearms-certificate
+  - uk-cd-issued-non-photo-card-driving-licence
+  - non-uk-cd-issued-driving-licence
+  - police-bail-sheet

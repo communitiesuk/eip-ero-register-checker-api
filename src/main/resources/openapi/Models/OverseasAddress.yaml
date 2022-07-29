@@ -1,0 +1,24 @@
+title: OverseasAddress
+type: object
+description: 'Overseas Address format. (TODO: confirm required fields)'
+properties:
+  country:
+    type: string
+    maxLength: 255
+  addressLine1:
+    type: string
+    maxLength: 255
+  addressLine2:
+    type: string
+    maxLength: 255
+  addressLine3:
+    type: string
+    maxLength: 255
+  addressLine4:
+    type: string
+    maxLength: 255
+  addressLine5:
+    type: string
+    maxLength: 255
+required:
+  - country

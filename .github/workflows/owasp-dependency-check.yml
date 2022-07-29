@@ -1,0 +1,87 @@
+name: OWASP Dependency Check
+
+on:
+  schedule:
+    - cron: '0 1 * * SUN' # 1am every Sunday
+
+jobs:
+  owasp-dependency-check:
+    runs-on: ubuntu-latest
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DLUHC_VT_BETA_ALERTS_WEBHOOK }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      # Installing JDK needs to come after checking out the repo because the action (setup-java) looks for the gradle wrapper files
+      - name: Install JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: corretto
+          java-version: 17
+          cache: gradle
+      - name: Run gradle OWASP Dependency Analyzer
+        run: ./gradlew clean dependencyCheckAnalyze --no-daemon 2>error.log
+        continue-on-error: true
+      - name: Extract CVEs
+        run: |
+          # Get the list of CVE reference numbers as a markdown list, extracted from the file from gradle stderr
+          CVE_LIST=$(grep 'One or more dependencies' error.log | sed  's/^.*: /* /' | sed  's/,/\\n*/g')
+          echo "CVE_LIST=$CVE_LIST" >> $GITHUB_ENV
+      - name: Send slack notification
+        if: ${{ env.CVE_LIST != '' }}
+        run: |
+          # Get the project name from the repository - everything after the final slash - eg: "cabinetoffice/eip-ero-portal" -> "eip-ero-portal"
+          PROJECT_NAME=$(echo "${{ github.repository }}" | grep -Eo "([^/]+$)")
+          # Construct the URL of this run to include in the slack message
+          GITHUB_ACTION_RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          
+          cat <<EOF >>slack-notification.json
+          {
+            "blocks": [
+              {
+                "type": "header",
+                "text": {
+                  "text": "OWASP Dependency Analyzer identified potential vulnerabilities",
+                  "type": "plain_text"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [ 
+                  {
+                    "text": "*Project:*\n${PROJECT_NAME}",
+                    "type": "mrkdwn"
+                  }
+                ]
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "text": "*Potential CVEs:*\n${{ env.CVE_LIST }}",
+                    "type": "mrkdwn"
+                  }
+                ]
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "text": "<${GITHUB_ACTION_RUN_URL}|View job and investigate>",
+                    "type": "mrkdwn"
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+          curl  -X POST \
+                -H 'Content-type: application/json' \
+                --data '@slack-notification.json' \
+                ${SLACK_WEBHOOK_URL}
+      - name: Save logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: Dependency Analysis Logs
+          path: | 
+            build/reports/dependency-check-report.html

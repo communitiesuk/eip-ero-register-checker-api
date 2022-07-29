@@ -1,0 +1,8 @@
+title: Age Ranges
+type: string
+description: Age Ranges
+enum:
+  - under-18
+  - between-18-and-75
+  - over-75
+  - unknown

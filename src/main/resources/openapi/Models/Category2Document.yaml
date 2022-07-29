@@ -1,0 +1,12 @@
+title: Category 2 Documents
+type: string
+description: Category 2 Documents
+enum:
+  - mortgage-statement
+  - bank-or-building-society-statement-or-confirmation-letter
+  - credit-card-statement
+  - pension-statement
+  - council-tax-statement-or-demand-letter
+  - utility-bill
+  - p45-or-p60-form
+  - statement-of-or-entitlement-to-benefits

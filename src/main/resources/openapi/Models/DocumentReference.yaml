@@ -1,0 +1,19 @@
+title: DocumentReference
+type: object
+description: 'Describes the uploaded document.'
+properties:
+  documentType:
+    type: string
+    description: 'The document type. Should be one of Category1Document or Category2Document.'
+  s3Arn:
+    type: string
+    description: 'S3 Arn of document, if null check documentRemovedReason.'
+  filename:
+    type: string
+    description: Original filename
+  documentRemovedReason:
+    type: string
+    description: 'A reason, to be displayed to the ERO, as to why the document that the applicant supplied has been removed. If a virus was detected then this will be a description of the issue from the virus scanning system'
+required:
+  - documentType
+  - filename

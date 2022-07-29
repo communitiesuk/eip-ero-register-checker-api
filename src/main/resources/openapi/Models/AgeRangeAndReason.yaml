@@ -1,0 +1,10 @@
+title: AgeRangeAndReason
+type: object
+properties:
+  ageRange:
+    $ref: ./AgeRange.yaml
+  reason:
+    type: string
+required:
+  - ageRange
+  - reason

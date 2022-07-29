@@ -1,0 +1,57 @@
+title: NinoMatchStatus
+type: object
+properties:
+  firstName:
+    type: string
+    enum:
+      - no-match
+      - match
+      - alias
+      - intials
+      - reversed
+      - alias-reversed
+      - soundex
+      - not-applicable
+  middelNames:
+    type: string
+    enum:
+      - no-match
+      - match
+      - not-applicable
+      - initials
+      - not-populated
+  lastname:
+    type: string
+    enum:
+      - no-match
+      - match
+      - alias
+      - reversed
+      - alias-reversed
+      - soundex
+      - not-applicable
+  dateOfBirth:
+    type: string
+    enum:
+      - no-match
+      - match
+      - not-applicable
+  nino:
+    type: string
+    enum:
+      - no-match
+      - match
+      - not-applicable
+  match:
+    type: string
+    enum:
+      - red
+      - green
+      - unverifiable
+required:
+  - firstName
+  - middelNames
+  - lastname
+  - dateOfBirth
+  - nino
+  - match

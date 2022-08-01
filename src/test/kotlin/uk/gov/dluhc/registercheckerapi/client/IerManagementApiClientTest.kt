@@ -39,7 +39,7 @@ internal class IerManagementApiClientTest {
     }
 
     @Test
-    fun `should get EROCertificateMapping for a given certificate serial`() {
+    fun `should get EROCertificateMapping response for a given certificate serial`() {
         // Given
         val certificateSerial = "123456789"
         val expectedEroCertificateMapping = EROCertificateMapping("1234", certificateSerial)
@@ -86,7 +86,7 @@ internal class IerManagementApiClientTest {
     }
 
     @Test
-    fun `should not get EROCertificateMapping given API returns a 500 error`() {
+    fun `should not get EROCertificateMapping response given API returns a 500 error`() {
         // Given
         val certificateSerial = "123456789"
 

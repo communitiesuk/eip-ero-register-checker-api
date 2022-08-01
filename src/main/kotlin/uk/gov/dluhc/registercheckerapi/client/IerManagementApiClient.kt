@@ -42,7 +42,7 @@ class IerManagementApiClient(private val ierManagementWebClient: WebClient) {
             handleWebClientResponseException(ex, certificateSerial)
         } else {
             logger.error(ex) { "Unhandled exception thrown by WebClient" }
-            Mono.error(IerGeneralException("Unhandled error getting ERO identifier $certificateSerial"))
+            Mono.error(IerGeneralException("Unhandled error getting EROCertificateMapping for certificate serial $certificateSerial"))
         }
 
     private fun handleWebClientResponseException(

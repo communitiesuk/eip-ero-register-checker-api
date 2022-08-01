@@ -9,9 +9,9 @@ import org.springframework.web.reactive.function.client.WebClient
 class WebClientConfiguration {
 
     @Bean
-    fun ierEroWebClient(@Value("\${api.ier-management.url}") ierEroApiUrl: String): WebClient =
+    fun ierEroWebClient(@Value("\${api.ier-management.url}") ierManagementApiBaseUrl: String): WebClient =
         WebClient.builder()
-            .baseUrl(ierEroApiUrl)
+            .baseUrl(ierManagementApiBaseUrl)
             // any other headers/auth headers etc we might need re: service to service communication
             .build()
 }

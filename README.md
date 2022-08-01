@@ -9,5 +9,5 @@ Requests are assumed pre-authenticated which carry a header defined by property 
 
 ### External Environment Variables
 The following environment variables must be set in order to run the application: 
-- `dluhc.request.header.name` is the name of header required in request
-- `api.ier-management.url` is the base URL of the external IER management API service
+- `CLIENT_CERT_SERIAL` is the name of header required in request
+- `API_IER_MANAGEMENT_URL` is the base URL of the external IER management API service

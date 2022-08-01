@@ -3,4 +3,4 @@ dluhc:
 
 api:
   ier-management:
-    url: ${API_IER_ERO_URL}
+    url: ${API_IER_MANAGEMENT_URL}

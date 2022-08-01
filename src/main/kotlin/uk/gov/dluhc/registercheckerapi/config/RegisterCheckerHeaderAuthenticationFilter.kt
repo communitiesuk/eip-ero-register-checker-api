@@ -12,12 +12,20 @@ import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
 import javax.servlet.http.HttpServletRequest
 
-class RegisterCheckerHeaderAuthenticationFilter : RequestHeaderAuthenticationFilter() {
+class RegisterCheckerHeaderAuthenticationFilter(requestHeaderName: String) : RequestHeaderAuthenticationFilter() {
 
-    private val clientCertSerialHeader = "client-cert-serial"
+    private val clientCertSerialHeaderName = requestHeaderName
+
+    companion object {
+        private val AUTHORITIES: MutableList<GrantedAuthority> = ArrayList()
+
+        init {
+            AUTHORITIES.add(SimpleGrantedAuthority("ROLE_EMS_SYSTEM"))
+        }
+    }
 
     init {
-        setPrincipalRequestHeader(clientCertSerialHeader)
+        setPrincipalRequestHeader(requestHeaderName)
         // This setting returns an HTTP 404 with no error message instead of an
         // HTTP 500 with the "missing header" exception message
         setExceptionIfHeaderMissing(false)
@@ -31,22 +39,13 @@ class RegisterCheckerHeaderAuthenticationFilter : RequestHeaderAuthenticationFil
     ) {
         val requestHeaderValue = super.getPreAuthenticatedPrincipal(servletRequest as HttpServletRequest?) as String?
 
-        if (requestHeaderValue?.isNotBlank() == true) {
-            val authToken = PreAuthenticatedAuthenticationToken(requestHeaderValue, requestHeaderValue, AUTHORITIES)
-            logger.info("Setting authenticated auth token $authToken to context ")
-            SecurityContextHolder.getContext().authentication = authToken
+        if (requestHeaderValue.isNullOrBlank()) {
+            logger.info("[$clientCertSerialHeaderName] header is not present in request header")
         } else {
-            logger.error("$clientCertSerialHeader header not present in request header")
+            val authToken = PreAuthenticatedAuthenticationToken(clientCertSerialHeaderName, requestHeaderValue, AUTHORITIES)
+            SecurityContextHolder.getContext().authentication = authToken
         }
 
         filterChain?.doFilter(servletRequest, servletResponse)
-    }
-
-    companion object {
-        private val AUTHORITIES: MutableList<GrantedAuthority> = ArrayList()
-
-        init {
-            AUTHORITIES.add(SimpleGrantedAuthority("ROLE_USER")) // TODO What should be the role TBD?
-        }
     }
 }

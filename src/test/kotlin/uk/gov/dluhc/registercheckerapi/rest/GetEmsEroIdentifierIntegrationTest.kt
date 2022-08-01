@@ -9,7 +9,6 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
     fun `should return forbidden given valid header key is not present`() {
         webTestClient.get()
             .uri("/registercheck")
-            .header("junk-header", "hello")
             .exchange()
             .expectStatus()
             .isForbidden

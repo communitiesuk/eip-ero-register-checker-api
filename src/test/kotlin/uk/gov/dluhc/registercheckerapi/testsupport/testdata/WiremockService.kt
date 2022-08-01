@@ -6,9 +6,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
 import org.springframework.stereotype.Service
 
-/**
- * Service class to provide support to tests with setting up and managing wiremock stubs
- */
 @Service
 class WiremockService(private val wireMockServer: WireMockServer) {
 
@@ -16,7 +13,7 @@ class WiremockService(private val wireMockServer: WireMockServer) {
         wireMockServer.resetAll()
     }
 
-    fun stubIerManagementGetEroIdentifier() {
+    fun stubIerApiGetEroIdentifier() {
         wireMockServer.stubFor(
             get(urlPathMatching("/ier-management-api/ier-ero/.*"))
                 .willReturn(
@@ -27,7 +24,7 @@ class WiremockService(private val wireMockServer: WireMockServer) {
                             """
                                 {
                                     "eroId": "1234",
-                                    "certificateSerial": "543219999",
+                                    "certificateSerial": "543219999"
                                 }
                             """.trimIndent()
                         )
@@ -35,12 +32,22 @@ class WiremockService(private val wireMockServer: WireMockServer) {
         )
     }
 
-    fun stubIerManagementGetEroIdentifierThrowsInternalServerError() {
+    fun stubIerApiGetEroIdentifierThrowsInternalServerError() {
         wireMockServer.stubFor(
             get(urlPathMatching("/ier-management-api/ier-ero/.*"))
                 .willReturn(
                     responseDefinition()
                         .withStatus(500)
+                )
+        )
+    }
+
+    fun stubIerApiGetEroIdentifierThrowsNotFoundError() {
+        wireMockServer.stubFor(
+            get(urlPathMatching("/ier-management-api/ier-ero/.*"))
+                .willReturn(
+                    responseDefinition()
+                        .withStatus(404)
                 )
         )
     }

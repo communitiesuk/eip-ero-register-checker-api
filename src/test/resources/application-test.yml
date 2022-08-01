@@ -1,0 +1,3 @@
+api:
+  ier-management:
+    url: http://wiremock

@@ -1,2 +1,6 @@
 dluhc:
   request.header.name: client-cert-serial
+
+api:
+  ier-management:
+    url: ${API_IER_ERO_URL}

@@ -94,13 +94,13 @@ tasks.withType<GenerateTask> {
     )
 }
 
-tasks.create("generate-models-from-openapi-document-RegisterCheckerAPIs.yaml", GenerateTask::class) {
+tasks.create("Generating RegisterCheckApiModel", GenerateTask::class) {
     enabled = true
     inputSpec.set("$projectDir/src/main/resources/openapi/RegisterCheckerAPIs.yaml")
     packageName.set("uk.gov.dluhc.registercheckerapi")
 }
 
-tasks.create("generate-models-from-openapi-document-IER-EROP-APIs.yaml", GenerateTask::class) {
+tasks.create("Generating IERApiModel", GenerateTask::class) {
     enabled = true
     inputSpec.set("$projectDir/src/main/resources/openapi/IER-EROP-APIs.yaml")
     packageName.set("uk.gov.dluhc.registercheckerapi")

@@ -13,10 +13,10 @@ import org.springframework.security.web.SecurityFilterChain
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-class SecurityConfiguration {
-
+class SecurityConfiguration(
     @Value("\${dluhc.request.header.name}")
-    private val requestHeaderName: String = ""
+    private val requestHeaderName: String
+) {
 
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {

@@ -54,6 +54,7 @@ dependencies {
 
     // tests
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
 }
 
 tasks.withType<KotlinCompile> {
@@ -70,9 +71,7 @@ tasks.withType<Test> {
 }
 
 tasks.withType<GenerateTask> {
-    enabled = true
-    inputSpec.set("$projectDir/src/main/resources/openapi/RegisterCheckerAPIs.yaml")
-    packageName.set("uk.gov.dluhc.registercheckerapi")
+    enabled = false
     validateSpec.set(true)
     outputDir.set("$projectDir/build/generated")
     generatorName.set("kotlin-spring")
@@ -93,6 +92,18 @@ tasks.withType<GenerateTask> {
             "useBeanValidation" to "true",
         )
     )
+}
+
+tasks.create("Generating RegisterCheckApiModel", GenerateTask::class) {
+    enabled = true
+    inputSpec.set("$projectDir/src/main/resources/openapi/RegisterCheckerAPIs.yaml")
+    packageName.set("uk.gov.dluhc.registercheckerapi")
+}
+
+tasks.create("Generating IERApiModel", GenerateTask::class) {
+    enabled = true
+    inputSpec.set("$projectDir/src/main/resources/openapi/IER-EROP-APIs.yaml")
+    packageName.set("uk.gov.dluhc.external.ier")
 }
 
 // Add the generated code to the source sets

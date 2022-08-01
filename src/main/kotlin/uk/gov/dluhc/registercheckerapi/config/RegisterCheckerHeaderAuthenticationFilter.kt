@@ -1,6 +1,5 @@
 package uk.gov.dluhc.registercheckerapi.config
 
-import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
@@ -17,17 +16,11 @@ class RegisterCheckerHeaderAuthenticationFilter(requestHeaderName: String) : Req
     private val clientCertSerialHeaderName = requestHeaderName
 
     companion object {
-        private val AUTHORITIES: MutableList<GrantedAuthority> = ArrayList()
-
-        init {
-            AUTHORITIES.add(SimpleGrantedAuthority("ROLE_EMS_SYSTEM"))
-        }
+        private val AUTHORITIES = listOf(SimpleGrantedAuthority("ROLE_EMS_SYSTEM"))
     }
 
     init {
         setPrincipalRequestHeader(requestHeaderName)
-        // This setting returns an HTTP 404 with no error message instead of an
-        // HTTP 500 with the "missing header" exception message
         setExceptionIfHeaderMissing(false)
     }
 
@@ -42,7 +35,8 @@ class RegisterCheckerHeaderAuthenticationFilter(requestHeaderName: String) : Req
         if (requestHeaderValue.isNullOrBlank()) {
             logger.info("[$clientCertSerialHeaderName] header is not present in request header")
         } else {
-            val authToken = PreAuthenticatedAuthenticationToken(clientCertSerialHeaderName, requestHeaderValue, AUTHORITIES)
+            val authToken =
+                PreAuthenticatedAuthenticationToken(clientCertSerialHeaderName, requestHeaderValue, AUTHORITIES)
             SecurityContextHolder.getContext().authentication = authToken
         }
 

@@ -1,3 +1,6 @@
+dluhc:
+  request.header.name: client-cert-serial
+
 api:
   ier-management:
     url: http://wiremock

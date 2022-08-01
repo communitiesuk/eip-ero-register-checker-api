@@ -32,7 +32,7 @@ class IerManagementApiClient(private val ierManagementWebClient: WebClient) {
 
     private fun buildUriString(certificateSerial: String): String =
         UriComponentsBuilder
-            .fromUriString("/ier-ero/eros")
+            .fromUriString("/ero")
             .queryParam("certificateSerial", certificateSerial)
             .build()
             .toUriString()
@@ -52,5 +52,5 @@ class IerManagementApiClient(private val ierManagementWebClient: WebClient) {
         if (ex.statusCode == HttpStatus.NOT_FOUND)
             Mono.error(IerNotFoundException(certificateSerial))
         else
-            Mono.error(IerGeneralException("Error ${ex.message} getting EROCertificateMapping for certificate serial $certificateSerial"))
+            Mono.error(IerGeneralException("Unable to retrieve EROCertificateMapping for certificate serial [$certificateSerial] due to error: [${ex.message}]"))
 }

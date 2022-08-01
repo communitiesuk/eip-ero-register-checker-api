@@ -55,7 +55,7 @@ internal class IerManagementApiClientTest {
         assertThat(actualEroCertificateMapping).isEqualTo(expectedEroCertificateMapping)
         assertThat(clientRequest.value.url())
             .hasHost("ier-management-api")
-            .hasPath("/ier-ero/eros")
+            .hasPath("/ero")
             .hasParameter("certificateSerial", certificateSerial)
     }
 
@@ -81,7 +81,7 @@ internal class IerManagementApiClientTest {
         assertThat(ex.message).isEqualTo(expectedException.message)
         assertThat(clientRequest.value.url())
             .hasHost("ier-management-api")
-            .hasPath("/ier-ero/eros")
+            .hasPath("/ero")
             .hasParameter("certificateSerial", certificateSerial)
     }
 
@@ -94,7 +94,7 @@ internal class IerManagementApiClientTest {
         given(clientResponse.bodyToMono(EROCertificateMapping::class.java)).willReturn(Mono.error(http500Error))
 
         val expectedException =
-            IerGeneralException("Error 500 INTERNAL_SERVER_ERROR getting EROCertificateMapping for certificate serial 123456789")
+            IerGeneralException("Unable to retrieve EROCertificateMapping for certificate serial [123456789] due to error: [500 INTERNAL_SERVER_ERROR]")
 
         // When
         val ex = Assertions.catchThrowableOfType(
@@ -106,7 +106,7 @@ internal class IerManagementApiClientTest {
         assertThat(ex.message).isEqualTo(expectedException.message)
         assertThat(clientRequest.value.url())
             .hasHost("ier-management-api")
-            .hasPath("/ier-ero/eros")
+            .hasPath("/ero")
             .hasParameter("certificateSerial", certificateSerial)
     }
 

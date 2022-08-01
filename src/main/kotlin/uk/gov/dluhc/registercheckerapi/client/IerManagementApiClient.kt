@@ -7,7 +7,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
-import uk.gov.dluhc.registercheckerapi.models.EROCertificateMapping
+import uk.gov.dluhc.external.ier.models.EROCertificateMapping
 
 private val logger = KotlinLogging.logger {}
 

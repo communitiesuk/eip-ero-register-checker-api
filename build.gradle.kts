@@ -49,6 +49,9 @@ dependencies {
     implementation("org.springframework:spring-webflux")
     implementation("io.projectreactor.netty:reactor-netty-http")
 
+    // spring security
+    implementation("org.springframework.boot:spring-boot-starter-security")
+
     // tests
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }

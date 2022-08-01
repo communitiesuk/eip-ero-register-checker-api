@@ -7,9 +7,9 @@ info:
     name: Krister Bone
     email: krister.bone@valtech.com
 servers:
-  - url: 'http://localhost:3000/registerchecks'
+  - url: 'http://localhost:3000'
 paths:
-  /:
+  /registerchecks:
     parameters: []
     get:
       summary: Get Register Requests
@@ -19,7 +19,13 @@ paths:
           $ref: '#/components/responses/RegisterCheckResponse'
       operationId: get-register-checks
       description: Retrieve list of register check requests for the connected EMS system.
-  '/{requestid}':
+      x-amazon-apigateway-integration:
+        type: HTTP_PROXY
+        uri: ${base_uri}/registerchecks
+        connectionType: VPC_LINK
+        connectionId: ${vpc_connection_id}
+        httpMethod: GET
+  '/registerchecks/{requestid}':
     parameters:
       - schema:
           type: string
@@ -35,6 +41,14 @@ paths:
       description: The EMS systems response to the register check request for the request id.
       requestBody:
         $ref: '#/components/requestBodies/RegisterCheckResponseRequest'
+      x-amazon-apigateway-integration:
+        type: HTTP_PROXY
+        uri: ${base_uri}/registerchecks/{requestid}
+        requestParameters:
+          integration.request.path.requestid: "method.request.path.requestid"
+        connectionType: VPC_LINK
+        connectionId: ${vpc_connection_id}
+        httpMethod: POST
 components:
   schemas:
     RegisterCheckRequest:

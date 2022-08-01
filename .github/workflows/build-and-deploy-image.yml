@@ -1,0 +1,66 @@
+name: Deploy image to TEST environment
+# See https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#running-your-workflow-when-a-pull-request-merges
+# https://github.com/aws-actions/amazon-ecs-deploy-task-definition
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  deployment:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      # Use Gradle to build Docker image instead of docker directly
+      # TODO - Discuss defining a Docker file explicitly or setting tag as `latest` in gradle task:
+      # docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: reg-checker-api-repo
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          ./gradlew bootBuildImage
+          docker tag eip-ero-register-checker-api:latest $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      # Note that the base Task Definition is managed by Terraform and task-definition includes the environment prefix
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition --task-definition "test-reg-check-api-ecs-task-definition" \
+          --query taskDefinition > task-definition.json
+
+      # Note that the container-name includes the environment prefix
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: test-reg-check-api-ecs-container
+          image: ${{ steps.build-image.outputs.image }}
+
+      # Note that several properties include the `test` environment prefix
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: test-reg-check-api-ecs-service
+          cluster: test-reg-check-api-ecs-cluster
+          wait-for-service-stability: true
+          codedeploy-appspec: ${{ github.workspace }}/.github/workflows/files/appspec.yaml.yaml
+          codedeploy-application: reg-check-api
+          codedeploy-deployment-group: test-reg-check-api-deployment-group

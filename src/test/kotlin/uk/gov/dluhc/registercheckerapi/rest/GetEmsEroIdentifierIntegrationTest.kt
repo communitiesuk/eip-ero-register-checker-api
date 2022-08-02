@@ -41,7 +41,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
     }
 
     @Test
-    fun `should return ok with eroId with correct use of caching`() {
+    fun `should return ok with same eroId with correct use of caching`() {
         // Given
         wireMockService.stubIerApiGetEroIdentifier(certSerialNumberValue)
 

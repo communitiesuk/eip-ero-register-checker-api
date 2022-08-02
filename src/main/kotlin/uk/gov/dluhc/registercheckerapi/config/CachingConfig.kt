@@ -18,11 +18,7 @@ class CachingConfig {
     @Bean
     fun cacheManager(): CacheManager {
         val cacheManager = SimpleCacheManager()
-        cacheManager.setCaches(
-            listOf(
-                ConcurrentMapCache(CERTIFICATE_SERIAL_CACHE_NAME),
-            )
-        )
+        cacheManager.setCaches(listOf(ConcurrentMapCache(CERTIFICATE_SERIAL_CACHE_NAME)))
         return cacheManager
     }
 }

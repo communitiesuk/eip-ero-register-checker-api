@@ -70,7 +70,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
     }
 
     @Test
-    fun `should return relevant eroId for different certificate serial with correct use of caching`() {
+    fun `should return eroId for different certificate serial not present earlier in cache`() {
         // Given
         val firstRequestCertSerialNumber = "543219999"
         val secondRequestCertSerialNumber = "453554535"

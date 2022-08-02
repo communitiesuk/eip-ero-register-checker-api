@@ -4,12 +4,15 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 
+private const val GET_ERO_ENDPOINT = "/registercheck"
+private const val REQUEST_HEADER_NAME = "client-cert-serial"
+
 internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
 
     @Test
     fun `should return forbidden given valid header key is not present`() {
         webTestClient.get()
-            .uri("/registercheck")
+            .uri(GET_ERO_ENDPOINT)
             .exchange()
             .expectStatus()
             .isForbidden
@@ -25,8 +28,8 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
 
         // When
         val response = webTestClient.get()
-            .uri("/registercheck")
-            .header("client-cert-serial", certSerialNumberValue)
+            .uri(GET_ERO_ENDPOINT)
+            .header(REQUEST_HEADER_NAME, certSerialNumberValue)
             .exchange()
             .expectStatus().isOk
             .returnResult(String::class.java)
@@ -45,8 +48,8 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
 
         // When
         val response = webTestClient.get()
-            .uri("/registercheck")
-            .header("client-cert-serial", certSerialNumberValue)
+            .uri(GET_ERO_ENDPOINT)
+            .header(REQUEST_HEADER_NAME, certSerialNumberValue)
             .exchange()
             .expectStatus().is4xxClientError
             .returnResult(String::class.java)
@@ -65,8 +68,8 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
 
         // When
         val response = webTestClient.get()
-            .uri("/registercheck")
-            .header("client-cert-serial", certSerialNumberValue)
+            .uri(GET_ERO_ENDPOINT)
+            .header(REQUEST_HEADER_NAME, certSerialNumberValue)
             .exchange()
             .expectStatus().is5xxServerError
             .returnResult(String::class.java)

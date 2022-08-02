@@ -41,16 +41,20 @@ class IerApiClient(private val ierWebClient: WebClient) {
         if (ex is WebClientResponseException) {
             handleWebClientResponseException(ex, certificateSerial)
         } else {
-            logger.error(ex) { "Unhandled exception thrown by WebClient" }
-            Mono.error(IerGeneralException("Unhandled error getting EROCertificateMapping for certificate serial $certificateSerial"))
+            val errMessage = "Unhandled error getting EROCertificateMapping for certificate serial $certificateSerial"
+            logger.error(ex) { errMessage }
+            Mono.error(IerGeneralException(errMessage))
         }
 
     private fun handleWebClientResponseException(
-        ex: WebClientResponseException,
-        certificateSerial: String
+        ex: WebClientResponseException, certificateSerial: String
     ): Mono<EROCertificateMapping> =
         if (ex.statusCode == HttpStatus.NOT_FOUND)
             Mono.error(IerNotFoundException(certificateSerial))
-        else
-            Mono.error(IerGeneralException("Unable to retrieve EROCertificateMapping for certificate serial [$certificateSerial] due to error: [${ex.message}]"))
+        else {
+            val errMessage =
+                "Unable to retrieve EROCertificateMapping for certificate serial [$certificateSerial] due to error: [${ex.message}]"
+            logger.warn { errMessage }
+            Mono.error(IerGeneralException(errMessage))
+        }
 }

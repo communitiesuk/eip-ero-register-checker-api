@@ -6,6 +6,8 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
 import org.springframework.stereotype.Service
 
+private const val IER_ERO_GET_URL = "/ier-ero/.*"
+
 @Service
 class WiremockService(private val wireMockServer: WireMockServer) {
 
@@ -15,7 +17,7 @@ class WiremockService(private val wireMockServer: WireMockServer) {
 
     fun stubIerApiGetEroIdentifier() {
         wireMockServer.stubFor(
-            get(urlPathMatching("/ier-ero/.*"))
+            get(urlPathMatching(IER_ERO_GET_URL))
                 .willReturn(
                     responseDefinition()
                         .withStatus(200)
@@ -34,7 +36,7 @@ class WiremockService(private val wireMockServer: WireMockServer) {
 
     fun stubIerApiGetEroIdentifierThrowsInternalServerError() {
         wireMockServer.stubFor(
-            get(urlPathMatching("/ier-ero/.*"))
+            get(urlPathMatching(IER_ERO_GET_URL))
                 .willReturn(
                     responseDefinition()
                         .withStatus(500)
@@ -44,7 +46,7 @@ class WiremockService(private val wireMockServer: WireMockServer) {
 
     fun stubIerApiGetEroIdentifierThrowsNotFoundError() {
         wireMockServer.stubFor(
-            get(urlPathMatching("/ier-ero/.*"))
+            get(urlPathMatching(IER_ERO_GET_URL))
                 .willReturn(
                     responseDefinition()
                         .withStatus(404)

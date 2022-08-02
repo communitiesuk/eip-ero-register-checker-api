@@ -53,10 +53,7 @@ internal class IerApiClientTest {
 
         // Then
         assertThat(actualEroCertificateMapping).isEqualTo(expectedEroCertificateMapping)
-        assertThat(clientRequest.value.url())
-            .hasHost("ier-api")
-            .hasPath("/ero")
-            .hasParameter("certificateSerial", certificateSerial)
+        assertClientUrlValues(certificateSerial)
     }
 
     @Test
@@ -79,10 +76,7 @@ internal class IerApiClientTest {
 
         // Then
         assertThat(ex.message).isEqualTo(expectedException.message)
-        assertThat(clientRequest.value.url())
-            .hasHost("ier-api")
-            .hasPath("/ero")
-            .hasParameter("certificateSerial", certificateSerial)
+        assertClientUrlValues(certificateSerial)
     }
 
     @Test
@@ -104,12 +98,16 @@ internal class IerApiClientTest {
 
         // Then
         assertThat(ex.message).isEqualTo(expectedException.message)
+        assertClientUrlValues(certificateSerial)
+    }
+
+    private fun HttpStatus.toWebClientResponseException(): WebClientResponseException =
+        WebClientResponseException.create(this.value(), this.name, HttpHeaders.EMPTY, "".toByteArray(), null)
+
+    private fun assertClientUrlValues(certificateSerial: String) {
         assertThat(clientRequest.value.url())
             .hasHost("ier-api")
             .hasPath("/ero")
             .hasParameter("certificateSerial", certificateSerial)
     }
-
-    private fun HttpStatus.toWebClientResponseException(): WebClientResponseException =
-        WebClientResponseException.create(this.value(), this.name, HttpHeaders.EMPTY, "".toByteArray(), null)
 }

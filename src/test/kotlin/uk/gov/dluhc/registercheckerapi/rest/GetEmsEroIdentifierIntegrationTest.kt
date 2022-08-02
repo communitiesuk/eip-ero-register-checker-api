@@ -145,7 +145,6 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
             .blockFirst()
 
         // Then
-        assertThat(secondErrorResponse).isEqualTo(initialErrorResponse)
         wireMockService.verifyGetEroIdentifierCalled(expectedNumberOfCalls)
     }
 

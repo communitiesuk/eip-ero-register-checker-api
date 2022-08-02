@@ -4,7 +4,9 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder.responseDefinition
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 
 private const val IER_ERO_GET_URL = "/ier-ero/.*"
@@ -24,23 +26,27 @@ class WiremockService(private val wireMockServer: WireMockServer) {
         wireMockServer.verify(count, getRequestedFor(urlPathMatching(IER_ERO_GET_URL)))
     }
 
-    fun stubIerApiGetEroIdentifier(certificateSerial: String) {
+    fun stubIerApiGetEroIdentifier(certificateSerial: String, eroId: String) {
         wireMockServer.stubFor(
-            get(urlPathMatching(IER_ERO_GET_URL))
+            get(urlEqualTo("/ier-ero/ero?certificateSerial=$certificateSerial"))
                 .willReturn(
                     responseDefinition()
                         .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                         .withBody(
                             """
                                 {
-                                    "eroId": "1234",
+                                    "eroId": "$eroId",
                                     "certificateSerial": "$certificateSerial"
                                 }
                             """.trimIndent()
                         )
                 )
         )
+    }
+
+    fun stubIerApiGetEroIdentifier(certificateSerial: String) {
+        stubIerApiGetEroIdentifier(certificateSerial, "1234")
     }
 
     fun stubIerApiGetEroIdentifierThrowsInternalServerError() {

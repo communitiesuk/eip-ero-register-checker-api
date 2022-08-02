@@ -70,6 +70,38 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
     }
 
     @Test
+    fun `should return relevant eroId for different certificate serial with correct use of caching`() {
+        // Given
+        val firstRequestCertSerialNumber = "543219999"
+        val secondRequestCertSerialNumber = "453554535"
+        val expectedNumberOfCalls = 2
+        wireMockService.stubIerApiGetEroIdentifier(firstRequestCertSerialNumber, "12345")
+        wireMockService.stubIerApiGetEroIdentifier(secondRequestCertSerialNumber, "67890")
+        val initialEroId = webTestClient.get()
+            .uri(GET_ERO_ENDPOINT)
+            .header(REQUEST_HEADER_NAME, firstRequestCertSerialNumber)
+            .exchange()
+            .expectStatus().isOk
+            .returnResult(String::class.java)
+            .responseBody
+            .blockFirst()
+
+        // When
+        val secondEroId = webTestClient.get()
+            .uri(GET_ERO_ENDPOINT)
+            .header(REQUEST_HEADER_NAME, secondRequestCertSerialNumber)
+            .exchange()
+            .expectStatus().isOk
+            .returnResult(String::class.java)
+            .responseBody
+            .blockFirst()
+
+        // Then
+        assertThat(secondEroId).isNotEqualTo(initialEroId)
+        wireMockService.verifyGetEroIdentifierCalled(expectedNumberOfCalls)
+    }
+
+    @Test
     fun `should return not found error given IER service throws 404`() {
         // Given
         wireMockService.stubIerApiGetEroIdentifierThrowsNotFoundError()

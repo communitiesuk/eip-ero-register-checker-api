@@ -20,8 +20,8 @@ class WiremockConfiguration {
 
     @Bean
     @Primary
-    fun wireMockEroManagementWebClient(wireMockServer: WireMockServer): WebClient =
+    fun wireMockIerWebClient(wireMockServer: WireMockServer): WebClient =
         WebClient.builder()
-            .baseUrl("http://localhost:${wireMockServer.port()}/ier-management-api/ier-ero")
+            .baseUrl("http://localhost:${wireMockServer.port()}/ier-ero")
             .build()
 }

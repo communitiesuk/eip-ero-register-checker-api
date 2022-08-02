@@ -12,17 +12,17 @@ import uk.gov.dluhc.external.ier.models.EROCertificateMapping
 private val logger = KotlinLogging.logger {}
 
 @Component
-class IerManagementApiClient(private val ierManagementWebClient: WebClient) {
+class IerApiClient(private val ierWebClient: WebClient) {
 
     /**
-     * Calls the external `ier-management-api` to return a [EROCertificateMapping] for the specified certificate serial.
+     * Calls the external `ier-api` to return a [EROCertificateMapping] for the specified certificate serial.
      *
      * @param certificateserial the certificate serial number for getting the Ero mapping
      * @return a [EROCertificateMapping] containing eroId and certificate serial
-     * @throws [IerManagementApiException] concrete implementation if the API returns an error
+     * @throws [IerApiException] concrete implementation if the API returns an error
      */
     fun getEroIdentifier(certificateSerial: String): EROCertificateMapping =
-        ierManagementWebClient
+        ierWebClient
             .get()
             .uri(buildUriString(certificateSerial))
             .retrieve()

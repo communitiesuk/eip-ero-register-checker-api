@@ -17,7 +17,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono
 import uk.gov.dluhc.external.ier.models.EROCertificateMapping
 
-internal class IerManagementApiClientTest {
+internal class IerApiClientTest {
 
     private val exchangeFunction: ExchangeFunction = mock()
 
@@ -26,11 +26,11 @@ internal class IerManagementApiClientTest {
     private val clientRequest = ArgumentCaptor.forClass(ClientRequest::class.java)
 
     private val webClient = WebClient.builder()
-        .baseUrl("http://ier-management-api")
+        .baseUrl("http://ier-api")
         .exchangeFunction(exchangeFunction)
         .build()
 
-    private val apiClient = IerManagementApiClient(webClient)
+    private val apiClient = IerApiClient(webClient)
 
     @BeforeEach
     fun setupWebClientRequestCapture() {
@@ -54,7 +54,7 @@ internal class IerManagementApiClientTest {
         // Then
         assertThat(actualEroCertificateMapping).isEqualTo(expectedEroCertificateMapping)
         assertThat(clientRequest.value.url())
-            .hasHost("ier-management-api")
+            .hasHost("ier-api")
             .hasPath("/ero")
             .hasParameter("certificateSerial", certificateSerial)
     }
@@ -80,7 +80,7 @@ internal class IerManagementApiClientTest {
         // Then
         assertThat(ex.message).isEqualTo(expectedException.message)
         assertThat(clientRequest.value.url())
-            .hasHost("ier-management-api")
+            .hasHost("ier-api")
             .hasPath("/ero")
             .hasParameter("certificateSerial", certificateSerial)
     }
@@ -105,7 +105,7 @@ internal class IerManagementApiClientTest {
         // Then
         assertThat(ex.message).isEqualTo(expectedException.message)
         assertThat(clientRequest.value.url())
-            .hasHost("ier-management-api")
+            .hasHost("ier-api")
             .hasPath("/ero")
             .hasParameter("certificateSerial", certificateSerial)
     }

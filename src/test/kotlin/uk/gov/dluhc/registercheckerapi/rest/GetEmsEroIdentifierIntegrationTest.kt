@@ -16,10 +16,12 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
     }
 
     @Test
-    fun `should return OK with eroId given valid header key is present`() {
+    fun `should return ok with eroId given valid header key is present`() {
         // Given
         val certSerialNumberValue = "543219999"
         wireMockService.stubIerApiGetEroIdentifier()
+
+        val expectedEroId = "1234"
 
         // When
         val response = webTestClient.get()
@@ -32,11 +34,11 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
         // Then
         val actual = response.responseBody.blockFirst()
         assertThat(actual).isNotNull
-        assertThat(actual).isEqualTo("1234")
+        assertThat(actual).isEqualTo(expectedEroId)
     }
 
     @Test
-    fun `should return Not found error given ier service throws 404`() {
+    fun `should return not found error given IER service throws 404`() {
         // Given
         val certSerialNumberValue = "543219888"
         wireMockService.stubIerApiGetEroIdentifierThrowsNotFoundError()
@@ -56,7 +58,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
     }
 
     @Test
-    fun `should return Internal Server error given ier service throws 500`() {
+    fun `should return internal server error given IER service throws 500`() {
         // Given
         val certSerialNumberValue = "543219252"
         wireMockService.stubIerApiGetEroIdentifierThrowsInternalServerError()

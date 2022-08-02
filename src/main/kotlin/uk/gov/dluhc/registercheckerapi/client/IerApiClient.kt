@@ -47,7 +47,8 @@ class IerApiClient(private val ierWebClient: WebClient) {
         }
 
     private fun handleWebClientResponseException(
-        ex: WebClientResponseException, certificateSerial: String
+        ex: WebClientResponseException,
+        certificateSerial: String
     ): Mono<EROCertificateMapping> =
         if (ex.statusCode == HttpStatus.NOT_FOUND)
             Mono.error(IerNotFoundException(certificateSerial))

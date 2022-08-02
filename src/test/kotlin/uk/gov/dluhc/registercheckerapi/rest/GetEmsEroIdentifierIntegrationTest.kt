@@ -41,7 +41,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
     }
 
     @Test
-    fun `should return ok with eroId given eroId is cached from a previous call`() {
+    fun `should return ok with previously cached eroId`() {
         // Given
         wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE)
 
@@ -70,7 +70,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
     }
 
     @Test
-    fun `should return eroId for different certificate serial not present earlier in cache`() {
+    fun `should return eroId for certificate serial not present earlier in cache`() {
         // Given
         val firstRequestCertSerialNumber = "543219999"
         val secondRequestCertSerialNumber = "453554535"
@@ -125,7 +125,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
         // Given
         val expectedNumberOfCalls = 2
         wireMockService.stubIerApiGetEroIdentifierThrowsNotFoundError()
-        val initialErrorResponse = webTestClient.get()
+        webTestClient.get()
             .uri(GET_ERO_ENDPOINT)
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
@@ -135,7 +135,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
             .blockFirst()
 
         // When
-        val secondErrorResponse = webTestClient.get()
+        webTestClient.get()
             .uri(GET_ERO_ENDPOINT)
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()

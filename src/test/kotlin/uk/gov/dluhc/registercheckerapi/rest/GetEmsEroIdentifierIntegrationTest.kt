@@ -6,7 +6,7 @@ import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 
 private const val GET_ERO_ENDPOINT = "/registercheck"
 private const val REQUEST_HEADER_NAME = "client-cert-serial"
-private const val certSerialNumberValue = "543219999"
+private const val CERT_SERIAL_NUMBER_VALUE = "543219999"
 
 internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
 
@@ -22,13 +22,13 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
     @Test
     fun `should return ok with eroId given valid header key is present`() {
         // Given
-        wireMockService.stubIerApiGetEroIdentifier(certSerialNumberValue)
+        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE)
         val expectedEroId = "1234"
 
         // When
         val response = webTestClient.get()
             .uri(GET_ERO_ENDPOINT)
-            .header(REQUEST_HEADER_NAME, certSerialNumberValue)
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().isOk
             .returnResult(String::class.java)
@@ -41,13 +41,13 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
     }
 
     @Test
-    fun `should return ok with same eroId with correct use of caching`() {
+    fun `should return ok with eroId given eroId is cached from a previous call`() {
         // Given
-        wireMockService.stubIerApiGetEroIdentifier(certSerialNumberValue)
+        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE)
 
         val initialEroId = webTestClient.get()
             .uri(GET_ERO_ENDPOINT)
-            .header(REQUEST_HEADER_NAME, certSerialNumberValue)
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().isOk
             .returnResult(String::class.java)
@@ -57,7 +57,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
         // When
         val cachedEroId = webTestClient.get()
             .uri(GET_ERO_ENDPOINT)
-            .header(REQUEST_HEADER_NAME, certSerialNumberValue)
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().isOk
             .returnResult(String::class.java)
@@ -109,7 +109,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
         // When
         val response = webTestClient.get()
             .uri(GET_ERO_ENDPOINT)
-            .header(REQUEST_HEADER_NAME, certSerialNumberValue)
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().is4xxClientError
             .returnResult(String::class.java)
@@ -127,7 +127,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
         wireMockService.stubIerApiGetEroIdentifierThrowsNotFoundError()
         val initialErrorResponse = webTestClient.get()
             .uri(GET_ERO_ENDPOINT)
-            .header(REQUEST_HEADER_NAME, certSerialNumberValue)
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().is4xxClientError
             .returnResult(String::class.java)
@@ -137,7 +137,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
         // When
         val secondErrorResponse = webTestClient.get()
             .uri(GET_ERO_ENDPOINT)
-            .header(REQUEST_HEADER_NAME, certSerialNumberValue)
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().is4xxClientError
             .returnResult(String::class.java)
@@ -157,7 +157,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
         // When
         val response = webTestClient.get()
             .uri(GET_ERO_ENDPOINT)
-            .header(REQUEST_HEADER_NAME, certSerialNumberValue)
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().is5xxServerError
             .returnResult(String::class.java)

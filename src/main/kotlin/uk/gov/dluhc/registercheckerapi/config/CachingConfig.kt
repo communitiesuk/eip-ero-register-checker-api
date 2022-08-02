@@ -11,12 +11,16 @@ import org.springframework.context.annotation.Configuration
 @EnableCaching
 class CachingConfig {
 
+    companion object {
+        const val CERTIFICATE_SERIAL_CACHE_NAME = "certificateSerialToEroIdCache"
+    }
+
     @Bean
     fun cacheManager(): CacheManager {
         val cacheManager = SimpleCacheManager()
         cacheManager.setCaches(
             listOf(
-                ConcurrentMapCache("certificateSerialToEroIdCache"),
+                ConcurrentMapCache(CERTIFICATE_SERIAL_CACHE_NAME),
             )
         )
         return cacheManager

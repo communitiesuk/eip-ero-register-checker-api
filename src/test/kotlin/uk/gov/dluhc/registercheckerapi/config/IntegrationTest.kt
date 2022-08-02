@@ -4,8 +4,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.cache.CacheManager
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.dluhc.registercheckerapi.service.IerService
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.WiremockService
 
 /**
@@ -22,8 +24,22 @@ internal abstract class IntegrationTest {
     @Autowired
     protected lateinit var wireMockService: WiremockService
 
+    @Autowired
+    protected lateinit var ierService: IerService
+
+    @Autowired
+    private lateinit var cacheManager: CacheManager
+
     @BeforeEach
-    fun resetWireMock() {
+    fun resetAll() {
+        clearAllCaches()
         wireMockService.resetAllStubsAndMappings()
+    }
+
+    fun clearAllCaches() {
+        cacheManager
+            .cacheNames
+            .mapNotNull { cacheManager.getCache(it) }
+            .forEach { it.clear() }
     }
 }

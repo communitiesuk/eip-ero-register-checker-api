@@ -3,6 +3,7 @@ package uk.gov.dluhc.registercheckerapi.testsupport.testdata
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder.responseDefinition
 import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
 import org.springframework.stereotype.Service
 
@@ -15,7 +16,15 @@ class WiremockService(private val wireMockServer: WireMockServer) {
         wireMockServer.resetAll()
     }
 
-    fun stubIerApiGetEroIdentifier() {
+    fun verifyGetEroIdentifierCalledOnce() {
+        verifyGetEroIdentifierCalled(1)
+    }
+
+    fun verifyGetEroIdentifierCalled(count: Int) {
+        wireMockServer.verify(count, getRequestedFor(urlPathMatching(IER_ERO_GET_URL)))
+    }
+
+    fun stubIerApiGetEroIdentifier(certificateSerial: String) {
         wireMockServer.stubFor(
             get(urlPathMatching(IER_ERO_GET_URL))
                 .willReturn(
@@ -26,7 +35,7 @@ class WiremockService(private val wireMockServer: WireMockServer) {
                             """
                                 {
                                     "eroId": "1234",
-                                    "certificateSerial": "543219999"
+                                    "certificateSerial": "$certificateSerial"
                                 }
                             """.trimIndent()
                         )

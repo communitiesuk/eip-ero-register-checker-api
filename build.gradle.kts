@@ -55,6 +55,7 @@ dependencies {
     // tests
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
+    testImplementation("com.github.tomakehurst:wiremock-jre8:2.33.2")
 }
 
 tasks.withType<KotlinCompile> {

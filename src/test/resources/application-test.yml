@@ -2,5 +2,5 @@ dluhc:
   request.header.name: client-cert-serial
 
 api:
-  ier-management:
+  ier:
     url: http://wiremock

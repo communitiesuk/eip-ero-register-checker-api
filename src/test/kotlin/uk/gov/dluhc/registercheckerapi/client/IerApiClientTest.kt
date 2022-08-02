@@ -17,7 +17,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono
 import uk.gov.dluhc.external.ier.models.EROCertificateMapping
 
-internal class IerManagementApiClientTest {
+internal class IerApiClientTest {
 
     private val exchangeFunction: ExchangeFunction = mock()
 
@@ -26,11 +26,11 @@ internal class IerManagementApiClientTest {
     private val clientRequest = ArgumentCaptor.forClass(ClientRequest::class.java)
 
     private val webClient = WebClient.builder()
-        .baseUrl("http://ier-management-api")
+        .baseUrl("http://ier-api")
         .exchangeFunction(exchangeFunction)
         .build()
 
-    private val apiClient = IerManagementApiClient(webClient)
+    private val apiClient = IerApiClient(webClient)
 
     @BeforeEach
     fun setupWebClientRequestCapture() {
@@ -53,10 +53,7 @@ internal class IerManagementApiClientTest {
 
         // Then
         assertThat(actualEroCertificateMapping).isEqualTo(expectedEroCertificateMapping)
-        assertThat(clientRequest.value.url())
-            .hasHost("ier-management-api")
-            .hasPath("/ero")
-            .hasParameter("certificateSerial", certificateSerial)
+        assertClientUrlValues(certificateSerial)
     }
 
     @Test
@@ -79,10 +76,7 @@ internal class IerManagementApiClientTest {
 
         // Then
         assertThat(ex.message).isEqualTo(expectedException.message)
-        assertThat(clientRequest.value.url())
-            .hasHost("ier-management-api")
-            .hasPath("/ero")
-            .hasParameter("certificateSerial", certificateSerial)
+        assertClientUrlValues(certificateSerial)
     }
 
     @Test
@@ -104,12 +98,16 @@ internal class IerManagementApiClientTest {
 
         // Then
         assertThat(ex.message).isEqualTo(expectedException.message)
-        assertThat(clientRequest.value.url())
-            .hasHost("ier-management-api")
-            .hasPath("/ero")
-            .hasParameter("certificateSerial", certificateSerial)
+        assertClientUrlValues(certificateSerial)
     }
 
     private fun HttpStatus.toWebClientResponseException(): WebClientResponseException =
         WebClientResponseException.create(this.value(), this.name, HttpHeaders.EMPTY, "".toByteArray(), null)
+
+    private fun assertClientUrlValues(certificateSerial: String) {
+        assertThat(clientRequest.value.url())
+            .hasHost("ier-api")
+            .hasPath("/ero")
+            .hasParameter("certificateSerial", certificateSerial)
+    }
 }

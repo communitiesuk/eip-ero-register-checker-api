@@ -2,5 +2,5 @@ dluhc:
   request.header.name: ${REQUEST_HEADER_CLIENT_CERT_SERIAL}
 
 api:
-  ier-management:
-    url: ${API_IER_MANAGEMENT_URL}
+  ier:
+    url: ${API_IER_URL}

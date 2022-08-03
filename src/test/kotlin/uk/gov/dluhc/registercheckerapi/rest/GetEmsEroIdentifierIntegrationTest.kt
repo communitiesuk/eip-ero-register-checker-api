@@ -6,6 +6,7 @@ import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 
 private const val GET_ERO_ENDPOINT = "/registercheck"
 private const val REQUEST_HEADER_NAME = "client-cert-serial"
+private const val CERT_SERIAL_NUMBER_VALUE = "543219999"
 
 internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
 
@@ -16,20 +17,19 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
             .exchange()
             .expectStatus()
             .isForbidden
+        wireMockService.verifyGetEroIdentifierCalled(0)
     }
 
     @Test
     fun `should return ok with eroId given valid header key is present`() {
         // Given
-        val certSerialNumberValue = "543219999"
-        wireMockService.stubIerApiGetEroIdentifier()
-
+        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE)
         val expectedEroId = "1234"
 
         // When
         val response = webTestClient.get()
             .uri(GET_ERO_ENDPOINT)
-            .header(REQUEST_HEADER_NAME, certSerialNumberValue)
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().isOk
             .returnResult(String::class.java)
@@ -38,18 +38,18 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
         val actual = response.responseBody.blockFirst()
         assertThat(actual).isNotNull
         assertThat(actual).isEqualTo(expectedEroId)
+        wireMockService.verifyGetEroIdentifierCalledOnce()
     }
 
     @Test
     fun `should return not found error given IER service throws 404`() {
         // Given
-        val certSerialNumberValue = "543219888"
         wireMockService.stubIerApiGetEroIdentifierThrowsNotFoundError()
 
         // When
         val response = webTestClient.get()
             .uri(GET_ERO_ENDPOINT)
-            .header(REQUEST_HEADER_NAME, certSerialNumberValue)
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().is4xxClientError
             .returnResult(String::class.java)
@@ -58,18 +58,18 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
         val actual = response.responseBody.blockFirst()
         assertThat(actual).isNotNull
         assertThat(actual).isEqualTo("EroId for certificate serial not found")
+        wireMockService.verifyGetEroIdentifierCalledOnce()
     }
 
     @Test
     fun `should return internal server error given IER service throws 500`() {
         // Given
-        val certSerialNumberValue = "543219252"
         wireMockService.stubIerApiGetEroIdentifierThrowsInternalServerError()
 
         // When
         val response = webTestClient.get()
             .uri(GET_ERO_ENDPOINT)
-            .header(REQUEST_HEADER_NAME, certSerialNumberValue)
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().is5xxServerError
             .returnResult(String::class.java)
@@ -78,5 +78,6 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
         val actual = response.responseBody.blockFirst()
         assertThat(actual).isNotNull
         assertThat(actual).isEqualTo("Error getting eroId for certificate serial")
+        wireMockService.verifyGetEroIdentifierCalledOnce()
     }
 }

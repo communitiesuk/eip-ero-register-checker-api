@@ -7,5 +7,5 @@ import uk.gov.dluhc.registercheckerapi.client.IerApiClient
 class IerService(private val ierApiClient: IerApiClient) {
 
     fun getEroIdentifierForCertificateSerial(certificateSerial: String): String =
-        ierApiClient.getEroIdentifier(certificateSerial).let { it.eroId!! }
+        ierApiClient.getEroIdentifier(certificateSerial).eroId!!
 }

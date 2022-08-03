@@ -17,6 +17,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
             .exchange()
             .expectStatus()
             .isForbidden
+        wireMockService.verifyGetEroIdentifierCalled(0)
     }
 
     @Test
@@ -41,67 +42,6 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
     }
 
     @Test
-    fun `should return ok with eroId given eroId is cached from a previous call`() {
-        // Given
-        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE)
-
-        val initialEroId = webTestClient.get()
-            .uri(GET_ERO_ENDPOINT)
-            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
-            .exchange()
-            .expectStatus().isOk
-            .returnResult(String::class.java)
-            .responseBody
-            .blockFirst()
-
-        // When
-        val cachedEroId = webTestClient.get()
-            .uri(GET_ERO_ENDPOINT)
-            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
-            .exchange()
-            .expectStatus().isOk
-            .returnResult(String::class.java)
-            .responseBody
-            .blockFirst()
-
-        // Then
-        assertThat(cachedEroId).isEqualTo(initialEroId)
-        wireMockService.verifyGetEroIdentifierCalledOnce()
-    }
-
-    @Test
-    fun `should return eroId for different certificate serial not present earlier in cache`() {
-        // Given
-        val firstRequestCertSerialNumber = "543219999"
-        val secondRequestCertSerialNumber = "453554535"
-        val expectedNumberOfCalls = 2
-        wireMockService.stubIerApiGetEroIdentifier(firstRequestCertSerialNumber, "12345")
-        wireMockService.stubIerApiGetEroIdentifier(secondRequestCertSerialNumber, "67890")
-        val initialEroId = webTestClient.get()
-            .uri(GET_ERO_ENDPOINT)
-            .header(REQUEST_HEADER_NAME, firstRequestCertSerialNumber)
-            .exchange()
-            .expectStatus().isOk
-            .returnResult(String::class.java)
-            .responseBody
-            .blockFirst()
-
-        // When
-        val secondEroId = webTestClient.get()
-            .uri(GET_ERO_ENDPOINT)
-            .header(REQUEST_HEADER_NAME, secondRequestCertSerialNumber)
-            .exchange()
-            .expectStatus().isOk
-            .returnResult(String::class.java)
-            .responseBody
-            .blockFirst()
-
-        // Then
-        assertThat(secondEroId).isNotEqualTo(initialEroId)
-        wireMockService.verifyGetEroIdentifierCalled(expectedNumberOfCalls)
-    }
-
-    @Test
     fun `should return not found error given IER service throws 404`() {
         // Given
         wireMockService.stubIerApiGetEroIdentifierThrowsNotFoundError()
@@ -118,34 +58,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
         val actual = response.responseBody.blockFirst()
         assertThat(actual).isNotNull
         assertThat(actual).isEqualTo("EroId for certificate serial not found")
-    }
-
-    @Test
-    fun `should not cache given IER service throws 404`() {
-        // Given
-        val expectedNumberOfCalls = 2
-        wireMockService.stubIerApiGetEroIdentifierThrowsNotFoundError()
-        val initialErrorResponse = webTestClient.get()
-            .uri(GET_ERO_ENDPOINT)
-            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
-            .exchange()
-            .expectStatus().is4xxClientError
-            .returnResult(String::class.java)
-            .responseBody
-            .blockFirst()
-
-        // When
-        val secondErrorResponse = webTestClient.get()
-            .uri(GET_ERO_ENDPOINT)
-            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
-            .exchange()
-            .expectStatus().is4xxClientError
-            .returnResult(String::class.java)
-            .responseBody
-            .blockFirst()
-
-        // Then
-        wireMockService.verifyGetEroIdentifierCalled(expectedNumberOfCalls)
+        wireMockService.verifyGetEroIdentifierCalledOnce()
     }
 
     @Test
@@ -165,5 +78,6 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
         val actual = response.responseBody.blockFirst()
         assertThat(actual).isNotNull
         assertThat(actual).isEqualTo("Error getting eroId for certificate serial")
+        wireMockService.verifyGetEroIdentifierCalledOnce()
     }
 }

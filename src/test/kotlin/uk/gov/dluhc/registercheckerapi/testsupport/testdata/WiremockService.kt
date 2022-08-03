@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder.responseDefinition
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
@@ -27,7 +28,7 @@ class WiremockService(private val wireMockServer: WireMockServer) {
 
     fun stubIerApiGetEroIdentifier(certificateSerial: String, eroId: String) {
         wireMockServer.stubFor(
-            get(urlPathMatching(IER_ERO_GET_URL))
+            get(urlEqualTo("/ier-ero/ero?certificateSerial=$certificateSerial"))
                 .willReturn(
                     responseDefinition()
                         .withStatus(200)

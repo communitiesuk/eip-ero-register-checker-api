@@ -4,3 +4,6 @@ dluhc:
 api:
   ier:
     url: ${API_IER_URL}
+
+sqs:
+  ems-cidr-update-queue-name: ${SQS_EMS_CIDR_UPDATE_QUEUE_NAME}

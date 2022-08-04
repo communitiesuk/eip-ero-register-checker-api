@@ -11,3 +11,4 @@ Requests are assumed pre-authenticated which carry a header defined by property 
 The following environment variables must be set in order to run the application: 
 - `REQUEST_HEADER_CLIENT_CERT_SERIAL` is the name of header required in request
 - `API_IER_URL` is the base URL of the external IER API service
+- `SQS_EMS_CIDR_UPDATE_QUEUE_NAME` is the name of the queue for EMS CIDR update notifications from IER 

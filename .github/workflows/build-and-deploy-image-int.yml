@@ -2,9 +2,11 @@ name: Deploy image to int environment
 # See https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#running-your-workflow-when-a-pull-request-merges
 # https://github.com/aws-actions/amazon-ecs-deploy-task-definition
 on:
-  push:
+  pull_request:
+    types:
+      - closed
     branches:
-      - "deploy-int"
+      - main
 
 jobs:
   deployment:

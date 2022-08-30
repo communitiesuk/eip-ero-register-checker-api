@@ -4,8 +4,8 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.owasp.dependencycheck.reporting.ReportGenerator.Format.HTML
 
 plugins {
-    id("org.springframework.boot") version "2.7.2"
-    id("io.spring.dependency-management") version "1.0.12.RELEASE"
+    id("org.springframework.boot") version "2.7.3"
+    id("io.spring.dependency-management") version "1.0.13.RELEASE"
     kotlin("jvm") version "1.7.0"
     kotlin("plugin.spring") version "1.7.0"
     kotlin("plugin.jpa") version "1.7.0"
@@ -13,7 +13,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "10.3.0"
     id("org.jlleitschuh.gradle.ktlint-idea") version "10.3.0"
     id("org.openapi.generator") version "6.0.1"
-    id("org.owasp.dependencycheck") version "7.1.1"
+    id("org.owasp.dependencycheck") version "7.1.2"
 }
 
 group = "uk.gov.dluhc"
@@ -42,7 +42,7 @@ dependencies {
 
     // api
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springdoc:springdoc-openapi-ui:1.6.9")
+    implementation("org.springdoc:springdoc-openapi-ui:1.6.11")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
     // webclient
@@ -130,5 +130,6 @@ dependencyCheck {
     failOnError = true
     failBuildOnCVSS = 0.toFloat()
     analyzers.assemblyEnabled = false
+    analyzers.centralEnabled = true
     format = HTML
 }

@@ -9,18 +9,24 @@ jobs:
   deployment:
     runs-on: ubuntu-latest
     steps:
+      - name: Set deployment environment
+        id: set-deployment-env
+        run: |
+          DEPLOY_ENV=${GITHUB_REF##*/}
+          echo "DEPLOY_ENV=${DEPLOY_ENV}" >> $GITHUB_ENV
+          
+          if [ $DEPLOY_ENV != "test" ]
+          then
+            echo "SECRET_PREFIX=${DEPLOY_ENV^^}_" >> $GITHUB_ENV
+          fi
+
       - uses: actions/checkout@v3
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets[format('{0}AWS_ACCESS_KEY_ID', env.SECRET_PREFIX)] }}
+          aws-secret-access-key: ${{ secrets[format('{0}AWS_ACCESS_KEY_ID', env.SECRET_PREFIX)] }}
           aws-region: eu-west-2
-
-      - name: Set deployment environment
-        id: set-deployment-env
-        run: |
-          echo "DEPLOY_ENV=${GITHUB_REF##*/}" >> $GITHUB_ENV
 
       # Note that the base Task Definition is managed by Terraform and task-definition includes the environment prefix
       - name: Download task definition

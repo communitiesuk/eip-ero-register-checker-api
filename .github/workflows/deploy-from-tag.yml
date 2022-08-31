@@ -1,0 +1,50 @@
+name: Deploy image from tag to environment
+
+on:
+  push:
+    tags:
+      - 'rc/*'
+
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+
+      - name: Set deployment environment
+        id: set-deployment-env
+        run: |
+          echo "DEPLOY_ENV=${GITHUB_REF##*/}" >> $GITHUB_ENV
+
+      # Note that the base Task Definition is managed by Terraform and task-definition includes the environment prefix
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition --task-definition "${{env.DEPLOY_ENV}}-vca-api-ecs-task-definition" \
+          --query taskDefinition > task-definition.json
+
+      # Note that the container-name includes the environment prefix
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{env.DEPLOY_ENV}}-vca-api-ecs-container
+          image: ${{ steps.login-ecr.outputs.registry }}/voter-card-applications-api-repo:${{ github.sha }}
+
+      # Note that several properties include the environment prefix
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{env.DEPLOY_ENV}}-vca-api-ecs-service
+          cluster: ${{env.DEPLOY_ENV}}-vca-api-ecs-cluster
+          wait-for-service-stability: true
+          codedeploy-appspec: ${{ github.workspace }}/.github/workflows/files/appspec.yaml
+          codedeploy-application: ${{env.DEPLOY_ENV}}-vca-api
+          codedeploy-deployment-group: ${{env.DEPLOY_ENV}}-vca-api-deployment-group

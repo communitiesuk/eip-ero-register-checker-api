@@ -31,7 +31,7 @@ jobs:
       # Note that the base Task Definition is managed by Terraform and task-definition includes the environment prefix
       - name: Download task definition
         run: |
-          aws ecs describe-task-definition --task-definition "${{env.DEPLOY_ENV}}-vca-api-ecs-task-definition" \
+          aws ecs describe-task-definition --task-definition "${{env.DEPLOY_ENV}}-reg-check-api-ecs-task-definition" \
           --query taskDefinition > task-definition.json
 
       # Note that the container-name includes the environment prefix
@@ -40,17 +40,17 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
-          container-name: ${{env.DEPLOY_ENV}}-vca-api-ecs-container
-          image: ${{ steps.login-ecr.outputs.registry }}/voter-card-applications-api-repo:${{ github.sha }}
+          container-name: ${{env.DEPLOY_ENV}}-reg-check-api-ecs-container
+          image: ${{ steps.login-ecr.outputs.registry }}/register-checker-api-repo:${{ github.sha }}
 
       # Note that several properties include the environment prefix
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{env.DEPLOY_ENV}}-vca-api-ecs-service
-          cluster: ${{env.DEPLOY_ENV}}-vca-api-ecs-cluster
+          service: ${{env.DEPLOY_ENV}}-reg-check-api-ecs-service
+          cluster: ${{env.DEPLOY_ENV}}-reg-check-api-ecs-cluster
           wait-for-service-stability: true
           codedeploy-appspec: ${{ github.workspace }}/.github/workflows/files/appspec.yaml
-          codedeploy-application: ${{env.DEPLOY_ENV}}-vca-api
-          codedeploy-deployment-group: ${{env.DEPLOY_ENV}}-vca-api-deployment-group
+          codedeploy-application: ${{env.DEPLOY_ENV}}-register-checker-api
+          codedeploy-deployment-group: ${{env.DEPLOY_ENV}}-reg-check-api-deployment-group

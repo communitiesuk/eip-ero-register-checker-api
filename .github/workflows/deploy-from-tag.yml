@@ -52,5 +52,5 @@ jobs:
           cluster: ${{env.DEPLOY_ENV}}-reg-check-api-ecs-cluster
           wait-for-service-stability: true
           codedeploy-appspec: ${{ github.workspace }}/.github/workflows/files/appspec.yaml
-          codedeploy-application: ${{env.DEPLOY_ENV}}-register-checker-api
+          codedeploy-application: ${{env.DEPLOY_ENV}}-reg-check-api
           codedeploy-deployment-group: ${{env.DEPLOY_ENV}}-reg-check-api-deployment-group

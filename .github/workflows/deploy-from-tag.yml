@@ -25,7 +25,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets[format('{0}AWS_ACCESS_KEY_ID', env.SECRET_PREFIX)] }}
-          aws-secret-access-key: ${{ secrets[format('{0}AWS_ACCESS_KEY_ID', env.SECRET_PREFIX)] }}
+          aws-secret-access-key: ${{ secrets[format('{0}AWS_SECRET_ACCESS_KEY', env.SECRET_PREFIX)] }}
           aws-region: eu-west-2
 
       # Note that the base Task Definition is managed by Terraform and task-definition includes the environment prefix

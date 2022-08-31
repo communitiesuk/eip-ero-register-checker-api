@@ -51,10 +51,14 @@ jobs:
               ref: `refs/tags/Build.${context.runNumber}`,
               sha: context.sha
             });
-            github.rest.git.updateRef({
+            github.rest.git.deleteRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: `tags/rc/int`,
+            });
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/rc/int`,
               sha: context.sha,
-              force: true,
             });

@@ -58,9 +58,14 @@ jobs:
               sha: context.sha,
               force: true,
             });
+
+      - name: Trigger deployment workflow
+        uses: actions/github-script@v5
+        with:
+          script: |
             github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'deploy-from-tag.yml',
-              ref: `tags/rc/int`,
+              ref: `refs/tags/rc/int`,
             });

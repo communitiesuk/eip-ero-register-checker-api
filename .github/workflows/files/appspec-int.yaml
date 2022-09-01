@@ -1,9 +1,0 @@
-version: 0.0
-Resources:
-  - TargetService:
-      Type: AWS::ECS::Service
-      Properties:
-        TaskDefinition: "arn:aws:ecs:eu-west-2:063998039290:task-definition/int-reg-check-api-ecs-task-definition:1"
-        LoadBalancerInfo:
-          ContainerName: "int-reg-check-api-ecs-container"
-          ContainerPort: 8080

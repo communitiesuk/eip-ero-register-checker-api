@@ -1,0 +1,80 @@
+name: Deploy
+
+on:
+  workflow_call:
+    inputs:
+      deploy_environment:
+        required: true
+        type: string
+
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set secret name prefix
+        id: set-deployment-env
+        run: |
+          DEPLOY_ENV=${{ inputs.deploy_environment }}
+          
+          if [ $DEPLOY_ENV != "test" ]
+          then
+            echo "SECRET_PREFIX=${DEPLOY_ENV^^}_" >> $GITHUB_ENV
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets[format('{0}AWS_ACCESS_KEY_ID', env.SECRET_PREFIX)] }}
+          aws-secret-access-key: ${{ secrets[format('{0}AWS_SECRET_ACCESS_KEY', env.SECRET_PREFIX)] }}
+          aws-region: eu-west-2
+
+      # Note that the base Task Definition is managed by Terraform
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition --task-definition "${{inputs.deploy_environment}}-reg-check-api-ecs-task-definition" \
+          --query taskDefinition > task-definition.json
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{inputs.deploy_environment}}-reg-check-api-ecs-container
+          image: ${{ steps.login-ecr.outputs.registry }}/register-checker-api-repo:${{ github.sha }}
+
+      - name: Update appspec file for environment
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: "{env}"
+          replace: ${{inputs.deploy_environment}}
+          include: "**/appspec.yaml"
+          regex: false
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{inputs.deploy_environment}}-reg-check-api-ecs-service
+          cluster: ${{inputs.deploy_environment}}-reg-check-api-ecs-cluster
+          wait-for-service-stability: true
+          codedeploy-appspec: ${{ github.workspace }}/.github/workflows/files/appspec.yaml
+          codedeploy-application: ${{inputs.deploy_environment}}-reg-check-api
+          codedeploy-deployment-group: ${{inputs.deploy_environment}}-reg-check-api-deployment-group
+
+      - name: Update tag
+        uses: actions/github-script@v5
+        with:
+          script: |
+            github.rest.git.updateRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `tags/rc/${{ inputs.deploy_environment }}`,
+              sha: context.sha,
+              force: true,
+            });

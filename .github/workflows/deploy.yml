@@ -1,27 +1,26 @@
-name: Deploy image from tag to environment
+name: Deploy
 
 on:
-  push:
-    tags:
-      - 'rc/*'
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      deploy_environment:
+        required: true
+        type: string
 
 jobs:
   deployment:
     runs-on: ubuntu-latest
     steps:
-      - name: Set deployment environment
+      - name: Set secret name prefix
         id: set-deployment-env
         run: |
-          DEPLOY_ENV=${GITHUB_REF##*/}
-          echo "DEPLOY_ENV=${DEPLOY_ENV}" >> $GITHUB_ENV
+          DEPLOY_ENV=${{ inputs.deploy_environment }}
           
           if [ $DEPLOY_ENV != "test" ]
           then
             echo "SECRET_PREFIX=${DEPLOY_ENV^^}_" >> $GITHUB_ENV
           fi
 
-      - uses: actions/checkout@v3
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -32,7 +31,7 @@ jobs:
       # Note that the base Task Definition is managed by Terraform
       - name: Download task definition
         run: |
-          aws ecs describe-task-definition --task-definition "${{env.DEPLOY_ENV}}-reg-check-api-ecs-task-definition" \
+          aws ecs describe-task-definition --task-definition "${{inputs.deploy_environment}}-reg-check-api-ecs-task-definition" \
           --query taskDefinition > task-definition.json
 
       - name: Login to Amazon ECR
@@ -44,14 +43,14 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
-          container-name: ${{env.DEPLOY_ENV}}-reg-check-api-ecs-container
+          container-name: ${{inputs.deploy_environment}}-reg-check-api-ecs-container
           image: ${{ steps.login-ecr.outputs.registry }}/register-checker-api-repo:${{ github.sha }}
 
       - name: Update appspec file for environment
         uses: jacobtomlinson/gha-find-replace@v2
         with:
           find: "{env}"
-          replace: ${{env.DEPLOY_ENV}}
+          replace: ${{inputs.deploy_environment}}
           include: "**/appspec.yaml"
           regex: false
 
@@ -59,9 +58,21 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{env.DEPLOY_ENV}}-reg-check-api-ecs-service
-          cluster: ${{env.DEPLOY_ENV}}-reg-check-api-ecs-cluster
+          service: ${{inputs.deploy_environment}}-reg-check-api-ecs-service
+          cluster: ${{inputs.deploy_environment}}-reg-check-api-ecs-cluster
           wait-for-service-stability: true
           codedeploy-appspec: ${{ github.workspace }}/.github/workflows/files/appspec.yaml
-          codedeploy-application: ${{env.DEPLOY_ENV}}-reg-check-api
-          codedeploy-deployment-group: ${{env.DEPLOY_ENV}}-reg-check-api-deployment-group
+          codedeploy-application: ${{inputs.deploy_environment}}-reg-check-api
+          codedeploSy-deployment-group: ${{inputs.deploy_environment}}-reg-check-api-deployment-group
+
+      - name: Update tag
+        uses: actions/github-script@v5
+        with:
+          script: |
+            github.rest.git.updateRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `tags/rc/${inputs.deploy_environment}`,
+              sha: context.sha,
+              force: true,
+            });

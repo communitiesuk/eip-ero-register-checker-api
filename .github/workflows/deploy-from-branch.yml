@@ -9,30 +9,12 @@ on:
         type: string
 
 jobs:
-  build-and-tag:
+  checkout:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Update tag
-        uses: actions/github-script@v5
-        with:
-          script: |
-            github.rest.git.updateRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: `tags/rc/${inputs.deploy_environment}`,
-              sha: context.sha,
-              force: true,
-            });
-
-      - name: Trigger deployment workflow
-        uses: actions/github-script@v5
-        with:
-          script: |
-            github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'deploy-from-tag.yml',
-              ref: `refs/tags/rc/${inputs.deploy_environment}`,
-            });
+  deploy:
+    uses: ./.github/workflows/deploy.yml
+    with:
+      deploy_environment: ${inputs.deploy_environment}
+    secrets: inherit

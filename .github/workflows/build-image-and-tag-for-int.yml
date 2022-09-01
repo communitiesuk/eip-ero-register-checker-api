@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -41,7 +42,7 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
-      - name: Create build tag and update rc/int tag
+      - name: Create build tag
         uses: actions/github-script@v5
         with:
           script: |
@@ -51,21 +52,9 @@ jobs:
               ref: `refs/tags/Build.${context.runNumber}`,
               sha: context.sha,
             });
-            github.rest.git.updateRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: `tags/rc/int`,
-              sha: context.sha,
-              force: true,
-            });
 
-      - name: Trigger deployment workflow
-        uses: actions/github-script@v5
-        with:
-          script: |
-            github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'deploy-from-tag.yml',
-              ref: `refs/tags/rc/int`,
-            });
+  deploy:
+    uses: ./.github/workflows/deploy.yml
+    with:
+      deploy_environment: int
+    secrets: inherit

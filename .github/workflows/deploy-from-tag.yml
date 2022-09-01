@@ -52,7 +52,7 @@ jobs:
         with:
           find: "{env}"
           replace: ${{env.DEPLOY_ENV}}
-          include: ${{ github.workspace }}/.github/workflows/files/appspec.yaml
+          include: "**/appspec.yaml"
           regex: false
 
       - name: Deploy Amazon ECS task definition

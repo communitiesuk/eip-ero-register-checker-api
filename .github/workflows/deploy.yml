@@ -11,6 +11,8 @@ jobs:
   deployment:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+
       - name: Set secret name prefix
         id: set-deployment-env
         run: |

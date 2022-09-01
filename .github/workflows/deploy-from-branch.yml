@@ -9,12 +9,7 @@ on:
         type: string
 
 jobs:
-  checkout:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
   deploy:
-    needs: checkout
     uses: ./.github/workflows/deploy.yml
     with:
       deploy_environment: ${inputs.deploy_environment}

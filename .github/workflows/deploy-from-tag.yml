@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'rc/*'
+  workflow_dispatch:
 
 jobs:
   deployment:
@@ -28,13 +29,12 @@ jobs:
           aws-secret-access-key: ${{ secrets[format('{0}AWS_SECRET_ACCESS_KEY', env.SECRET_PREFIX)] }}
           aws-region: eu-west-2
 
-      # Note that the base Task Definition is managed by Terraform and task-definition includes the environment prefix
+      # Note that the base Task Definition is managed by Terraform
       - name: Download task definition
         run: |
           aws ecs describe-task-definition --task-definition "${{env.DEPLOY_ENV}}-reg-check-api-ecs-task-definition" \
           --query taskDefinition > task-definition.json
 
-      # Note that the container-name includes the environment prefix
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -43,7 +43,6 @@ jobs:
           container-name: ${{env.DEPLOY_ENV}}-reg-check-api-ecs-container
           image: ${{ steps.login-ecr.outputs.registry }}/register-checker-api-repo:${{ github.sha }}
 
-      # Note that several properties include the environment prefix
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:

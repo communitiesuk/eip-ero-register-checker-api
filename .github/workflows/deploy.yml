@@ -74,7 +74,7 @@ jobs:
             github.rest.git.updateRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: `tags/rc/${inputs.deploy_environment}`,
+              ref: `tags/rc/${{ inputs.deploy_environment }}`,
               sha: context.sha,
               force: true,
             });

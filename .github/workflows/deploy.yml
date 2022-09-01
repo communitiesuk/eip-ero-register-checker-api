@@ -63,7 +63,7 @@ jobs:
           wait-for-service-stability: true
           codedeploy-appspec: ${{ github.workspace }}/.github/workflows/files/appspec.yaml
           codedeploy-application: ${{inputs.deploy_environment}}-reg-check-api
-          codedeploSy-deployment-group: ${{inputs.deploy_environment}}-reg-check-api-deployment-group
+          codedeploy-deployment-group: ${{inputs.deploy_environment}}-reg-check-api-deployment-group
 
       - name: Update tag
         uses: actions/github-script@v5

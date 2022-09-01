@@ -43,6 +43,10 @@ jobs:
           container-name: ${{env.DEPLOY_ENV}}-reg-check-api-ecs-container
           image: ${{ steps.login-ecr.outputs.registry }}/register-checker-api-repo:${{ github.sha }}
 
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:

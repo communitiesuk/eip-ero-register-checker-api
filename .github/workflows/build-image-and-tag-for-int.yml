@@ -49,7 +49,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: `refs/tags/Build.${context.runNumber}`,
-              sha: context.sha
+              sha: context.sha,
             });
             github.rest.git.updateRef({
               owner: context.repo.owner,
@@ -61,6 +61,6 @@ jobs:
             github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'deploy-from-tag.yml'
-              ref: `tags/rc/int`
+              workflow_id: 'deploy-from-tag.yml',
+              ref: `tags/rc/int`,
             });

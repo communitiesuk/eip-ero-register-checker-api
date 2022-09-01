@@ -35,6 +35,10 @@ jobs:
           aws ecs describe-task-definition --task-definition "${{env.DEPLOY_ENV}}-reg-check-api-ecs-task-definition" \
           --query taskDefinition > task-definition.json
 
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -42,10 +46,6 @@ jobs:
           task-definition: task-definition.json
           container-name: ${{env.DEPLOY_ENV}}-reg-check-api-ecs-container
           image: ${{ steps.login-ecr.outputs.registry }}/register-checker-api-repo:${{ github.sha }}
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1

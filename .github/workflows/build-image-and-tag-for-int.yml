@@ -41,24 +41,20 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
+      # Explicitly using the git CLI to push tags, to ensure the deployment workflow is triggered.
       - name: Create build tag and update rc/int tag
-        uses: actions/github-script@v5
-        with:
-          script: |
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: `refs/tags/Build.${context.runNumber}`,
-              sha: context.sha
-            });
-            github.rest.git.deleteRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: `tags/rc/int`,
-            });
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: `refs/tags/rc/int`,
-              sha: context.sha,
-            });
+        id: update-git-tags
+        env:
+          ENV_TAG: rc/int
+        run: |
+          # Add build number tag
+          git tag -a Build.$GITHUB_RUN_NUMBER
+          git push origin Build.$GITHUB_RUN_NUMBER
+          
+          # Remove env deployment tag
+          git tag -d $ENV_TAG
+          git push --delete origin $ENV_TAG
+          
+          # Add env deployment tag
+          git tag -a $ENV_TAG
+          git push origin $ENV_TAG

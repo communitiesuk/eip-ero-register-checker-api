@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - feature/EIP1-1634-tagged-deployments
 
 jobs:
   build-and-tag:

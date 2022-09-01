@@ -54,6 +54,7 @@ jobs:
             });
 
   deploy:
+    needs: build-and-tag
     uses: ./.github/workflows/deploy.yml
     with:
       deploy_environment: int

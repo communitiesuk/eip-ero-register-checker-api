@@ -14,6 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
   deploy:
+    needs: checkout
     uses: ./.github/workflows/deploy.yml
     with:
       deploy_environment: ${inputs.deploy_environment}

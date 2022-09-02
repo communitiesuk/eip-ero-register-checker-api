@@ -7,11 +7,11 @@ on:
         required: true
         type: string
       app:
-        required: true
+        required: false
         type: string
         default: reg-check-api
       ecr_repo:
-        required: true
+        required: false
         type: string
         default: register-checker-api-repo
 

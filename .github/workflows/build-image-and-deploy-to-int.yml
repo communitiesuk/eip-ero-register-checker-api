@@ -1,4 +1,4 @@
-name: Build image and tag for int
+name: Build image and deploy to int
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets['INT_AWS_ACCESS_KEY_ID'] }}
+          aws-access-key-id: ${{ secrets.INT_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.INT_AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
 
@@ -48,7 +48,7 @@ jobs:
             github.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: `refs/tags/Build.${context.runNumber}`,
+              ref: `refs/tags/build/${context.runNumber}`,
               sha: context.sha,
             });
 

@@ -6,6 +6,14 @@ on:
       deploy_environment:
         required: true
         type: string
+      app:
+        required: false
+        type: string
+        default: reg-check-api
+      ecr_repo:
+        required: false
+        type: string
+        default: register-checker-api-repo
 
 jobs:
   deployment:
@@ -33,7 +41,7 @@ jobs:
       # Note that the base Task Definition is managed by Terraform
       - name: Download task definition
         run: |
-          aws ecs describe-task-definition --task-definition "${{inputs.deploy_environment}}-reg-check-api-ecs-task-definition" \
+          aws ecs describe-task-definition --task-definition "${{inputs.deploy_environment}}-${{inputs.app}}-ecs-task-definition" \
           --query taskDefinition > task-definition.json
 
       - name: Login to Amazon ECR
@@ -45,8 +53,8 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
-          container-name: ${{inputs.deploy_environment}}-reg-check-api-ecs-container
-          image: ${{ steps.login-ecr.outputs.registry }}/register-checker-api-repo:${{ github.sha }}
+          container-name: ${{inputs.deploy_environment}}-${{inputs.app}}-ecs-container
+          image: ${{ steps.login-ecr.outputs.registry }}/${{inputs.ecr_repo}}:${{ github.sha }}
 
       - name: Update appspec file for environment
         uses: jacobtomlinson/gha-find-replace@v2
@@ -60,12 +68,12 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{inputs.deploy_environment}}-reg-check-api-ecs-service
-          cluster: ${{inputs.deploy_environment}}-reg-check-api-ecs-cluster
+          service: ${{inputs.deploy_environment}}-${{inputs.app}}-ecs-service
+          cluster: ${{inputs.deploy_environment}}-${{inputs.app}}-ecs-cluster
           wait-for-service-stability: true
           codedeploy-appspec: ${{ github.workspace }}/.github/workflows/files/appspec.yaml
-          codedeploy-application: ${{inputs.deploy_environment}}-reg-check-api
-          codedeploy-deployment-group: ${{inputs.deploy_environment}}-reg-check-api-deployment-group
+          codedeploy-application: ${{inputs.deploy_environment}}-${{inputs.app}}
+          codedeploy-deployment-group: ${{inputs.deploy_environment}}-${{inputs.app}}-deployment-group
 
       - name: Update tag
         uses: actions/github-script@v5

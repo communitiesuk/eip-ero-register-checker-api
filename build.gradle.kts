@@ -44,6 +44,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springdoc:springdoc-openapi-ui:1.6.11")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.yaml:snakeyaml:1.31")
 
     // webclient
     implementation("org.springframework:spring-webflux")
@@ -132,4 +133,5 @@ dependencyCheck {
     analyzers.assemblyEnabled = false
     analyzers.centralEnabled = true
     format = HTML
+    suppressionFiles = listOf("owasp.suppressions.xml")
 }

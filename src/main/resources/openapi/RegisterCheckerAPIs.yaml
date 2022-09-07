@@ -61,14 +61,14 @@ paths:
               application/json: |
                 {}
     get:
-      summary: Get Register Requests
+      summary: Get Pending Register Checks
+      description: Retrieve list of pending register check requests for the connected EMS system.
+      operationId: get-pending-register-checks
       tags:
         - Register Checks
       responses:
         '200':
-          $ref: '#/components/responses/RegisterCheckResponse'
-      operationId: get-register-checks
-      description: Retrieve list of register check requests for the connected EMS system.
+          $ref: '#/components/responses/PendingRegisterChecks'
       x-amazon-apigateway-integration:
         type: HTTP_PROXY
         uri: ${base_uri}/registerchecks
@@ -150,52 +150,112 @@ components:
   # Schema and Enum Definitions
   # --------------------------------------------------------------------------------
   schemas:
-    RegisterCheckRequest:
-      title: RegisterCheckRequest
+    PendingRegisterChecksResponse:
+      title: PendingRegisterChecksResponse
+      description: Response containing pending Register Checks for the calling ERO's EMS system.
+      properties:
+        pageSize:
+          type: integer
+          default: 100
+        registerCheckRequests:
+          description: The list of Pending Register Checks
+          type: array
+          items:
+            $ref: '#/components/schemas/PendingRegisterCheck'
+      required:
+        - pageSize
+        - registerCheckRequests
+
+    PendingRegisterCheck:
+      title: PendingRegisterCheck
       type: object
+      description: An object describing a pending request for a check against the Electoral Register
       properties:
         requestid:
-          $ref: ../Models/Primatives/Identifier.yaml
-        source:
           type: string
-          example: EROP
-          description: Currently only EROP
+          pattern: '^[a-fA-F\d]{24}$'
+          description: A unique identifier for the check against the Electoral Register. A 24 character hex string.
+          example: 1f0f76a9a66f438b9bb33070
+        source:
+          $ref: '#/components/schemas/SourceSystem'
         gssCode:
-          $ref: ../Models/Primatives/GssCode.yaml
+          type: string
+          pattern: '^[a-zA-Z]\d{8}$'
+          description: The Local Authority GSS Code that manages the Electoral Register.
+          example: E06000001
         actingStaffId:
           type: string
-          description: Acting Staff Id that initialed the request. (Optional)
+          description: |-
+            Indicates the source of the request.
+            
+            Where EROP creates the request automatically this will be "EROP". Should there be a need to manually force an additional check, this will indicate the id of the ERO user who triggered the request (for auditing purposes).
+          example: EROP
         createdAt:
           type: string
-          description: The date and time the request was generated
+          description: The date and time this request to check the Electoral Register was generated
           format: date-time
         fn:
           type: string
-          description: First name
+          description: The applicant's first name
+          example: Fred
         mn:
           type: string
-          description: Middle name
+          description: The applicant's middle name(s)
+          example: Cuthbert
         ln:
           type: string
-          description: Last name
+          description: The applicant's surname
+          example: Blogs
         dob:
           type: string
-          description: Date of Birth (ISO8601 format)
+          description: The applicant's date of birth (ISO-8601 format)
           format: date
-        address:
-          $ref: ../Models/Address.yaml
+        regproperty:
+          type: string
+          example: Aviation House
+        regstreet:
+          type: string
+          example: 125 Kingsway
+        reglocality:
+          type: string
+          example: Camden
+        regtown:
+          type: string
+          example: London
+        regarea:
+          type: string
+          example: Greater London
+        regpostcode:
+          type: string
+          example: SW112DR
+        reguprn:
+          type: string
+          example: 0987654321
         phone:
           type: string
+          description: The applicant's phone number for contact purposes.
+          example: 01234 567890
         email:
           type: string
           format: email
+          description: The applicant's email address for contact purposes.
       required:
         - requestid
         - source
+        - gssCode
+        - actingStaffId
         - createdAt
         - fn
         - ln
-        - address
+        - regstreet
+        - regpostcode
+
+    SourceSystem:
+      title: SourceSystem
+      description: The source system of the Application
+      enum:
+        - EROP
+
     RegisterCheckMatch:
       title: RegisterCheckMatch
       type: object
@@ -333,21 +393,22 @@ components:
   # Response Body Definitions
   # --------------------------------------------------------------------------------
   responses:
-    RegisterCheckResponse:
-      description: Example response
+    PendingRegisterChecks:
+      description: Response containing pending Register Checks for the calling ERO's EMS system.
+      headers:
+        Access-Control-Allow-Origin:
+          schema:
+            type: string
+        Access-Control-Allow-Methods:
+          schema:
+            type: string
+        Access-Control-Allow-Headers:
+          schema:
+            type: string
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              pageSize:
-                type: integer
-                default: 100
-              registerCheckRequests:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RegisterCheckRequest'
-          examples: {}
+            $ref: '#/components/schemas/PendingRegisterChecksResponse'
   #
   # Request Body Definitions
   # --------------------------------------------------------------------------------

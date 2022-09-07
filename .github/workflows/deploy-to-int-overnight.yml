@@ -1,4 +1,4 @@
-name: Deploy to test environment overnight
+name: Deploy to int environment overnight
 
 on:
   schedule:
@@ -8,5 +8,5 @@ jobs:
   deploy:
     uses: ./.github/workflows/deploy.yml
     with:
-      deploy_environment: test
+      deploy_environment: int
     secrets: inherit

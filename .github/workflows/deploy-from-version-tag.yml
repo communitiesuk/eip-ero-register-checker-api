@@ -8,11 +8,11 @@ on:
         required: true
         type: choice
         options:
+          - sb
           - dev
           - int
-          - test
           - pvt
-          - sb
+          - test
 
 jobs:
   deploy:

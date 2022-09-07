@@ -77,15 +77,3 @@ jobs:
           codedeploy-appspec: ${{ github.workspace }}/.github/workflows/files/appspec.yaml
           codedeploy-application: ${{inputs.deploy_environment}}-${{inputs.app}}
           codedeploy-deployment-group: ${{inputs.deploy_environment}}-${{inputs.app}}-deployment-group
-
-      - name: Update environment tag
-        uses: actions/github-script@v5
-        with:
-          script: |
-            github.rest.git.updateRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: `tags/rc/${{ inputs.deploy_environment }}`,
-              sha: context.sha,
-              force: true,
-            });

@@ -22,7 +22,17 @@ paths:
   # Register Checks
   # --------------------------------------------------------------------------------
   /registerchecks:
-    parameters: []
+    parameters:
+      - name: pageSize
+        description: The maximum number of Pending Register Checks to return
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 100
+        example: 100
+        in: query
+        required: false
     options:
       summary: CORS support
       description: |

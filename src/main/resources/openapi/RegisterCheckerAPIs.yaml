@@ -91,9 +91,12 @@ paths:
   # --------------------------------------------------------------------------------
   '/registerchecks/{requestid}':
     parameters:
-      - schema:
+      - name: requestid
+        description: A unique identifier for the check against the Electoral Register. A 24 character hex string.
+        schema:
           type: string
-        name: requestid
+          pattern: '^[a-fA-F\d]{24}$'
+        example: 1f0f76a9a66f438b9bb33070
         in: path
         required: true
     options:
@@ -134,16 +137,16 @@ paths:
               application/json: |
                 {}
     post:
-      summary: ''
-      operationId: post-registerchecks-requestid
+      summary: Update Pending Register Check
+      description: The EMS system's response to a single Register Check. Updates a pending Register Check with the outcome of the check.
+      operationId: update-pending-register-check
       tags:
-        - Single Register Check
+        - Update Single Register Check
+      requestBody:
+        $ref: '#/components/requestBodies/RegisterCheckResultRequest'
       responses:
         '200':
-          description: OK
-      description: The EMS systems response to the register check request for the request id.
-      requestBody:
-        $ref: '#/components/requestBodies/RegisterCheckResponseRequest'
+          description: Pending Register Check updated successfully.
       x-amazon-apigateway-integration:
         type: HTTP_PROXY
         uri: ${base_uri}/registerchecks/{requestid}
@@ -152,6 +155,7 @@ paths:
         connectionType: VPC_LINK
         connectionId: ${vpc_connection_id}
         httpMethod: POST
+
 #
 # --------------------------------------------------------------------------------
 #
@@ -196,7 +200,7 @@ components:
         actingStaffId:
           type: string
           description: |-
-            Indicates the source of the request.
+            Indicates who/what initiated the register check request.
             
             Where EROP creates the request automatically this will be "EROP". Should there be a need to manually force an additional check, this will indicate the id of the ERO user who triggered the request (for auditing purposes).
           example: EROP
@@ -204,6 +208,7 @@ components:
           type: string
           description: The date and time this request to check the Electoral Register was generated
           format: date-time
+          example: 2022-09-07 14:14:55
         fn:
           type: string
           description: The applicant's first name
@@ -215,11 +220,12 @@ components:
         ln:
           type: string
           description: The applicant's surname
-          example: Blogs
+          example: Bloggs
         dob:
           type: string
           description: The applicant's date of birth (ISO-8601 format)
           format: date
+          example: 1995-03-02
         regproperty:
           type: string
           example: Aviation House
@@ -266,6 +272,36 @@ components:
       enum:
         - EROP
 
+    RegisterCheckResult:
+      title: RegisterCheckResult
+      type: object
+      description: The outcome of an ERO's EMS system's Register Check.
+      properties:
+        requestid:
+          type: string
+          pattern: '^[a-fA-F\d]{24}$'
+          description: A unique identifier for the check against the Electoral Register. A 24 character hex string.
+          example: 1f0f76a9a66f438b9bb33070
+        gssCode:
+          type: string
+          pattern: '^[a-zA-Z]\d{8}$'
+          description: The Local Authority GSS Code that manages the Electoral Register.
+          example: E06000001
+        createdAt:
+          type: string
+          description: The date and time this request to update the Pending Register Check was generated.
+          format: date-time
+          example: 2022-09-07 14:14:55
+        registerCheckMatchCount:
+          type: integer
+          description: The number of possible matches found in the Electoral Register for the details in the request. If 10 or fewer matches were found, each should be returned in the “registerCheckMatches” array below. If more than 10 matches were found, the “registerCheckMatches” array should be omitted.
+          example: 10
+        registerCheckMatches:
+          type: array
+          description: Each record in “registerCheckMatches” represents one potential match within the EMS that could represent the Elector in the Register Check Request
+          items:
+            $ref: '#/components/schemas/RegisterCheckMatch'
+
     RegisterCheckMatch:
       title: RegisterCheckMatch
       type: object
@@ -274,137 +310,186 @@ components:
         emsElectorId:
           type: string
           description: The stable unique id of the elector.
+          example: TODO - is this is a UUID?
         fn:
           type: string
-          description: First name as stored in the EMS
+          description: The applicant's first name
+          example: Fred
         mn:
           type: string
-          description: Middle names as stored in the EMS
+          description: The applicant's middle name(s)
+          example: Cuthbert
         ln:
           type: string
-          description: Last name as stored in the EMS
+          description: The applicant's surname
+          example: Bloggs
         dob:
           type: string
-          description: Date of birth as stored in the EMS in ISO8601 format
+          description: The applicant's date of birth (ISO-8601 format)
           format: date
-        address:
-          $ref: ../Models/Address.yaml
+          example: "1995-03-02"
+        regproperty:
+          type: string
+          example: Aviation House
+        regstreet:
+          type: string
+          example: 125 Kingsway
+        reglocality:
+          type: string
+          example: Camden
+        regtown:
+          type: string
+          example: London
+        regarea:
+          type: string
+          example: Greater London
+        regpostcode:
+          type: string
+          example: SW112DR
+        reguprn:
+          type: string
+          example: 0987654321
         phone:
           type: string
+          description: The applicant's phone number for contact purposes.
+          example: 01234 567890
         email:
           type: string
+          format: email
+          description: The applicant's email address for contact purposes.
         registeredStartDate:
           type: string
-          description: ISO8601 format. The date the match was registered.
+          description: ISO-8601 format. The date the match was registered.
           format: date
+          example: 2022-09-01
         registeredEndDate:
           type: string
-          description: ISO8601 format. The date the match was deregistered.
+          description: ISO-8601 format. The date the match was deregistered.
           format: date
-        proxyVoterCountUK:
-          type: integer
-          description: The number of UK based Electors for whom this match is registered to act as a proxy
-        proxyVoterOverseasCount:
-          type: integer
-          description: The number of Overseas based Electors for whom this match is registered to act as a proxy
+          example: 2023-09-01
+        applicationCreatedAt:
+          type: string
+          description: ISO-8601 format. Optional date and time the application was received, if the application is pending. This may be presented to the ERO user to assist their decisions.
+          format: date-time
+          example: 2022-08-01 09:35:07
         attestationCount:
           type: integer
+          description: The number of Electors this match has attested for another Elector, in the past year.
         franchiseCode:
           type: string
+          example: TBD
         postalVote:
-          type: object
-          properties:
-            postalVoteUntilFurtherNotice:
-              type: boolean
-            postalVoteForSingleDate:
-              type: string
-              description: 'Date in ISO8601 format. If set, the elector has a postal vote for the election(s) and referendum(s) to be held on the specified date.'
-              format: date
-            postalVoteStartDate:
-              type: string
-              description: 'Date in ISO8601 format. If set, the elector has a postal vote for the period defined by the two dates.'
-              format: date
-            postalVoteEndDate:
-              type: string
-              description: 'Date in ISO8601 format. If set, the elector has a postal vote for the period defined by the two dates.'
-              format: date
-            ballotAddress:
-              $ref: ../Models/Address.yaml
-            ballotAddressReason:
-              type: string
-              description: |
-                Required only if “ballot” address given) The reason the applicant gave for using a different address for the ballot paper (max 500 utf-8 chars)
-              maxLength: 500
+          $ref: '#/components/schemas/PostalVote'
         proxyVote:
-          type: object
-          properties:
-            proxyVoteUntilFurtherNotice:
-              type: boolean
-            proxyVoteForSingleDate:
-              type: string
-              description: 'Date in ISO8601 format. If set, the elector has a proxy vote for the election(s) and referendum(s) to be held on the specified date.'
-              format: date
-            proxyVoteStartDate:
-              type: string
-              description: 'Date in ISO8601 format. If set, the elector has a proxy vote for the period defined by the two dates.'
-              format: date
-            proxyVoteEndDate:
-              type: string
-              description: 'Date in ISO8601 format. If set, the elector has a proxy vote for the period defined by the two dates.'
-              format: date
-            proxyfn:
-              type: string
-              description: First name of the chosen proxy
-            proxymn:
-              type: string
-              description: Middle name(s) (optional) of the chosen proxy
-            proxyln:
-              type: string
-              description: Last name of the chosen proxy
-            proxyfamilyrelationship:
-              type: string
-              description: (optional) the family relationship (if any) of the chosen proxy. The question to users is “What is your proxy’s relationship to you?”
-              maxLength: 500
-            proxyAddress:
-              $ref: ../Models/Address.yaml
-            proxyphone:
-              type: string
-              description: (optional) phone number of the chosen proxy as supplied by the applicant
-            proxyemail:
-              type: string
-              description: (optional) email address of the chosen proxy as supplied by the applicant
-              format: email
-            proxyReason:
-              type: string
-              description: |
-                A free-form text value containing the applicant’s response to the question “please explain why you are not able to go to your polling station on polling day” for the primary form variant or other text for other form variants (see “Proxy Vote reasons” below) (max 500 utf-8 chars)
-              maxLength: 500
-        voterCards:
-          type: array
-          items:
-            type: object
-            properties:
-              status:
-                type: string
-                description: the status of the Voter Card as supplied from EROP via IER
-              authorisingStaffId:
-                type: string
-                description: the authorising staff id of the Voter Card as supplied from EROP via IER
-              cardNumber:
-                type: string
-                description: the card number of the Voter Card as supplied from EROP via IER
-              cardIssueDate:
-                type: string
-                description: the card issue date in ISO8601 format of the Voter Card as supplied from EROP via IER
-                format: date
+          $ref: '#/components/schemas/ProxyVote'
       required:
-        - address
+        - emsElectorId
+
+    PostalVote:
+      type: object
+      properties:
+        postalVoteUntilFurtherNotice:
+          type: boolean
+        postalVoteForSingleDate:
+          type: string
+          description: Date in ISO-8601 format. If set, the elector has a postal vote for the election(s) and referendum(s) to be held on the specified date.
+          format: date
+        postalVoteStartDate:
+            type: string
+            description: Date in ISO-8601 format. If set, the elector has a postal vote for the period defined by the two dates.
+            format: date
+        postalVoteEndDate:
+            type: string
+            description: Date in ISO-8601 format. If set, the elector has a postal vote for the period defined by the two dates.
+            format: date
+        ballotproperty:
+          type: string
+        ballotstreet:
+          type: string
+        ballotlocality:
+          type: string
+        ballottown:
+          type: string
+        ballotarea:
+          type: string
+        ballotpostcode:
+          type: string
+          example: SW112DR
+        ballotuprn:
+          type: string
+          example: 098766
+        ballotAddressReason:
+          type: string
+          description: |
+            Required only if “ballot” address given. The reason the applicant gave for using a different address for the ballot paper (max 500 utf-8 chars)
+          maxLength: 500
+
+    ProxyVote:
+      type: object
+      properties:
+        proxyVoteUntilFurtherNotice:
+          type: boolean
+          description: True if the elector has a proxy vote until further notice.
+        proxyVoteForSingleDate:
+          type: string
+          description: 'Date in ISO8601 format. If set, the elector has a proxy vote for the election(s) and referendum(s) to be held on the specified date.'
+          format: date
+        proxyVoteStartDate:
+          type: string
+          description: 'Date in ISO8601 format. If set, the elector has a proxy vote for the period defined by the two dates.'
+          format: date
+        proxyVoteEndDate:
+          type: string
+          description: 'Date in ISO8601 format. If set, the elector has a proxy vote for the period defined by the two dates.'
+          format: date
+        proxyfn:
+          type: string
+          description: First name of the chosen proxy
+        proxymn:
+          type: string
+          description: Middle name(s) (optional) of the chosen proxy
+        proxyln:
+          type: string
+          description: Last name of the chosen proxy
+        proxyfamilyrelationship:
+          type: string
+          description: (optional) the family relationship (if any) of the chosen proxy. The question to users is “What is your proxy’s relationship to you?”
+          maxLength: 500
+        proxyproperty:
+          type: string
+        proxystreet:
+          type: string
+        proxylocality:
+          type: string
+        proxytown:
+          type: string
+        proxyarea:
+          type: string
+        proxypostcode:
+          type: string
+          example: SW112DR
+        proxyuprn:
+          type: string
+          example: 098766
+        proxyphone:
+          type: string
+          description: (optional) phone number of the chosen proxy as supplied by the applicant
+        proxyemail:
+          type: string
+          description: (optional) email address of the chosen proxy as supplied by the applicant
+          format: email
+        proxyreason:
+          type: string
+          description: |
+            A free-form text value containing the applicant’s response to the question “please explain why you are not able to go to your polling station on polling day” for the primary form variant or other text for other form variants (see “Proxy Vote reasons” below) (max 500 utf-8 chars)
+          maxLength: 500
+
   #
   # Response Body Definitions
   # --------------------------------------------------------------------------------
   responses:
     PendingRegisterChecks:
-      description: Response containing pending Register Checks for the calling ERO's EMS system.
+      description: Contains pending Register Checks for the calling ERO's EMS system to process.
       headers:
         Access-Control-Allow-Origin:
           schema:
@@ -423,27 +508,9 @@ components:
   # Request Body Definitions
   # --------------------------------------------------------------------------------
   requestBodies:
-    RegisterCheckResponseRequest:
+    RegisterCheckResultRequest:
+      description: The result of a Register Check (performed by an ERO's EMS system), which may contain a positive match or otherwise.
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              requestid:
-                $ref: ../Models/Primatives/Identifier.yaml
-              gssCode:
-                $ref: ../Models/Primatives/GssCode.yaml
-              createdAt:
-                type: string
-                description: the date and time the response was generated (Europe/London)
-                format: date-time
-              registerCheckMatchCount:
-                type: integer
-                description: 'the number of possible matches found in the Electoral Register for the details in the request. If 10 or fewer matches were found, each should be returned in the “registerCheckMatches” array below. If more than 10 matches were found, the “registerCheckMatches” array should be omitted.'
-              registerCheckMatches:
-                type: array
-                description: Each record in “registerCheckMatches” represents one potential match within the EMS that could represent the Elector in the Register Check Request
-                items:
-                  $ref: '#/components/schemas/RegisterCheckMatch'
-          examples: {}
-      description: Response from EMS systems with matches for a register check request.
+            $ref: '#/components/schemas/RegisterCheckResult'

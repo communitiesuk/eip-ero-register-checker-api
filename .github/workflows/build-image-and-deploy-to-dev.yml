@@ -9,7 +9,7 @@ jobs:
   build-and-tag:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.get-latest-tag.outputs.tag }}
+      version: ${{ steps.bump-semver.outputs.new_version }}
     steps:
       - uses: actions/checkout@v3
 

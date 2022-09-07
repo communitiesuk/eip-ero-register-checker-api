@@ -8,7 +8,19 @@ info:
     email: krister.bone@valtech.com
 servers:
   - url: 'http://localhost:3000'
+#
+# --------------------------------------------------------------------------------
+#
 paths:
+  #
+  # --------------------------------------------------------------------------------
+  # RESTful style endpoints start here
+  # --------------------------------------------------------------------------------
+  #
+
+  #
+  # Register Checks
+  # --------------------------------------------------------------------------------
   /registerchecks:
     parameters: []
     get:
@@ -25,6 +37,10 @@ paths:
         connectionType: VPC_LINK
         connectionId: ${vpc_connection_id}
         httpMethod: GET
+
+  #
+  # Single Register Check
+  # --------------------------------------------------------------------------------
   '/registerchecks/{requestid}':
     parameters:
       - schema:
@@ -49,7 +65,13 @@ paths:
         connectionType: VPC_LINK
         connectionId: ${vpc_connection_id}
         httpMethod: POST
+#
+# --------------------------------------------------------------------------------
+#
 components:
+  #
+  # Schema and Enum Definitions
+  # --------------------------------------------------------------------------------
   schemas:
     RegisterCheckRequest:
       title: RegisterCheckRequest
@@ -230,6 +252,9 @@ components:
                 format: date
       required:
         - address
+  #
+  # Response Body Definitions
+  # --------------------------------------------------------------------------------
   responses:
     RegisterCheckResponse:
       description: Example response
@@ -246,6 +271,9 @@ components:
                 items:
                   $ref: '#/components/schemas/RegisterCheckRequest'
           examples: {}
+  #
+  # Request Body Definitions
+  # --------------------------------------------------------------------------------
   requestBodies:
     RegisterCheckResponseRequest:
       content:

@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - EIP1-1673
+      - feature/EIP1-1673
 
 jobs:
   build-and-tag:

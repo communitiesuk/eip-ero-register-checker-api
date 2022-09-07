@@ -2,7 +2,7 @@ name: Deploy to int environment overnight
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Every night at midnight
+    - cron: '0 1 * * *' # Every night at 1 AM
 
 jobs:
   deploy:

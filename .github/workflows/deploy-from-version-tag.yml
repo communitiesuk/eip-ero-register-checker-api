@@ -1,10 +1,10 @@
-name: Deploy a branch to an environment
+name: Deploy a tagged version to an environment
 
 on:
   workflow_dispatch:
     inputs:
       deploy_environment:
-        description: 'Environment to deploy to'
+        description: 'Environment'
         required: true
         type: choice
         options:
@@ -16,7 +16,9 @@ on:
 
 jobs:
   deploy:
+    if: startsWith(github.ref, 'refs/tags/v')
     uses: ./.github/workflows/deploy.yml
     with:
       deploy_environment: ${{inputs.deploy_environment}}
+      version: ${{github.ref_name}}
     secrets: inherit

@@ -9,6 +9,8 @@ on:
 jobs:
   build-and-tag:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-latest-tag.outputs.tag }}
     steps:
       - uses: actions/checkout@v3
 
@@ -30,39 +32,44 @@ jobs:
           java-version: 17
           cache: gradle
 
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: register-checker-api-repo
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          ./gradlew bootBuildImage
-          docker tag eip-ero-register-checker-api:latest $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-
-      - uses: actions-ecosystem/action-get-latest-tag@v1
+      - name: Get latest version tag
+        uses: actions-ecosystem/action-get-latest-tag@v1
         id: get-latest-tag
         with:
           semver_only: true
           with_initial_version: true
           initial_version: v1.0.0
 
-      - uses: actions-ecosystem/action-bump-semver@v1
+      - name: Bump version tag
+        uses: actions-ecosystem/action-bump-semver@v1
         id: bump-semver
         with:
           current_version: ${{ steps.get-latest-tag.outputs.tag }}
           level: patch
 
-      - uses: actions-ecosystem/action-push-tag@v1
+      - name: Push version tag
+        uses: actions-ecosystem/action-push-tag@v1
         with:
           tag: ${{ steps.bump-semver.outputs.new_version }}
           message: '${{ github.event.head_commit.message }}'
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: register-checker-api-repo
+          IMAGE_TAG: ${{ steps.bump-semver.outputs.new_version }}
+        run: |
+          ./gradlew bootBuildImage
+          IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker tag eip-ero-register-checker-api:latest $IMAGE
+          docker push $IMAGE
+          echo "::set-output name=image::$IMAGE"
 
   deploy:
     needs: build-and-tag
     uses: ./.github/workflows/deploy.yml
     with:
       deploy_environment: dev
+      version: ${{ needs.build-and-tag.outputs.version }}
     secrets: inherit

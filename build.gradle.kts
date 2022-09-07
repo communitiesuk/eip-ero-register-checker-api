@@ -19,6 +19,7 @@ plugins {
 group = "uk.gov.dluhc"
 version = "latest"
 java.sourceCompatibility = JavaVersion.VERSION_17
+ext["snakeyaml.version"] = "1.31"
 
 repositories {
     mavenCentral()
@@ -44,7 +45,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springdoc:springdoc-openapi-ui:1.6.11")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.yaml:snakeyaml:1.31")
 
     // webclient
     implementation("org.springframework:spring-webflux")

@@ -1,0 +1,74 @@
+name: Build image and deploy to dev
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-latest-tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Install JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: corretto
+          java-version: 17
+          cache: gradle
+
+      - name: Get latest version tag
+        uses: actions-ecosystem/action-get-latest-tag@v1
+        id: get-latest-tag
+        with:
+          semver_only: true
+          with_initial_version: true
+          initial_version: v1.0.0
+
+      - name: Bump version tag
+        uses: actions-ecosystem/action-bump-semver@v1
+        id: bump-semver
+        with:
+          current_version: ${{ steps.get-latest-tag.outputs.tag }}
+          level: patch
+
+      - name: Push version tag
+        uses: actions-ecosystem/action-push-tag@v1
+        with:
+          tag: ${{ steps.bump-semver.outputs.new_version }}
+          message: '${{ github.event.head_commit.message }}'
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: register-checker-api-repo
+          IMAGE_TAG: ${{ steps.bump-semver.outputs.new_version }}
+        run: |
+          ./gradlew bootBuildImage
+          IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker tag eip-ero-register-checker-api:latest $IMAGE
+          docker push $IMAGE
+          echo "::set-output name=image::$IMAGE"
+
+  deploy:
+    needs: build-and-tag
+    uses: ./.github/workflows/deploy.yml
+    with:
+      deploy_environment: dev
+      version: ${{ needs.build-and-tag.outputs.version }}
+    secrets: inherit

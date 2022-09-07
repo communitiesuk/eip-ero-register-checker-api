@@ -6,6 +6,9 @@ on:
       deploy_environment:
         required: true
         type: string
+      version:
+        required: true
+        type: string
       app:
         required: false
         type: string
@@ -54,7 +57,7 @@ jobs:
         with:
           task-definition: task-definition.json
           container-name: ${{inputs.deploy_environment}}-${{inputs.app}}-ecs-container
-          image: ${{ steps.login-ecr.outputs.registry }}/${{inputs.ecr_repo}}:${{ github.sha }}
+          image: ${{ steps.login-ecr.outputs.registry }}/${{inputs.ecr_repo}}:${{ inputs.version }}
 
       - name: Update appspec file for environment
         uses: jacobtomlinson/gha-find-replace@v2
@@ -74,15 +77,3 @@ jobs:
           codedeploy-appspec: ${{ github.workspace }}/.github/workflows/files/appspec.yaml
           codedeploy-application: ${{inputs.deploy_environment}}-${{inputs.app}}
           codedeploy-deployment-group: ${{inputs.deploy_environment}}-${{inputs.app}}-deployment-group
-
-      - name: Update tag
-        uses: actions/github-script@v5
-        with:
-          script: |
-            github.rest.git.updateRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: `tags/rc/${{ inputs.deploy_environment }}`,
-              sha: context.sha,
-              force: true,
-            });

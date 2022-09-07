@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <suppress until="2023-09-07Z">
+        <notes>
+            <![CDATA[ file name: spring-security-crypto-5.7.3.jar]]>
+            The method with the vulnerability is deprecated now, but not removed yet.
+            It will be removed as part of Spring 6.
+            The warning is suppressed until then.
+            https://github.com/spring-projects/spring-security/issues/8980
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-crypto@.*$</packageUrl>
+        <vulnerabilityName>CVE-2020-5408</vulnerabilityName>
+    </suppress>
+    <suppress until="2023-09-07Z">
+        <notes>
+            <![CDATA[file name: spring-web-5.3.22.jar]]>
+            The vulnerability is on Spring HTTP Invoker, and it is deprecated by Spring, but not removed yet.
+            It is not used in our code base and seen as a JVM deserialization issue rather than a Spring one by the Spring team.
+            It doesn't look like it will be address any time soon, and since we don't use it, it is suppressed as well.
+            https://docs.spring.io/spring-framework/docs/current/reference/html/integration.html#remoting-httpinvoker
+            https://github.com/spring-projects/spring-framework/issues/24434#issuecomment-744519525
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-web@.*$</packageUrl>
+        <cve>CVE-2016-1000027</cve>
+    </suppress>
+</suppressions>

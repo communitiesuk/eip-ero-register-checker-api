@@ -19,6 +19,7 @@ plugins {
 group = "uk.gov.dluhc"
 version = "latest"
 java.sourceCompatibility = JavaVersion.VERSION_17
+ext["snakeyaml.version"] = "1.31"
 
 repositories {
     mavenCentral()
@@ -132,4 +133,5 @@ dependencyCheck {
     analyzers.assemblyEnabled = false
     analyzers.centralEnabled = true
     format = HTML
+    suppressionFiles = listOf("owasp.suppressions.xml")
 }

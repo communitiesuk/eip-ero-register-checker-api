@@ -143,7 +143,7 @@ paths:
       tags:
         - Update Single Register Check
       requestBody:
-        $ref: '#/components/requestBodies/RegisterCheckResultRequest'
+        $ref: '#/components/requestBodies/RegisterCheckResult'
       responses:
         '200':
           description: Pending Register Check updated successfully.
@@ -208,7 +208,7 @@ components:
           type: string
           description: The date and time this request to check the Electoral Register was generated
           format: date-time
-          example: 2022-09-07 14:14:55
+          example: 2022-09-07T14:14:55.123Z
         fn:
           type: string
           description: The applicant's first name
@@ -272,8 +272,8 @@ components:
       enum:
         - EROP
 
-    RegisterCheckResult:
-      title: RegisterCheckResult
+    RegisterCheckResultRequest:
+      title: RegisterCheckResultRequest
       type: object
       description: The outcome of an ERO's EMS system's Register Check.
       properties:
@@ -291,7 +291,7 @@ components:
           type: string
           description: The date and time this request to update the Pending Register Check was generated.
           format: date-time
-          example: 2022-09-07 14:14:55
+          example: 2022-09-07T14:14:55.123Z
         registerCheckMatchCount:
           type: integer
           description: The number of possible matches found in the Electoral Register for the details in the request. If 10 or fewer matches were found, each should be returned in the “registerCheckMatches” array below. If more than 10 matches were found, the “registerCheckMatches” array should be omitted.
@@ -309,8 +309,7 @@ components:
       properties:
         emsElectorId:
           type: string
-          description: The stable unique id of the elector.
-          example: TODO - is this is a UUID?
+          description: The stable unique id of the elector provided by the EMS client.
         fn:
           type: string
           description: The applicant's first name
@@ -371,7 +370,7 @@ components:
           type: string
           description: ISO-8601 format. Optional date and time the application was received, if the application is pending. This may be presented to the ERO user to assist their decisions.
           format: date-time
-          example: 2022-08-01 09:35:07
+          example: 2022-09-07T14:14:55.123Z
         attestationCount:
           type: integer
           description: The number of Electors this match has attested for another Elector, in the past year.
@@ -508,9 +507,9 @@ components:
   # Request Body Definitions
   # --------------------------------------------------------------------------------
   requestBodies:
-    RegisterCheckResultRequest:
+    RegisterCheckResult:
       description: The result of a Register Check (performed by an ERO's EMS system), which may contain a positive match or otherwise.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/RegisterCheckResult'
+            $ref: '#/components/schemas/RegisterCheckResultRequest'

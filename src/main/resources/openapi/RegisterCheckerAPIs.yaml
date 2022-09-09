@@ -92,7 +92,7 @@ paths:
   '/registerchecks/{requestid}':
     parameters:
       - name: requestid
-        description: A unique identifier for the check against the Electoral Register. A 24 character hex string.
+        description: The request id from the originating Pending Register Check Request. A 24 character hex string.
         schema:
           type: string
           pattern: '^[a-fA-F\d]{24}$'
@@ -145,7 +145,7 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/RegisterCheckResult'
       responses:
-        '200':
+        '201':
           description: Pending Register Check updated successfully.
       x-amazon-apigateway-integration:
         type: HTTP_PROXY
@@ -280,12 +280,12 @@ components:
         requestid:
           type: string
           pattern: '^[a-fA-F\d]{24}$'
-          description: A unique identifier for the check against the Electoral Register. A 24 character hex string.
+          description: The request/correlation id from the originating Pending Register Check Response. A 24 character hex string.
           example: 1f0f76a9a66f438b9bb33070
         gssCode:
           type: string
           pattern: '^[a-zA-Z]\d{8}$'
-          description: The Local Authority GSS Code that manages the Electoral Register.
+          description: The Local Authority GSS Code from the originating Pending Register Check Response.
           example: E06000001
         createdAt:
           type: string
@@ -301,6 +301,11 @@ components:
           description: Each record in “registerCheckMatches” represents one potential match within the EMS that could represent the Elector in the Register Check Request
           items:
             $ref: '#/components/schemas/RegisterCheckMatch'
+      required:
+        - requestid
+        - gssCode
+        - createdAt
+        - registerCheckMatchCount
 
     RegisterCheckMatch:
       title: RegisterCheckMatch
@@ -376,13 +381,19 @@ components:
           description: The number of Electors this match has attested for another Elector, in the past year.
         franchiseCode:
           type: string
-          example: TBD
+          description: Franchise codes indicate the electors voting eligibility within different elections, i.e. national or local elections.
         postalVote:
           $ref: '#/components/schemas/PostalVote'
         proxyVote:
           $ref: '#/components/schemas/ProxyVote'
       required:
         - emsElectorId
+        - fn
+        - ln
+        - regstreet
+        - regpostcode
+        - attestationCount
+        - frachiseCode
 
     PostalVote:
       type: object
@@ -403,20 +414,27 @@ components:
             format: date
         ballotproperty:
           type: string
+          description: The property name of the address to which the applicant has requested the ballot paper is sent (if different to their registered address).
         ballotstreet:
           type: string
+          description: The street of the address to which the applicant has requested the ballot paper is sent (if different to their registered address - required if so).
         ballotlocality:
           type: string
+          description: The localtiy of the address to which the applicant has requested the ballot paper is sent (if different to their registered address).
         ballottown:
           type: string
+          description: The town of the address to which the applicant has requested the ballot paper is sent (if different to their registered address).
         ballotarea:
           type: string
+          description: The area of the address to which the applicant has requested the ballot paper is sent (if different to their registered address).
         ballotpostcode:
           type: string
           example: SW112DR
+          description: The postcode of the address to which the applicant has requested the ballot paper is sent (if different to their registered address - required if so).
         ballotuprn:
           type: string
           example: 098766
+          description: The UPRN of the address to which the applicant has requested the ballot paper is sent (if different to their registered address).
         ballotAddressReason:
           type: string
           description: |
@@ -431,57 +449,69 @@ components:
           description: True if the elector has a proxy vote until further notice.
         proxyVoteForSingleDate:
           type: string
-          description: 'Date in ISO8601 format. If set, the elector has a proxy vote for the election(s) and referendum(s) to be held on the specified date.'
+          description: Date in ISO-8601 format. If set, the elector has a proxy vote for the election(s) and referendum(s) to be held on the specified date.
           format: date
         proxyVoteStartDate:
           type: string
-          description: 'Date in ISO8601 format. If set, the elector has a proxy vote for the period defined by the two dates.'
+          description: Date in ISO-8601 format. If set, the elector has a proxy vote for the period defined by the two dates.
           format: date
         proxyVoteEndDate:
           type: string
-          description: 'Date in ISO8601 format. If set, the elector has a proxy vote for the period defined by the two dates.'
+          description: Date in ISO-8601 format. If set, the elector has a proxy vote for the period defined by the two dates.
           format: date
         proxyfn:
           type: string
-          description: First name of the chosen proxy
+          description: First name of the chosen proxy.
         proxymn:
           type: string
-          description: Middle name(s) (optional) of the chosen proxy
+          description: (Optional) Middle name(s) of the chosen proxy.
         proxyln:
           type: string
-          description: Last name of the chosen proxy
+          description: Last name of the chosen proxy.
         proxyfamilyrelationship:
           type: string
-          description: (optional) the family relationship (if any) of the chosen proxy. The question to users is “What is your proxy’s relationship to you?”
+          description: (Optional) The family relationship (if any) of the chosen proxy. The question to users is “What is your proxy’s relationship to you?”
           maxLength: 500
         proxyproperty:
           type: string
+          description: The property of the address of the chosen proxy as supplied by the applicant.
         proxystreet:
           type: string
+          description: (Required) The street of the address of the chosen proxy as supplied by the applicant.
         proxylocality:
           type: string
+          description: The locality of the address of the chosen proxy as supplied by the applicant.
         proxytown:
           type: string
+          description: The town of the address of the chosen proxy as supplied by the applicant.
         proxyarea:
           type: string
+          description: The area of the address of the chosen proxy as supplied by the applicant.
         proxypostcode:
           type: string
           example: SW112DR
+          description: (Required) The postcode of the address of the chosen proxy as supplied by the applicant.
         proxyuprn:
           type: string
           example: 098766
+          description: The UPRN of the address of the chosen proxy as supplied by the applicant.
         proxyphone:
           type: string
-          description: (optional) phone number of the chosen proxy as supplied by the applicant
+          description: (Optional) phone number of the chosen proxy as supplied by the applicant
         proxyemail:
           type: string
-          description: (optional) email address of the chosen proxy as supplied by the applicant
+          description: (Optional) email address of the chosen proxy as supplied by the applicant
           format: email
         proxyreason:
           type: string
           description: |
             A free-form text value containing the applicant’s response to the question “please explain why you are not able to go to your polling station on polling day” for the primary form variant or other text for other form variants (see “Proxy Vote reasons” below) (max 500 utf-8 chars)
           maxLength: 500
+      required:
+        - proxyfn
+        - proxyln
+        - proxystreet
+        - proxypostcode
 
   #
   # Response Body Definitions

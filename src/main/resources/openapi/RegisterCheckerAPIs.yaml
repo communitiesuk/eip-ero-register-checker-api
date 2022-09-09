@@ -28,7 +28,7 @@ paths:
         schema:
           type: integer
           minimum: 1
-          maximum: 200
+          maximum: 500
           default: 100
         example: 100
         in: query
@@ -92,11 +92,11 @@ paths:
   '/registerchecks/{requestid}':
     parameters:
       - name: requestid
-        description: The request id from the originating Pending Register Check Request. A 24 character hex string.
+        description: The request id from the originating Pending Register Check Request.
         schema:
           type: string
-          pattern: '^[a-fA-F\d]{24}$'
-        example: 1f0f76a9a66f438b9bb33070
+          format: uuid
+        example: 9477c3c2-303f-11ed-a261-0242ac120002
         in: path
         required: true
     options:
@@ -187,9 +187,9 @@ components:
       properties:
         requestid:
           type: string
-          pattern: '^[a-fA-F\d]{24}$'
-          description: A unique identifier for the check against the Electoral Register. A 24 character hex string.
-          example: 1f0f76a9a66f438b9bb33070
+          description: A unique identifier for this check against the Electoral Register.
+          format: uuid
+          example: 9477c3c2-303f-11ed-a261-0242ac120002
         source:
           $ref: '#/components/schemas/SourceSystem'
         gssCode:
@@ -279,9 +279,9 @@ components:
       properties:
         requestid:
           type: string
-          pattern: '^[a-fA-F\d]{24}$'
-          description: The request/correlation id from the originating Pending Register Check Response. A 24 character hex string.
-          example: 1f0f76a9a66f438b9bb33070
+          description: The request ID from the originating Pending Register Check Response.
+          format: uuid
+          example: 9477c3c2-303f-11ed-a261-0242ac120002
         gssCode:
           type: string
           pattern: '^[a-zA-Z]\d{8}$'

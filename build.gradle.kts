@@ -66,7 +66,7 @@ dependencies {
     // mysql
     runtimeOnly("mysql:mysql-connector-java")
     runtimeOnly("software.aws.rds:aws-mysql-jdbc:1.1.0")
-    runtimeOnly("software.amazon.awssdk:rds:2.17.256")
+    runtimeOnly("software.amazon.awssdk:rds:2.17.271")
 
     // tests
     testImplementation("org.springframework.boot:spring-boot-starter-test")

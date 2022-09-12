@@ -1,3 +1,17 @@
+spring:
+  datasource:
+    username: root
+    password: password
+  liquibase:
+    contexts: ddl
+
+  jpa:
+    properties:
+      hibernate:
+        enable_lazy_load_no_trans: true
+        format_sql: false
+        show_sql: false
+
 dluhc:
   request.header.name: client-cert-serial
 

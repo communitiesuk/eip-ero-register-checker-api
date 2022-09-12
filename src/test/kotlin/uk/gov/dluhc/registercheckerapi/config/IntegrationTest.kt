@@ -22,6 +22,10 @@ internal abstract class IntegrationTest {
     @Autowired
     protected lateinit var wireMockService: WiremockService
 
+    companion object {
+        val mysqlContainerConfiguration: MySQLContainerConfiguration = MySQLContainerConfiguration.getInstance()
+    }
+
     @BeforeEach
     fun resetWireMock() {
         wireMockService.resetAllStubsAndMappings()

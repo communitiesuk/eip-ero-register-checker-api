@@ -21,6 +21,10 @@ version = "latest"
 java.sourceCompatibility = JavaVersion.VERSION_17
 ext["snakeyaml.version"] = "1.31"
 
+allOpen {
+    annotations("javax.persistence.Entity", "javax.persistence.MappedSuperclass", "javax.persistence.Embedabble")
+}
+
 repositories {
     mavenCentral()
 }
@@ -31,6 +35,8 @@ apply(plugin = "org.springframework.boot")
 apply(plugin = "io.spring.dependency-management")
 apply(plugin = "org.jetbrains.kotlin.jvm")
 apply(plugin = "org.jetbrains.kotlin.plugin.spring")
+apply(plugin = "org.jetbrains.kotlin.plugin.jpa")
+apply(plugin = "org.jetbrains.kotlin.plugin.allopen")
 
 dependencies {
     // framework
@@ -53,10 +59,22 @@ dependencies {
     // spring security
     implementation("org.springframework.boot:spring-boot-starter-security")
 
+    // jpa/liquibase
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.liquibase:liquibase-core")
+
+    // mysql
+    runtimeOnly("mysql:mysql-connector-java")
+    runtimeOnly("software.aws.rds:aws-mysql-jdbc:1.1.0")
+    runtimeOnly("software.amazon.awssdk:rds:2.17.271")
+
     // tests
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
     testImplementation("com.github.tomakehurst:wiremock-jre8:2.33.2")
+
+    testImplementation("org.testcontainers:testcontainers:1.17.3")
+    testImplementation("org.testcontainers:mysql:1.17.3")
 }
 
 tasks.withType<KotlinCompile> {

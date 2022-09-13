@@ -38,6 +38,8 @@ apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 apply(plugin = "org.jetbrains.kotlin.plugin.jpa")
 apply(plugin = "org.jetbrains.kotlin.plugin.allopen")
 
+extra["awsSdkVersion"] = "2.17.272"
+
 dependencies {
     // framework
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -66,7 +68,11 @@ dependencies {
     // mysql
     runtimeOnly("mysql:mysql-connector-java")
     runtimeOnly("software.aws.rds:aws-mysql-jdbc:1.1.0")
-    runtimeOnly("software.amazon.awssdk:rds:2.17.271")
+    runtimeOnly("software.amazon.awssdk:rds")
+
+    // AWS dependencies (that are defined in the BOM "software.amazon.awssdk")
+    implementation("software.amazon.awssdk:sts")
+    implementation("software.amazon.awssdk:sqs")
 
     // tests
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -75,6 +81,12 @@ dependencies {
 
     testImplementation("org.testcontainers:testcontainers:1.17.3")
     testImplementation("org.testcontainers:mysql:1.17.3")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("software.amazon.awssdk:bom:${property("awsSdkVersion")}")
+    }
 }
 
 tasks.withType<KotlinCompile> {

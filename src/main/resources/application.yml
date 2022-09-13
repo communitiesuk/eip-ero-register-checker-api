@@ -13,7 +13,8 @@ dluhc:
 
 api:
   ier:
-    url: ${API_IER_URL}
+    base.url: ${API_IER_BASE_URL}
+    sts.assume.role: ${API_IER_STS_ASSUME_ROLE}
 
 sqs:
   ems-cidr-update-queue-name: ${SQS_EMS_CIDR_UPDATE_QUEUE_NAME}

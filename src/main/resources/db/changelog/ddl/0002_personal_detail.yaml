@@ -56,3 +56,6 @@ databaseChangeLog:
                     - column:
                         name: address_id
                   indexName: personal_detail_address_id_idx
+      rollback:
+        - dropTable:
+            tableName: personal_detail

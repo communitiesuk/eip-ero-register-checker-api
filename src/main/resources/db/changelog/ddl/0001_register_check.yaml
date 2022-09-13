@@ -24,7 +24,7 @@ databaseChangeLog:
                     unique: true
                     uniqueConstraintName: register_check_correlation_id_unique_idx
               - column:
-                  remarks: Primary key of the application (e.g. Voter Card Application). Not exposed externally.
+                  remarks: A unique ID for the application (e.g. Voter Card Application). Not exposed externally.
                   name: application_id
                   type: varchar(36)
                   constraints:

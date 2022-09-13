@@ -1,0 +1,58 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0002-create-personal-detail
+      author: matt.wills@valtech.com
+      context: ddl
+      changes:
+        - createTable:
+            tableName: personal_detail
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: personal_detail_pkey
+              - column:
+                  name: first_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: middle_names
+                  type: varchar(255)
+              - column:
+                  name: surname
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_of_birth
+                  type: date
+              - column:
+                  name: email
+                  type: varchar(1024)
+              - column:
+                  name: phone_number
+                  type: varchar(50)
+              - column:
+                  name: address_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_created
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_by
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - createIndex:
+                  columns:
+                    - column:
+                        name: address_id
+                  indexName: personal_detail_address_id_idx

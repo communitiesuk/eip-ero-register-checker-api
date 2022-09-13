@@ -1,0 +1,51 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0003-create-address
+      author: matt.wills@valtech.com
+      context: ddl
+      changes:
+        - createTable:
+            tableName: address
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: address_pkey
+              - column:
+                  name: street
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: property
+                  type: varchar(255)
+              - column:
+                  name: locality
+                  type: varchar(255)
+              - column:
+                  name: town
+                  type: varchar(255)
+              - column:
+                  name: area
+                  type: varchar(255)
+              - column:
+                  name: postcode
+                  type: varchar(10)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: uprn
+                  type: varchar(12)
+              - column:
+                  name: date_created
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_by
+                  type: varchar(255)
+                  constraints:
+                    nullable: false

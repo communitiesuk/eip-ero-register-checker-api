@@ -1,0 +1,87 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0001-create-register-check
+      author: matt.wills@valtech.com
+      context: ddl
+      changes:
+        - createTable:
+            tableName: register_check
+            columns:
+              - column:
+                  # Internal PK - not exposed externally.
+                  name: id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: register_check_pkey
+              - column:
+                  # maps to requestid in the GET response
+                  name: correlation_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  # primary key of the application (currently only Voter Card Applications). Not exposed externally.
+                  name: application_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  # corresponding register check id in the Voter Card Application. Not exposed externally.
+                  name: application_register_check_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  # maps to 'source' in the GET response
+                  name: application_type
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: gss_code
+                  type: varchar(80)
+                  constraints:
+                    nullable: false
+              - column:
+                  # e.g. PENDING - not exposed externally.
+                  name: status
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: personal_detail_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  # maps from 'registerCheckMatchCount' in the update (POST) request
+                  name: match_count
+                  type: int
+              - column:
+                  # maps to 'createdAt' in the GET response
+                  name: date_created
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  # maps to 'actingStaffId' in the GET response
+                  name: created_by
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  # maps from 'createdAt' in the update (POST) request
+                  name: updated_at
+                  type: timestamp
+              - column:
+                  name: version
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - createIndex:
+                  columns:
+                    - column:
+                        name: address_id
+                  indexName: reg_check_personal_detail_idx

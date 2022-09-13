@@ -17,4 +17,5 @@ dluhc:
 
 api:
   ier:
-    url: http://wiremock
+    base.url: http://wiremock
+    sts.assume.role: arn:aws:iam::1234567890987:role/grant-me-access-to-ier

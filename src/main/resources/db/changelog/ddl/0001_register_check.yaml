@@ -89,6 +89,13 @@ databaseChangeLog:
                     - column:
                         name: correlation_id
                   indexName: reg_check_correlation_id_idx
+              - createIndex:
+                  columns:
+                    - column:
+                        name: status
+                    - column:
+                        name: gss_code
+                  indexName: reg_check_status_gss_code_idx
       rollback:
         - dropTable:
             tableName: register_check

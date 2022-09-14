@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.dluhc.external.ier.models.EROCertificateMapping
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 
-internal class IerGetEroApiClientTest : IntegrationTest() {
+internal class IerGetEroApiClientIntegrationTest : IntegrationTest() {
 
     @Autowired
     private lateinit var ierGetEroApiClient: IerGetEroApiClient
@@ -24,7 +24,7 @@ internal class IerGetEroApiClientTest : IntegrationTest() {
         // Given
         val certificateSerial = "123456789"
         val expectedEroId = "camden-city-council"
-        val expectedEroCertificateMapping = EROCertificateMapping(expectedEroId, certificateSerial)
+        val expectedEroCertificateMapping = EROCertificateMapping(eroId = expectedEroId, certificateSerial = certificateSerial)
         wireMockService.stubIerApiGetEroIdentifier(certificateSerial, expectedEroId)
 
         // When
@@ -40,7 +40,7 @@ internal class IerGetEroApiClientTest : IntegrationTest() {
         // Given
         val certificateSerial = "123456789"
         wireMockService.stubIerApiGetEroIdentifierThrowsNotFoundError()
-        val expectedException = IerNotFoundException(certificateSerial)
+        val expectedException = IerNotFoundException(certificateSerial = certificateSerial)
 
         // When
         val ex = Assertions.catchThrowableOfType(
@@ -60,7 +60,7 @@ internal class IerGetEroApiClientTest : IntegrationTest() {
         wireMockService.stubIerApiGetEroIdentifierThrowsInternalServerError()
 
         val expectedException =
-            IerGeneralException("Unable to retrieve EROCertificateMapping for certificate serial [123456789] due to error: [500 Server Error: [no body]]")
+            IerGeneralException(message = "Unable to retrieve EROCertificateMapping for certificate serial [123456789] due to error: [500 Server Error: [no body]]")
 
         // When
         val ex = Assertions.catchThrowableOfType(

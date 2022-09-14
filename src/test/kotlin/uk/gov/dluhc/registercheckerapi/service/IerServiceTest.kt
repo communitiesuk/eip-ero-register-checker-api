@@ -11,15 +11,15 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.mockito.kotlin.verify
 import uk.gov.dluhc.external.ier.models.EROCertificateMapping
-import uk.gov.dluhc.registercheckerapi.client.IerApiClient
 import uk.gov.dluhc.registercheckerapi.client.IerGeneralException
+import uk.gov.dluhc.registercheckerapi.client.IerGetEroApiClient
 import uk.gov.dluhc.registercheckerapi.client.IerNotFoundException
 
 @ExtendWith(MockitoExtension::class)
 internal class IerServiceTest {
 
     @Mock
-    private lateinit var ierApiClient: IerApiClient
+    private lateinit var ierGetEroApiClient: IerGetEroApiClient
 
     @InjectMocks
     private lateinit var ierService: IerService
@@ -29,7 +29,7 @@ internal class IerServiceTest {
         // Given
         val certificateSerial = "123456789"
 
-        given(ierApiClient.getEroIdentifier(any()))
+        given(ierGetEroApiClient.getEroIdentifier(any()))
             .willReturn(EROCertificateMapping("1234", certificateSerial))
 
         val expectedEroId = "1234"
@@ -39,7 +39,7 @@ internal class IerServiceTest {
 
         // Then
         assertThat(actualEroId).isEqualTo(expectedEroId)
-        verify(ierApiClient).getEroIdentifier(certificateSerial)
+        verify(ierGetEroApiClient).getEroIdentifier(certificateSerial)
     }
 
     @Test
@@ -48,7 +48,7 @@ internal class IerServiceTest {
         val certificateSerial = "123456789"
 
         val expected = IerNotFoundException(certificateSerial)
-        given(ierApiClient.getEroIdentifier(any())).willThrow(expected)
+        given(ierGetEroApiClient.getEroIdentifier(any())).willThrow(expected)
 
         // When
         val ex = catchThrowableOfType(
@@ -66,7 +66,7 @@ internal class IerServiceTest {
         val certificateSerial = "123456789"
 
         val expected = IerGeneralException("Error getting eroId for certificate serial $certificateSerial")
-        given(ierApiClient.getEroIdentifier(any())).willThrow(expected)
+        given(ierGetEroApiClient.getEroIdentifier(any())).willThrow(expected)
 
         // When
         val ex = catchThrowableOfType(

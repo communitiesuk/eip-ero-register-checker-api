@@ -24,22 +24,22 @@ databaseChangeLog:
                     unique: true
                     uniqueConstraintName: register_check_correlation_id_unique_idx
               - column:
-                  remarks: A unique ID for the application (e.g. Voter Card Application). Not exposed externally.
-                  name: application_id
+                  remarks: A reference to the source application (e.g. Voter Card Application). Not exposed externally.
+                  name: source_reference
                   type: varchar(36)
                   constraints:
                     nullable: false
               - column:
-                  remarks: A general correlation ID within the corresponding application (e.g. the register_status ID in the VC application). Not exposed externally.
-                  name: application_correlation_id
+                  remarks: A correlation ID for the corresponding source application (e.g. the register_status ID in the VC application). Not exposed externally.
+                  name: source_correlation_id
                   type: uuid
                   constraints:
                     nullable: false
                     unique: true
                     uniqueConstraintName: register_check_app_correlation_id_unique_idx
               - column:
-                  remarks: Maps to 'source' in the API (GET) response
-                  name: application_type
+                  remarks: The type of the source application. Maps to the system 'source' type (e.g. EROP) in the API (GET) response.
+                  name: source_type
                   type: varchar(100)
                   constraints:
                     nullable: false
@@ -70,7 +70,7 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  remarks: Maps to 'actingStaffId' in the API (GET) response
+                  remarks: Set to 'system', or to the a user's email address if it was initiated manually. For the GET response, 'system' will be mapped to 'EROP' for VCA.
                   name: created_by
                   type: varchar(255)
                   constraints:
@@ -87,15 +87,15 @@ databaseChangeLog:
               - createIndex:
                   columns:
                     - column:
-                        name: correlation_id
-                  indexName: reg_check_correlation_id_idx
-              - createIndex:
-                  columns:
-                    - column:
                         name: status
                     - column:
                         name: gss_code
                   indexName: reg_check_status_gss_code_idx
+              - createIndex:
+                  columns:
+                    - column:
+                        name: correlation_id
+                  indexName: reg_check_correlation_id_idx
       rollback:
         - dropTable:
             tableName: register_check

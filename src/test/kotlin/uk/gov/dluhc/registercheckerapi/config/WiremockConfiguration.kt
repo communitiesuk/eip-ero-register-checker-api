@@ -21,12 +21,8 @@ class WiremockConfiguration {
 
     @Bean
     @Primary
-    fun wireMockIerRestTemplate(
-        // TODO ierClientHttpRequestFactory: ClientHttpRequestFactory,
-        wireMockServer: WireMockServer
-    ): RestTemplate =
+    fun wireMockIerRestTemplate(wireMockServer: WireMockServer): RestTemplate =
         RestTemplateBuilder()
-            // TODO .requestFactory { ierClientHttpRequestFactory }
             .rootUri("http://localhost:${wireMockServer.port()}/ier-ero")
             .build()
 }

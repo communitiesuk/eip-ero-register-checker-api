@@ -60,11 +60,15 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  remarks: Maps from 'registerCheckMatchCount' in the update (POST) request
+                  remarks: Maps from 'registerCheckMatchCount' in the update (POST) request.
                   name: match_count
                   type: int
               - column:
-                  remarks: Maps to 'createdAt' in the API (GET) response
+                  remarks: The timestamp that the update (POST) request was sent from the EMS (maps from 'createdAt').
+                  name: match_result_sent_at
+                  type: timestamp
+              - column:
+                  remarks: Maps to 'createdAt' in the API (GET) response.
                   name: date_created
                   type: timestamp
                   constraints:
@@ -76,9 +80,11 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  remarks: Maps from 'createdAt' in the update (POST) request
+                  remarks: The timestamp this row was last updated.
                   name: updated_at
                   type: timestamp
+                  constraints:
+                    nullable: false
               - column:
                   name: version
                   type: bigint

@@ -87,8 +87,8 @@ databaseChangeLog:
               - createIndex:
                   columns:
                     - column:
-                        name: address_id
-                  indexName: reg_check_personal_detail_idx
+                        name: correlation_id
+                  indexName: reg_check_correlation_id_idx
       rollback:
         - dropTable:
             tableName: register_check

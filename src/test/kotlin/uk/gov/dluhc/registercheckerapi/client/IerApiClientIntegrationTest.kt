@@ -11,10 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.dluhc.external.ier.models.EROCertificateMapping
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 
-internal class IerGetEroApiClientIntegrationTest : IntegrationTest() {
+internal class IerApiClientIntegrationTest : IntegrationTest() {
 
     @Autowired
-    private lateinit var ierGetEroApiClient: IerGetEroApiClient
+    private lateinit var ierApiClient: IerApiClient
 
     @Autowired
     private lateinit var wireMockServer: WireMockServer
@@ -28,7 +28,7 @@ internal class IerGetEroApiClientIntegrationTest : IntegrationTest() {
         wireMockService.stubIerApiGetEroIdentifier(certificateSerial, expectedEroId)
 
         // When
-        val actualEroCertificateMapping = ierGetEroApiClient.getEroIdentifier(certificateSerial)
+        val actualEroCertificateMapping = ierApiClient.getEroIdentifier(certificateSerial)
 
         // Then
         assertThat(actualEroCertificateMapping).isEqualTo(expectedEroCertificateMapping)
@@ -44,7 +44,7 @@ internal class IerGetEroApiClientIntegrationTest : IntegrationTest() {
 
         // When
         val ex = Assertions.catchThrowableOfType(
-            { ierGetEroApiClient.getEroIdentifier(certificateSerial) },
+            { ierApiClient.getEroIdentifier(certificateSerial) },
             IerNotFoundException::class.java
         )
 
@@ -64,7 +64,7 @@ internal class IerGetEroApiClientIntegrationTest : IntegrationTest() {
 
         // When
         val ex = Assertions.catchThrowableOfType(
-            { ierGetEroApiClient.getEroIdentifier(certificateSerial) },
+            { ierApiClient.getEroIdentifier(certificateSerial) },
             IerGeneralException::class.java
         )
 

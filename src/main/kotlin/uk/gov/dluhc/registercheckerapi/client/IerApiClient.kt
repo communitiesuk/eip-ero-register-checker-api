@@ -12,7 +12,7 @@ import uk.gov.dluhc.external.ier.models.EROCertificateMapping
 private val logger = KotlinLogging.logger {}
 
 @Component
-class IerGetEroApiClient(
+class IerApiClient(
     private val ierRestTemplate: RestTemplate
 ) {
 
@@ -39,23 +39,21 @@ class IerGetEroApiClient(
         } catch (httpClientEx: HttpClientErrorException) {
             when (httpClientEx.statusCode) {
                 HttpStatus.NOT_FOUND -> throw IerNotFoundException(certificateSerial).apply {
-                    logger.warn { "Error: ${this.message}" }
+                    logger.warn { "Error: ${httpClientEx.message}" }
                 }
 
                 else -> {
                     val message =
-                        "Unable to retrieve EROCertificateMapping for certificate serial [$certificateSerial] due to error: [$this]"
+                        "Unable to retrieve EROCertificateMapping for certificate serial [$certificateSerial] due to error: [${httpClientEx.message}]"
                     throw IerGeneralException(message).apply {
-                        logger.warn { "Error: $message" }
+                        logger.warn { "Error: ${httpClientEx.message}" }
                     }
                 }
             }
         } catch (e: RestClientException) {
-            val message =
-                "Unable to retrieve EROCertificateMapping for certificate serial [$certificateSerial] due to error: [${e.message}]"
-            throw IerGeneralException(message).apply {
-                logger.error("Error: $message")
-            }
+            val message = "Unable to retrieve EROCertificateMapping for certificate serial [$certificateSerial] due to error: [${e.message}]"
+            logger.error("Error: $message")
+            throw IerGeneralException(message)
         }
     }
 

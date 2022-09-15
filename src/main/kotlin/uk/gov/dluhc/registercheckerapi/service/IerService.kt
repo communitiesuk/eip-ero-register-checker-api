@@ -1,11 +1,11 @@
 package uk.gov.dluhc.registercheckerapi.service
 
 import org.springframework.stereotype.Service
-import uk.gov.dluhc.registercheckerapi.client.IerGetEroApiClient
+import uk.gov.dluhc.registercheckerapi.client.IerApiClient
 
 @Service
-class IerService(private val ierGetEroApiClient: IerGetEroApiClient) {
+class IerService(private val ierApiClient: IerApiClient) {
 
     fun getEroIdentifierForCertificateSerial(certificateSerial: String): String =
-        ierGetEroApiClient.getEroIdentifier(certificateSerial).eroId!!
+        ierApiClient.getEroIdentifier(certificateSerial).eroId!!
 }

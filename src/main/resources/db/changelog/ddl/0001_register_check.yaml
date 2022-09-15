@@ -1,0 +1,107 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0001-create-register-check
+      author: matt.wills@valtech.com
+      context: ddl
+      changes:
+        - createTable:
+            tableName: register_check
+            columns:
+              - column:
+                  remarks: Internal PK - not exposed externally.
+                  name: id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: register_check_pkey
+              - column:
+                  remarks: Maps to requestid in the API (GET) response
+                  name: correlation_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: register_check_correlation_id_unique_idx
+              - column:
+                  remarks: A reference to the source application (e.g. Voter Card Application). Not exposed externally.
+                  name: source_reference
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  remarks: A correlation ID for the corresponding source application (e.g. the register_status ID in the VC application). Not exposed externally.
+                  name: source_correlation_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: register_check_app_correlation_id_unique_idx
+              - column:
+                  remarks: The type of the source application. Maps to the system 'source' type (e.g. EROP) in the API (GET) response.
+                  name: source_type
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: gss_code
+                  type: varchar(80)
+                  constraints:
+                    nullable: false
+              - column:
+                  remarks: e.g. PENDING - not exposed externally.
+                  name: status
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: personal_detail_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  remarks: Maps from 'registerCheckMatchCount' in the update (POST) request.
+                  name: match_count
+                  type: int
+              - column:
+                  remarks: The timestamp that the update (POST) request was sent from the EMS (maps from 'createdAt').
+                  name: match_result_sent_at
+                  type: timestamp
+              - column:
+                  remarks: Maps to 'createdAt' in the API (GET) response.
+                  name: date_created
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  remarks: Set to 'system', or to the a user's email address if it was initiated manually. For the GET response, 'system' will be mapped to 'EROP' for VCA.
+                  name: created_by
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  remarks: The timestamp this row was last updated.
+                  name: updated_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - createIndex:
+                  columns:
+                    - column:
+                        name: status
+                    - column:
+                        name: gss_code
+                  indexName: reg_check_status_gss_code_idx
+              - createIndex:
+                  columns:
+                    - column:
+                        name: correlation_id
+                  indexName: reg_check_correlation_id_idx
+      rollback:
+        - dropTable:
+            tableName: register_check

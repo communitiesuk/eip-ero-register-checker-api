@@ -6,4 +6,8 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.0.xsd">
 
+    <include relativeToChangelogFile="true" file="ddl/0001_register_check.yaml"/>
+    <include relativeToChangelogFile="true" file="ddl/0002_personal_detail.yaml"/>
+    <include relativeToChangelogFile="true" file="ddl/0003_address.yaml"/>
+
 </databaseChangeLog>

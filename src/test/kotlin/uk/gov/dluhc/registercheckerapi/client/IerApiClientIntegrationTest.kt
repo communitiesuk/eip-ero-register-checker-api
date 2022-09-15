@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
+import com.github.tomakehurst.wiremock.matching.StringValuePattern
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -22,9 +23,10 @@ internal class IerApiClientIntegrationTest : IntegrationTest() {
     @Test
     fun `should get EROCertificateMapping response for a given certificate serial`() {
         // Given
-        val certificateSerial = "123456789"
+        val certificateSerial = "1234567891"
         val expectedEroId = "camden-city-council"
-        val expectedEroCertificateMapping = EROCertificateMapping(eroId = expectedEroId, certificateSerial = certificateSerial)
+        val expectedEroCertificateMapping =
+            EROCertificateMapping(eroId = expectedEroId, certificateSerial = certificateSerial)
         wireMockService.stubIerApiGetEroIdentifier(certificateSerial, expectedEroId)
 
         // When
@@ -38,8 +40,8 @@ internal class IerApiClientIntegrationTest : IntegrationTest() {
     @Test
     fun `should not get EROCertificateMapping response given API returns a 404 error`() {
         // Given
-        val certificateSerial = "123456789"
-        wireMockService.stubIerApiGetEroIdentifierThrowsNotFoundError()
+        val certificateSerial = "1234567892"
+        wireMockService.stubIerApiGetEroIdentifierThrowsNotFoundError(certificateSerial)
         val expectedException = IerNotFoundException(certificateSerial = certificateSerial)
 
         // When
@@ -56,11 +58,11 @@ internal class IerApiClientIntegrationTest : IntegrationTest() {
     @Test
     fun `should not get EROCertificateMapping response given API returns a 500 error`() {
         // Given
-        val certificateSerial = "123456789"
-        wireMockService.stubIerApiGetEroIdentifierThrowsInternalServerError()
+        val certificateSerial = "1234567893"
+        wireMockService.stubIerApiGetEroIdentifierThrowsInternalServerError(certificateSerial)
 
         val expectedException =
-            IerGeneralException(message = "Unable to retrieve EROCertificateMapping for certificate serial [123456789] due to error: [500 Server Error: [no body]]")
+            IerGeneralException(message = "Unable to retrieve EROCertificateMapping for certificate serial [$certificateSerial] due to error: [500 Server Error: [no body]]")
 
         // When
         val ex = Assertions.catchThrowableOfType(
@@ -77,6 +79,15 @@ internal class IerApiClientIntegrationTest : IntegrationTest() {
         wireMockServer.verify(
             WireMock.getRequestedFor(urlPathMatching("/ier-ero/ero"))
                 .withQueryParam("certificateSerial", equalTo(certificateSerial))
+                .withHeader("Authorization", matchingAwsSignedAuthHeader())
         )
     }
+
+    private fun matchingAwsSignedAuthHeader(): StringValuePattern =
+        WireMock.matching(
+            "AWS4-HMAC-SHA256 " +
+                "Credential=.*, " +
+                "SignedHeaders=accept;accept-encoding;host;x-amz-date;x-amz-security-token, " +
+                "Signature=.*"
+        )
 }

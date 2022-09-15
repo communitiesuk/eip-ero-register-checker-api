@@ -1,3 +1,11 @@
+cloud:
+  aws:
+    region:
+      static: eu-west-2
+    credentials:
+      access-key: test
+      secret-key: test
+
 spring:
   datasource:
     username: root
@@ -19,3 +27,7 @@ api:
   ier:
     base.url: http://replaced-by-wireMockServer-bean
     sts.assume.role: arn:aws:iam::1234567890987:role/grant-me-access-to-ier
+
+sqs:
+  ems-cidr-update-queue-name: unknown-queue
+  initiate-applicant-register-check-queue-name: initiate-applicant-register-check

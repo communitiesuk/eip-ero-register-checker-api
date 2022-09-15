@@ -51,7 +51,8 @@ class IerApiClient(
                 }
             }
         } catch (e: RestClientException) {
-            val message = "Unable to retrieve EROCertificateMapping for certificate serial [$certificateSerial] due to error: [${e.message}]"
+            val message =
+                "Unable to retrieve EROCertificateMapping for certificate serial [$certificateSerial] due to error: [${e.message}]"
             logger.error("Error: $message")
             throw IerGeneralException(message)
         }

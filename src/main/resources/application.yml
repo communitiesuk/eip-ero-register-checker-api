@@ -1,3 +1,11 @@
+cloud:
+  aws:
+    region:
+      auto: true
+      use-default-aws-region-chain: true
+    credentials:
+      use-default-aws-credentials-chain: true
+
 spring:
   datasource:
     url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/register_checker
@@ -18,3 +26,4 @@ api:
 
 sqs:
   ems-cidr-update-queue-name: ${SQS_EMS_CIDR_UPDATE_QUEUE_NAME}
+  initiate-applicant-register-check-queue-name: ${SQS_INITIATE_APPLICANT_REGISTER_CHECK_QUEUE_NAME}

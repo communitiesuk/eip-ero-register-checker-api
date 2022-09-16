@@ -18,6 +18,7 @@ class IerApiClient(
 
     companion object {
         private const val GET_ERO_URI = "/ero"
+        private const val QUERY_PARAM_CERTIFICATE_SERIAL_KEY = "certificateSerial"
     }
 
     /**
@@ -31,37 +32,47 @@ class IerApiClient(
         logger.info("Get IER ERO for certificateSerial=[$certificateSerial]")
         try {
             return ierRestTemplate.getForEntity(
-                buildUriString(certificateSerial),
+                buildUriStringWithQueryParam(certificateSerial),
                 EROCertificateMapping::class.java
             ).body!!.apply {
                 logger.info { "GET IER ero response for certificateSerial=[$certificateSerial] is [$this]" }
             }
         } catch (httpClientEx: HttpClientErrorException) {
-            when (httpClientEx.statusCode) {
-                HttpStatus.NOT_FOUND -> throw IerNotFoundException(certificateSerial).apply {
-                    logger.warn { "Error: ${httpClientEx.message}" }
-                }
-
-                else -> {
-                    val message =
-                        "Unable to retrieve EROCertificateMapping for certificate serial [$certificateSerial] due to error: [${httpClientEx.message}]"
-                    throw IerGeneralException(message).apply {
-                        logger.warn { "Error: ${httpClientEx.message}" }
-                    }
-                }
-            }
+            throw logAndThrowHttpClientErrorException(httpClientEx, certificateSerial)
         } catch (e: RestClientException) {
-            val message =
-                "Unable to retrieve EROCertificateMapping for certificate serial [$certificateSerial] due to error: [${e.message}]"
-            logger.error("Error: $message")
-            throw IerGeneralException(message)
+            throw logAndThrowGeneralException(e, certificateSerial)
         }
     }
 
-    private fun buildUriString(certificateSerial: String): String =
+    private fun buildUriStringWithQueryParam(certificateSerial: String) =
         UriComponentsBuilder
             .fromUriString(GET_ERO_URI)
-            .queryParam("certificateSerial", certificateSerial)
+            .queryParam(QUERY_PARAM_CERTIFICATE_SERIAL_KEY, certificateSerial)
             .build()
             .toUriString()
+
+    private fun logAndThrowHttpClientErrorException(
+        httpClientEx: HttpClientErrorException,
+        certificateSerial: String
+    ): IerApiException {
+        when (httpClientEx.statusCode) {
+            HttpStatus.NOT_FOUND -> throw IerNotFoundException(certificateSerial).apply {
+                logger.warn { "HttpClientErrorException: [${httpClientEx.message}]" }
+            }
+
+            else -> {
+                throw logAndThrowGeneralException(httpClientEx, certificateSerial)
+            }
+        }
+    }
+
+    private fun logAndThrowGeneralException(
+        restClientException: RestClientException,
+        certificateSerial: String
+    ): IerGeneralException {
+        val message = "Unable to retrieve EROCertificateMapping for certificate serial [$certificateSerial] due to error: [${restClientException.message}]"
+        throw IerGeneralException(message).apply {
+            logger.error { "Error: [${restClientException.message}]" }
+        }
+    }
 }

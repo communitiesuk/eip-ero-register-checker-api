@@ -38,7 +38,7 @@ internal class IerApiClientIntegrationTest : IntegrationTest() {
     }
 
     @Test
-    fun `should not get EROCertificateMapping response given API returns a 404 error`() {
+    fun `should return not found when EROCertificateMapping for given certificate serial is not found in IER`() {
         // Given
         val certificateSerial = "1234567892"
         wireMockService.stubIerApiGetEroIdentifierThrowsNotFoundError(certificateSerial)
@@ -56,7 +56,26 @@ internal class IerApiClientIntegrationTest : IntegrationTest() {
     }
 
     @Test
-    fun `should not get EROCertificateMapping response given API returns a 500 error`() {
+    fun `should return general exception when IER returns forbidden error`() {
+        // Given
+        val certificateSerial = "1234567895"
+        wireMockService.stubIerApiGetEroIdentifierThrowsUnauthorizedError(certificateSerial)
+        val expectedException =
+            IerGeneralException(message = "Unable to retrieve EROCertificateMapping for certificate serial [$certificateSerial] due to error: [403 Forbidden: [no body]]")
+
+        // When
+        val ex = Assertions.catchThrowableOfType(
+            { ierApiClient.getEroIdentifier(certificateSerial) },
+            IerGeneralException::class.java
+        )
+
+        // Then
+        assertThat(ex.message).isEqualTo(expectedException.message)
+        verifyWiremockGetInvokedFor(certificateSerial)
+    }
+
+    @Test
+    fun `should return general exception when IER returns internal server error`() {
         // Given
         val certificateSerial = "1234567893"
         wireMockService.stubIerApiGetEroIdentifierThrowsInternalServerError(certificateSerial)

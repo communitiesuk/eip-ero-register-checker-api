@@ -74,6 +74,17 @@ class WiremockService(private val wireMockServer: WireMockServer) {
         )
     }
 
+    fun stubIerApiGetEroIdentifierThrowsUnauthorizedError(certificateSerial: String) {
+        wireMockServer.stubFor(
+            get(urlEqualTo(buildUrl(certificateSerial)))
+                .withHeader("Authorization", matchingAwsSignedAuthHeader())
+                .willReturn(
+                    responseDefinition()
+                        .withStatus(403)
+                )
+        )
+    }
+
     private fun buildUrl(certificateSerial: String) = "/ier-ero/ero?certificateSerial=$certificateSerial"
     private fun matchingAwsSignedAuthHeader(): StringValuePattern =
         matching(

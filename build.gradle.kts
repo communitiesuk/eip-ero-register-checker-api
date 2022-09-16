@@ -48,6 +48,7 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("io.github.microutils:kotlin-logging-jvm:2.1.23")
     implementation("org.apache.commons:commons-lang3:3.12.0")
+    implementation("org.apache.httpcomponents:httpclient:4.5.13")
 
     // api
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -74,11 +75,15 @@ dependencies {
     implementation("software.amazon.awssdk:sts")
     implementation("software.amazon.awssdk:sqs")
 
+    // AWS signer using SDK V2 library is available at https://mvnrepository.com/artifact/io.github.acm19/aws-request-signing-apache-interceptor/2.1.1
+    implementation("io.github.acm19:aws-request-signing-apache-interceptor:2.1.1")
+
     // tests
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
     testImplementation("com.github.tomakehurst:wiremock-jre8:2.33.2")
 
+    testImplementation("org.testcontainers:junit-jupiter:1.17.3")
     testImplementation("org.testcontainers:testcontainers:1.17.3")
     testImplementation("org.testcontainers:mysql:1.17.3")
 }

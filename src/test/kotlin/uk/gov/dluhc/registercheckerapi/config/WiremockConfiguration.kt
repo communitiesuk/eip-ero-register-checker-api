@@ -2,26 +2,27 @@ package uk.gov.dluhc.registercheckerapi.config
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
+import org.springframework.boot.test.util.TestPropertyValues
+import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Primary
-import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
 class WiremockConfiguration {
 
     @Bean
-    fun wireMockServer(): WireMockServer =
+    fun wireMockServer(applicationContext: ConfigurableApplicationContext): WireMockServer =
         WireMockServer(
-            options().dynamicPort()
+            options()
+                .dynamicPort()
+                .dynamicHttpsPort()
         ).apply {
             start()
+            val ierBaseUrl = getIerEroBaseUrl(wireMockServerPort = port())
+            TestPropertyValues.of(
+                "api.ier.base.url=$ierBaseUrl",
+            ).applyTo(applicationContext)
         }
 
-    @Bean
-    @Primary
-    fun wireMockIerWebClient(wireMockServer: WireMockServer): WebClient =
-        WebClient.builder()
-            .baseUrl("http://localhost:${wireMockServer.port()}/ier-ero")
-            .build()
+    private fun getIerEroBaseUrl(wireMockServerPort: Int) = "http://localhost:$wireMockServerPort/ier-ero"
 }

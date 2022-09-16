@@ -44,7 +44,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
     @Test
     fun `should return not found error given IER service throws 404`() {
         // Given
-        wireMockService.stubIerApiGetEroIdentifierThrowsNotFoundError()
+        wireMockService.stubIerApiGetEroIdentifierThrowsNotFoundError(certificateSerial = CERT_SERIAL_NUMBER_VALUE)
 
         // When
         val response = webTestClient.get()
@@ -64,7 +64,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
     @Test
     fun `should return internal server error given IER service throws 500`() {
         // Given
-        wireMockService.stubIerApiGetEroIdentifierThrowsInternalServerError()
+        wireMockService.stubIerApiGetEroIdentifierThrowsInternalServerError(certificateSerial = CERT_SERIAL_NUMBER_VALUE)
 
         // When
         val response = webTestClient.get()

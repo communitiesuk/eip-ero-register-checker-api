@@ -1,4 +1,4 @@
-package uk.gov.dluhc.registercheckerapi.testsupport.testdata
+package uk.gov.dluhc.registercheckerapi.testsupport
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder.responseDefinition
@@ -30,7 +30,7 @@ class WiremockService(private val wireMockServer: WireMockServer) {
 
     fun stubIerApiGetEroIdentifier(certificateSerial: String, eroId: String) {
         wireMockServer.stubFor(
-            get(urlEqualTo(buildUrl(certificateSerial)))
+            get(urlEqualTo(buildGetIerEndpointUrl(certificateSerial)))
                 .withHeader("Authorization", matchingAwsSignedAuthHeader())
                 .willReturn(
                     responseDefinition()
@@ -52,40 +52,30 @@ class WiremockService(private val wireMockServer: WireMockServer) {
         stubIerApiGetEroIdentifier(certificateSerial, "1234")
     }
 
-    fun stubIerApiGetEroIdentifierThrowsInternalServerError(certificateSerial: String) {
+    fun stubIerApiGetEroIdentifierThrowsInternalServerError(certificateSerial: String) =
+        stubIerApiGetEroIdentifierThrowsException(certificateSerial, 500)
+
+    fun stubIerApiGetEroIdentifierThrowsNotFoundError(certificateSerial: String) =
+        stubIerApiGetEroIdentifierThrowsException(certificateSerial, 404)
+
+    fun stubIerApiGetEroIdentifierThrowsUnauthorizedError(certificateSerial: String) =
+        stubIerApiGetEroIdentifierThrowsException(certificateSerial, 403)
+
+    private fun stubIerApiGetEroIdentifierThrowsException(
+        certificateSerial: String,
+        httpStatusCode: Int
+    ) {
         wireMockServer.stubFor(
-            get(urlEqualTo(buildUrl(certificateSerial)))
+            get(urlEqualTo(buildGetIerEndpointUrl(certificateSerial)))
                 .withHeader("Authorization", matchingAwsSignedAuthHeader())
                 .willReturn(
                     responseDefinition()
-                        .withStatus(500)
+                        .withStatus(httpStatusCode)
                 )
         )
     }
 
-    fun stubIerApiGetEroIdentifierThrowsNotFoundError(certificateSerial: String) {
-        wireMockServer.stubFor(
-            get(urlEqualTo(buildUrl(certificateSerial)))
-                .withHeader("Authorization", matchingAwsSignedAuthHeader())
-                .willReturn(
-                    responseDefinition()
-                        .withStatus(404)
-                )
-        )
-    }
-
-    fun stubIerApiGetEroIdentifierThrowsUnauthorizedError(certificateSerial: String) {
-        wireMockServer.stubFor(
-            get(urlEqualTo(buildUrl(certificateSerial)))
-                .withHeader("Authorization", matchingAwsSignedAuthHeader())
-                .willReturn(
-                    responseDefinition()
-                        .withStatus(403)
-                )
-        )
-    }
-
-    private fun buildUrl(certificateSerial: String) = "/ier-ero/ero?certificateSerial=$certificateSerial"
+    private fun buildGetIerEndpointUrl(certificateSerial: String) = "/ier-ero/ero?certificateSerial=$certificateSerial"
     private fun matchingAwsSignedAuthHeader(): StringValuePattern =
         matching(
             "AWS4-HMAC-SHA256 " +

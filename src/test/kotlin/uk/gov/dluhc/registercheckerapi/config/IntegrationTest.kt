@@ -6,7 +6,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.dluhc.registercheckerapi.testsupport.testdata.WiremockService
+import uk.gov.dluhc.registercheckerapi.testsupport.WiremockService
 
 /**
  * Base class used to bring up the entire Spring ApplicationContext

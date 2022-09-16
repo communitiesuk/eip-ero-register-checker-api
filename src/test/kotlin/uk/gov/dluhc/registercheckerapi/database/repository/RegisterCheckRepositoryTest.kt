@@ -21,6 +21,10 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         // Then
         assertThat(actual).isNotNull
         assertThat(actual).containsExactly(registerCheck1)
+        assertThat(actual[0].id).isNotNull
+        assertThat(actual[0].dateCreated).isNotNull
+        assertThat(actual[0].updatedAt).isNotNull
+        assertThat(actual[0].version).isNotNull
     }
 
     @Test

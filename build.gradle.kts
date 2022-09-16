@@ -73,7 +73,11 @@ dependencies {
 
     // AWS dependencies (that are defined in the BOM "software.amazon.awssdk")
     implementation("software.amazon.awssdk:sts")
-    implementation("software.amazon.awssdk:sqs")
+    testImplementation("software.amazon.awssdk:sqs")
+
+    // messaging
+    implementation("org.springframework:spring-messaging")
+    implementation("io.awspring.cloud:spring-cloud-starter-aws-messaging:2.4.2")
 
     // AWS signer using SDK V2 library is available at https://mvnrepository.com/artifact/io.github.acm19/aws-request-signing-apache-interceptor/2.1.1
     implementation("io.github.acm19:aws-request-signing-apache-interceptor:2.1.1")
@@ -86,6 +90,7 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter:1.17.3")
     testImplementation("org.testcontainers:testcontainers:1.17.3")
     testImplementation("org.testcontainers:mysql:1.17.3")
+    testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 }
 
 dependencyManagement {

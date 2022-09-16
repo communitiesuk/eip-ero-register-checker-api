@@ -5,13 +5,15 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
 import com.github.tomakehurst.wiremock.matching.StringValuePattern
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.dluhc.external.ier.models.EROCertificateMapping
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 
+/**
+* Note: Negative tests which throws errors/exceptions for [uk.gov.dluhc.registercheckerapi.client.IerApiClient] are covered as a part of Mockito unit tests
+ */
 internal class IerApiClientIntegrationTest : IntegrationTest() {
 
     @Autowired
@@ -34,63 +36,6 @@ internal class IerApiClientIntegrationTest : IntegrationTest() {
 
         // Then
         assertThat(actualEroCertificateMapping).isEqualTo(expectedEroCertificateMapping)
-        verifyWiremockGetInvokedFor(certificateSerial)
-    }
-
-    @Test
-    fun `should return not found when EROCertificateMapping for given certificate serial is not found in IER`() {
-        // Given
-        val certificateSerial = "1234567892"
-        wireMockService.stubIerApiGetEroIdentifierThrowsNotFoundError(certificateSerial)
-        val expectedException = IerNotFoundException(certificateSerial = certificateSerial)
-
-        // When
-        val ex = Assertions.catchThrowableOfType(
-            { ierApiClient.getEroIdentifier(certificateSerial) },
-            IerNotFoundException::class.java
-        )
-
-        // Then
-        assertThat(ex.message).isEqualTo(expectedException.message)
-        verifyWiremockGetInvokedFor(certificateSerial)
-    }
-
-    @Test
-    fun `should return general exception when IER returns forbidden error`() {
-        // Given
-        val certificateSerial = "1234567895"
-        wireMockService.stubIerApiGetEroIdentifierThrowsUnauthorizedError(certificateSerial)
-        val expectedException =
-            IerGeneralException(message = "Unable to retrieve EROCertificateMapping for certificate serial [$certificateSerial] due to error: [403 Forbidden: [no body]]")
-
-        // When
-        val ex = Assertions.catchThrowableOfType(
-            { ierApiClient.getEroIdentifier(certificateSerial) },
-            IerGeneralException::class.java
-        )
-
-        // Then
-        assertThat(ex.message).isEqualTo(expectedException.message)
-        verifyWiremockGetInvokedFor(certificateSerial)
-    }
-
-    @Test
-    fun `should return general exception when IER returns internal server error`() {
-        // Given
-        val certificateSerial = "1234567893"
-        wireMockService.stubIerApiGetEroIdentifierThrowsInternalServerError(certificateSerial)
-
-        val expectedException =
-            IerGeneralException(message = "Unable to retrieve EROCertificateMapping for certificate serial [$certificateSerial] due to error: [500 Server Error: [no body]]")
-
-        // When
-        val ex = Assertions.catchThrowableOfType(
-            { ierApiClient.getEroIdentifier(certificateSerial) },
-            IerGeneralException::class.java
-        )
-
-        // Then
-        assertThat(ex.message).isEqualTo(expectedException.message)
         verifyWiremockGetInvokedFor(certificateSerial)
     }
 

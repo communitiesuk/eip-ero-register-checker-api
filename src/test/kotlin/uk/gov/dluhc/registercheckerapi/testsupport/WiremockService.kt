@@ -58,9 +58,6 @@ class WiremockService(private val wireMockServer: WireMockServer) {
     fun stubIerApiGetEroIdentifierThrowsNotFoundError(certificateSerial: String) =
         stubIerApiGetEroIdentifierThrowsException(certificateSerial, 404)
 
-    fun stubIerApiGetEroIdentifierThrowsUnauthorizedError(certificateSerial: String) =
-        stubIerApiGetEroIdentifierThrowsException(certificateSerial, 403)
-
     private fun stubIerApiGetEroIdentifierThrowsException(
         certificateSerial: String,
         httpStatusCode: Int
@@ -76,6 +73,7 @@ class WiremockService(private val wireMockServer: WireMockServer) {
     }
 
     private fun buildGetIerEndpointUrl(certificateSerial: String) = "/ier-ero/ero?certificateSerial=$certificateSerial"
+
     private fun matchingAwsSignedAuthHeader(): StringValuePattern =
         matching(
             "AWS4-HMAC-SHA256 " +

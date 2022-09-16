@@ -25,5 +25,4 @@ api:
     sts.assume.role: ${API_IER_STS_ASSUME_ROLE}
 
 sqs:
-  ems-cidr-update-queue-name: ${SQS_EMS_CIDR_UPDATE_QUEUE_NAME}
   initiate-applicant-register-check-queue-name: ${SQS_INITIATE_APPLICANT_REGISTER_CHECK_QUEUE_NAME}

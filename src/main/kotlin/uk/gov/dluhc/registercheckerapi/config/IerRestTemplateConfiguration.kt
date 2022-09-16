@@ -47,7 +47,9 @@ class IerRestTemplateConfiguration(
                     .roleArn(ierStsAssumeRole)
                     .roleSessionName(STS_SESSION_NAME)
                     .build()
-            ).stsClient(stsClient).build()
+            )
+            .stsClient(stsClient)
+            .build()
 
         val httpClientBuilder = HttpClientBuilder.create()
         httpClientBuilder.addInterceptorLast(

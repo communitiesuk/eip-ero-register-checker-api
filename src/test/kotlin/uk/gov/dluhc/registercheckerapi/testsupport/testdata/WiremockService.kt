@@ -55,6 +55,7 @@ class WiremockService(private val wireMockServer: WireMockServer) {
     fun stubIerApiGetEroIdentifierThrowsInternalServerError(certificateSerial: String) {
         wireMockServer.stubFor(
             get(urlEqualTo(buildUrl(certificateSerial)))
+                .withHeader("Authorization", matchingAwsSignedAuthHeader())
                 .willReturn(
                     responseDefinition()
                         .withStatus(500)
@@ -65,6 +66,7 @@ class WiremockService(private val wireMockServer: WireMockServer) {
     fun stubIerApiGetEroIdentifierThrowsNotFoundError(certificateSerial: String) {
         wireMockServer.stubFor(
             get(urlEqualTo(buildUrl(certificateSerial)))
+                .withHeader("Authorization", matchingAwsSignedAuthHeader())
                 .willReturn(
                     responseDefinition()
                         .withStatus(404)

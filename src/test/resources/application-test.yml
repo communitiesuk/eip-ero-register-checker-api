@@ -29,5 +29,4 @@ api:
     sts.assume.role: arn:aws:iam::1234567890987:role/grant-me-access-to-ier
 
 sqs:
-  ems-cidr-update-queue-name: unknown-queue
   initiate-applicant-register-check-queue-name: initiate-applicant-register-check

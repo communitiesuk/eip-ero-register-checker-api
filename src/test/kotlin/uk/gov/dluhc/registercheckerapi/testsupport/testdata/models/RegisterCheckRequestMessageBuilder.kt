@@ -1,5 +1,7 @@
 package uk.gov.dluhc.registercheckerapi.testsupport.testdata.models
 
+import net.datafaker.Address
+import org.apache.commons.lang3.RandomStringUtils
 import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckAddress
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckPersonalDetail
@@ -24,12 +26,12 @@ fun buildInitiateRegisterCheckMessage(
 )
 
 fun buildRegisterCheckPersonalDetail(
-    firstName: String = "John",
-    middleNames: String? = "James",
-    surname: String = "Smith",
-    dateOfBirth: LocalDate? = LocalDate.now(),
-    phone: String? = "020 7224 3688",
-    email: String? = "info@sherlock-holmes.co.uk",
+    firstName: String = DataFaker.faker.name().firstName(),
+    middleNames: String? = DataFaker.faker.name().firstName(),
+    surname: String = DataFaker.faker.name().lastName(),
+    dateOfBirth: LocalDate? = DataFaker.faker.date().birthday().toLocalDateTime().toLocalDate(),
+    email: String? = DataFaker.faker.internet().emailAddress(),
+    phone: String? = DataFaker.faker.phoneNumber().cellPhone(),
     address: RegisterCheckAddress = buildRegisterCheckAddress()
 ) = RegisterCheckPersonalDetail(
     firstName = firstName,
@@ -42,13 +44,14 @@ fun buildRegisterCheckPersonalDetail(
 )
 
 fun buildRegisterCheckAddress(
-    property: String? = "221 B",
-    street: String = "Baker Street",
-    locality: String? = "W",
-    town: String? = "Westminster",
-    area: String? = "London",
-    postcode: String = "NW1 6XE",
-    uprn: String? = "1234",
+    fakeAddress: Address = DataFaker.faker.address(),
+    property: String? = fakeAddress.buildingNumber(),
+    street: String = fakeAddress.streetName(),
+    locality: String? = fakeAddress.streetName(),
+    town: String? = fakeAddress.city(),
+    area: String? = fakeAddress.state(),
+    postcode: String = fakeAddress.postcode(),
+    uprn: String? = RandomStringUtils.randomNumeric(12),
 ) = RegisterCheckAddress(
     property = property,
     street = street,

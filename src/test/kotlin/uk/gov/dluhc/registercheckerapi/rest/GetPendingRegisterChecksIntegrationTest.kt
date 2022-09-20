@@ -4,16 +4,18 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 
-private const val GET_ERO_ENDPOINT = "/registercheck"
-private const val REQUEST_HEADER_NAME = "client-cert-serial"
-private const val CERT_SERIAL_NUMBER_VALUE = "543219999"
+internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
 
-internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
+    companion object {
+        private const val GET_PENDING_REGISTER_CHECKS_ENDPOINT = "/registerchecks"
+        private const val REQUEST_HEADER_NAME = "client-cert-serial"
+        private const val CERT_SERIAL_NUMBER_VALUE = "543219999"
+    }
 
     @Test
     fun `should return forbidden given valid header key is not present`() {
         webTestClient.get()
-            .uri(GET_ERO_ENDPOINT)
+            .uri(GET_PENDING_REGISTER_CHECKS_ENDPOINT)
             .exchange()
             .expectStatus()
             .isForbidden
@@ -28,7 +30,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
 
         // When
         val response = webTestClient.get()
-            .uri(GET_ERO_ENDPOINT)
+            .uri(GET_PENDING_REGISTER_CHECKS_ENDPOINT)
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().isOk
@@ -48,7 +50,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
 
         // When
         val response = webTestClient.get()
-            .uri(GET_ERO_ENDPOINT)
+            .uri(GET_PENDING_REGISTER_CHECKS_ENDPOINT)
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().is4xxClientError
@@ -68,7 +70,7 @@ internal class GetEmsEroIdentifierIntegrationTest : IntegrationTest() {
 
         // When
         val response = webTestClient.get()
-            .uri(GET_ERO_ENDPOINT)
+            .uri(GET_PENDING_REGISTER_CHECKS_ENDPOINT)
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().is5xxServerError

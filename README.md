@@ -1,5 +1,7 @@
 # # eip-ero-register-checker-api
-Spring Boot microservice exposing a REST API to update register checker status
+Spring Boot microservice that is :
+- Consuming and handling SQS messages related to applicant's register checks.
+- Exposing secured REST APIs to allow search and update operations related to applicant's register checks.
 
 ## Running the application
 Either `./gradlew bootRun` or run the class `RegisterCheckerApiApplication`

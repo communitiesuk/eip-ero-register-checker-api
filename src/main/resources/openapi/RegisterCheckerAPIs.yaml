@@ -141,7 +141,7 @@ paths:
       description: The EMS system's response to a single Register Check. Updates a pending Register Check with the outcome of the check.
       operationId: update-pending-register-check
       tags:
-        - Update Single Register Check
+        - Single Register Check
       requestBody:
         $ref: '#/components/requestBodies/RegisterCheckResult'
       responses:

@@ -12,7 +12,8 @@ import uk.gov.dluhc.external.ier.models.EROCertificateMapping
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 
 /**
-* Note: Negative tests which throws errors/exceptions for [uk.gov.dluhc.registercheckerapi.client.IerApiClient] are covered as a part of Mockito unit tests
+* Note: Negative tests which throws errors/exceptions for [uk.gov.dluhc.registercheckerapi.client.IerApiClient]
+ * are covered as a part of Mockito unit tests in [uk.gov.dluhc.registercheckerapi.client.IerApiClientTest]
  */
 internal class IerApiClientIntegrationTest : IntegrationTest() {
 

@@ -12,8 +12,8 @@ import org.mockito.kotlin.given
 import org.mockito.kotlin.verify
 import uk.gov.dluhc.external.ier.models.EROCertificateMapping
 import uk.gov.dluhc.registercheckerapi.client.IerApiClient
+import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
 import uk.gov.dluhc.registercheckerapi.client.IerGeneralException
-import uk.gov.dluhc.registercheckerapi.client.IerNotFoundException
 
 @ExtendWith(MockitoExtension::class)
 internal class IerServiceTest {
@@ -47,13 +47,13 @@ internal class IerServiceTest {
         // Given
         val certificateSerial = "123456789"
 
-        val expected = IerNotFoundException(certificateSerial)
+        val expected = IerEroNotFoundException(certificateSerial)
         given(ierApiClient.getEroIdentifier(any())).willThrow(expected)
 
         // When
         val ex = catchThrowableOfType(
             { ierService.getEroIdentifierForCertificateSerial(certificateSerial) },
-            IerNotFoundException::class.java
+            IerEroNotFoundException::class.java
         )
 
         // Then

@@ -53,7 +53,7 @@ internal class IerApiClientTest {
         // Given
         val certificateSerial = "1234567892"
         val expectedUrl = "/ero?certificateSerial=$certificateSerial"
-        val expectedException = IerNotFoundException(certificateSerial = certificateSerial)
+        val expectedException = IerEroNotFoundException(certificateSerial = certificateSerial)
 
         given(ierRestTemplate.getForEntity(anyString(), eq(EROCertificateMapping::class.java)))
             .willThrow(HttpClientErrorException(HttpStatus.NOT_FOUND, "No ero found"))
@@ -61,7 +61,7 @@ internal class IerApiClientTest {
         // When
         val ex = Assertions.catchThrowableOfType(
             { ierApiClient.getEroIdentifier(certificateSerial) },
-            IerNotFoundException::class.java
+            IerEroNotFoundException::class.java
         )
 
         // Then

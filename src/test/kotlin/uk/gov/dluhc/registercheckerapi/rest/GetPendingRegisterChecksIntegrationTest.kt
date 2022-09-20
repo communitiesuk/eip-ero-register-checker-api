@@ -59,7 +59,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
         // Then
         val actual = response.responseBody.blockFirst()
         assertThat(actual).isNotNull
-        assertThat(actual).isEqualTo("EroId for certificate serial not found")
+        assertThat(actual).isEqualTo("EROCertificateMapping for certificateSerial=[543219999] not found")
         wireMockService.verifyGetEroIdentifierCalledOnce()
     }
 

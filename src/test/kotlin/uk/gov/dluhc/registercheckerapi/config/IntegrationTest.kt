@@ -11,7 +11,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import software.amazon.awssdk.services.sqs.SqsClient
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
-import uk.gov.dluhc.registercheckerapi.service.InitiateRegisterCheckService
+import uk.gov.dluhc.registercheckerapi.service.RegisterCheckService
 import uk.gov.dluhc.registercheckerapi.testsupport.WiremockService
 
 /**
@@ -23,7 +23,7 @@ import uk.gov.dluhc.registercheckerapi.testsupport.WiremockService
 internal abstract class IntegrationTest {
 
     @MockBean
-    protected lateinit var initiateRegisterCheckService: InitiateRegisterCheckService
+    protected lateinit var registerCheckService: RegisterCheckService
 
     @Autowired
     protected lateinit var webTestClient: WebTestClient

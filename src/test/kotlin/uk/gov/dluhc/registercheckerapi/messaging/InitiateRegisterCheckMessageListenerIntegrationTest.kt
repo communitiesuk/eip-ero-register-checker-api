@@ -31,7 +31,7 @@ internal class InitiateRegisterCheckMessageListenerIntegrationTest : Integration
         // Then
         val stopWatch = StopWatch.createStarted()
         await().atMost(5, TimeUnit.SECONDS).untilAsserted {
-            verify(initiateRegisterCheckService).initiateRegisterCheck()
+            verify(registerCheckService).initiateRegisterCheck()
 
             stopWatch.stop()
             logger.info("completed assertions in $stopWatch")

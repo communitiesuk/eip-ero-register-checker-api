@@ -5,7 +5,7 @@ import mu.KotlinLogging
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.stereotype.Component
 import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckMessage
-import uk.gov.dluhc.registercheckerapi.service.InitiateRegisterCheckService
+import uk.gov.dluhc.registercheckerapi.service.RegisterCheckService
 import javax.validation.Valid
 
 private val logger = KotlinLogging.logger { }
@@ -15,7 +15,7 @@ private val logger = KotlinLogging.logger { }
  */
 @Component
 class InitiateRegisterCheckMessageListener(
-    val initiateRegisterCheckService: InitiateRegisterCheckService
+    val registerCheckService: RegisterCheckService
 ) :
     MessageListener<InitiateRegisterCheckMessage> {
 
@@ -27,7 +27,7 @@ class InitiateRegisterCheckMessageListener(
                     "sourceReference: $sourceReference and " +
                     "sourceCorrelationId: $sourceCorrelationId"
             }
-            initiateRegisterCheckService.initiateRegisterCheck()
+            registerCheckService.initiateRegisterCheck()
         }
     }
 }

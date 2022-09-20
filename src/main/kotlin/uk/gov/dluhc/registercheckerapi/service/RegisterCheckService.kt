@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service
 private val logger = KotlinLogging.logger { }
 
 @Service
-class InitiateRegisterCheckService {
+class RegisterCheckService {
     fun initiateRegisterCheck() {
         logger.info { "start initiateRegisterCheck" }
         TODO("implement in next task")

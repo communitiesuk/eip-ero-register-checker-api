@@ -7,11 +7,15 @@ import org.springframework.boot.test.util.TestPropertyValues
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Primary
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.utility.DockerImageName
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.sts.StsClient
+import java.net.URI
 
 /**
  * Configuration class exposing beans for the LocalStack (AWS) environment.
@@ -21,8 +25,6 @@ class LocalStackContainerConfiguration {
 
     private companion object {
         const val DEFAULT_PORT = 4566
-
-        val objectMapper = ObjectMapper()
     }
 
     @Bean
@@ -33,7 +35,7 @@ class LocalStackContainerConfiguration {
         StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey))
 
     /**
-     * Creates and starts LocalStack configured with a basic (empty) SQS service.
+     * Creates and starts LocalStack configured with a basic (empty) STS+SQS service.
      * Returns the container that can subsequently be used for further setup and configuration.
      */
     @Bean
@@ -55,6 +57,21 @@ class LocalStackContainerConfiguration {
             }
     }
 
+    @Bean
+    @Primary
+    fun localStackStsClient(
+        @Qualifier("localstackContainer") localStackContainer: GenericContainer<*>,
+        awsCredentialsProvider: AwsCredentialsProvider
+    ): StsClient {
+
+        val uri = URI.create("http://${localStackContainer.host}:${localStackContainer.getMappedPort(DEFAULT_PORT)}")
+        return StsClient.builder()
+            .credentialsProvider(awsCredentialsProvider)
+            .region(Region.EU_WEST_2)
+            .endpointOverride(uri)
+            .build()
+    }
+
     /**
      * Uses the localstack container to configure the various services.
      *
@@ -64,9 +81,11 @@ class LocalStackContainerConfiguration {
     fun localStackContainerSqsSettings(
         @Qualifier("localstackContainer") localStackContainer: GenericContainer<*>,
         applicationContext: ConfigurableApplicationContext,
-        @Value("\${sqs.initiate-applicant-register-check-queue-name}") initiateApplicantRegisterCheckQueueName: String
+        @Value("\${sqs.initiate-applicant-register-check-queue-name}") initiateApplicantRegisterCheckQueueName: String,
+        objectMapper: ObjectMapper
     ): LocalStackContainerSettings {
-        val queueUrlInitiateApplicantRegisterCheck = localStackContainer.createSqsQueue(initiateApplicantRegisterCheckQueueName)
+        val queueUrlInitiateApplicantRegisterCheck =
+            localStackContainer.createSqsQueue(initiateApplicantRegisterCheckQueueName, objectMapper)
 
         val apiUrl = "http://${localStackContainer.host}:${localStackContainer.getMappedPort(DEFAULT_PORT)}"
 
@@ -80,7 +99,7 @@ class LocalStackContainerConfiguration {
         )
     }
 
-    private fun GenericContainer<*>.createSqsQueue(queueName: String): String {
+    private fun GenericContainer<*>.createSqsQueue(queueName: String, objectMapper: ObjectMapper): String {
         val execInContainer = execInContainer(
             "awslocal", "sqs", "create-queue", "--queue-name", queueName, "--attributes", "DelaySeconds=1"
         )

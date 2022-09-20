@@ -73,7 +73,7 @@ dependencies {
 
     // AWS dependencies (that are defined in the BOM "software.amazon.awssdk")
     implementation("software.amazon.awssdk:sts")
-    testImplementation("software.amazon.awssdk:sqs")
+    implementation("software.amazon.awssdk:sqs")
 
     // messaging
     implementation("org.springframework:spring-messaging")

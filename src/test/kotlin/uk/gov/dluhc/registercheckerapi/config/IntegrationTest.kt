@@ -6,6 +6,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
 import uk.gov.dluhc.registercheckerapi.testsupport.WiremockService
 
 /**
@@ -22,6 +23,9 @@ internal abstract class IntegrationTest {
     @Autowired
     protected lateinit var wireMockService: WiremockService
 
+    @Autowired
+    protected lateinit var registerCheckRepository: RegisterCheckRepository
+
     companion object {
         val mysqlContainerConfiguration: MySQLContainerConfiguration = MySQLContainerConfiguration.getInstance()
     }
@@ -29,5 +33,10 @@ internal abstract class IntegrationTest {
     @BeforeEach
     fun resetWireMock() {
         wireMockService.resetAllStubsAndMappings()
+    }
+
+    @BeforeEach
+    fun clearDatabase() {
+        registerCheckRepository.deleteAll()
     }
 }

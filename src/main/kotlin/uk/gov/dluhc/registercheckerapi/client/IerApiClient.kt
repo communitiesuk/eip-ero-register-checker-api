@@ -56,7 +56,7 @@ class IerApiClient(
         certificateSerial: String
     ): IerApiException {
         when (httpClientEx.statusCode) {
-            HttpStatus.NOT_FOUND -> throw IerNotFoundException(certificateSerial).apply {
+            HttpStatus.NOT_FOUND -> throw IerEroNotFoundException(certificateSerial).apply {
                 logger.warn { "HttpClientErrorException: [${httpClientEx.message}]" }
             }
 

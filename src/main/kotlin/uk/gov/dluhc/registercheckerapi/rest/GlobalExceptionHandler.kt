@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 import uk.gov.dluhc.registercheckerapi.client.IerApiException
-import uk.gov.dluhc.registercheckerapi.client.IerNotFoundException
+import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
 
 @ControllerAdvice
 class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
@@ -28,11 +28,11 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         )
     }
 
-    @ExceptionHandler(value = [IerNotFoundException::class])
+    @ExceptionHandler(value = [IerEroNotFoundException::class])
     protected fun handleIerNotFoundApiException(
         e: IerApiException,
         request: WebRequest
     ): ResponseEntity<Any?>? {
-        return handleExceptionInternal(e, "EroId for certificate serial not found", HttpHeaders(), NOT_FOUND, request)
+        return handleExceptionInternal(e, "${e.message}", HttpHeaders(), NOT_FOUND, request)
     }
 }

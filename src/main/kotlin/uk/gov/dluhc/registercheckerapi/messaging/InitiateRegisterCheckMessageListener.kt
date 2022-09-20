@@ -14,7 +14,7 @@ private val logger = KotlinLogging.logger { }
  * Implementation of [MessageListener] to handle [InitiateRegisterCheckMessage] messages
  */
 @Component
-class VoterCardApplicationCreateMessageListener(
+class InitiateRegisterCheckMessageListener(
     val initiateRegisterCheckService: InitiateRegisterCheckService
 ) :
     MessageListener<InitiateRegisterCheckMessage> {

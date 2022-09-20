@@ -39,6 +39,7 @@ apply(plugin = "org.jetbrains.kotlin.plugin.jpa")
 apply(plugin = "org.jetbrains.kotlin.plugin.allopen")
 
 extra["awsSdkVersion"] = "2.17.272"
+extra["springCloudVersion"] = "2.4.2"
 
 dependencies {
     // framework
@@ -77,7 +78,7 @@ dependencies {
 
     // messaging
     implementation("org.springframework:spring-messaging")
-    implementation("io.awspring.cloud:spring-cloud-starter-aws-messaging:2.4.2")
+    implementation("io.awspring.cloud:spring-cloud-starter-aws-messaging")
 
     // AWS signer using SDK V2 library is available at https://mvnrepository.com/artifact/io.github.acm19/aws-request-signing-apache-interceptor/2.1.1
     implementation("io.github.acm19:aws-request-signing-apache-interceptor:2.1.1")
@@ -96,6 +97,7 @@ dependencies {
 dependencyManagement {
     imports {
         mavenBom("software.amazon.awssdk:bom:${property("awsSdkVersion")}")
+        mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:${property("springCloudVersion")}")
     }
 }
 

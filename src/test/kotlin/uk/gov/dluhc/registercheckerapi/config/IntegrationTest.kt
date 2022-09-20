@@ -9,8 +9,8 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
 import software.amazon.awssdk.services.sqs.SqsClient
+import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
 import uk.gov.dluhc.registercheckerapi.service.InitiateRegisterCheckService
 import uk.gov.dluhc.registercheckerapi.testsupport.WiremockService
 

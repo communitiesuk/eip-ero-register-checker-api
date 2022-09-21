@@ -24,6 +24,8 @@ dluhc:
   request.header.name: client-cert-serial
 
 api:
+  ero-management:
+    url: http://replaced-by-wireMockServer-bean
   ier:
     base.url: http://replaced-by-wireMockServer-bean
     sts.assume.role: arn:aws:iam::1234567890987:role/grant-me-access-to-ier

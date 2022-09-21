@@ -7,6 +7,7 @@ plugins {
     id("org.springframework.boot") version "2.7.3"
     id("io.spring.dependency-management") version "1.0.13.RELEASE"
     kotlin("jvm") version "1.7.0"
+    kotlin("kapt") version "1.7.10"
     kotlin("plugin.spring") version "1.7.0"
     kotlin("plugin.jpa") version "1.7.0"
     kotlin("plugin.allopen") version "1.7.0"
@@ -50,6 +51,8 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:2.1.23")
     implementation("org.apache.commons:commons-lang3:3.12.0")
     implementation("org.apache.httpcomponents:httpclient:4.5.13")
+    implementation("org.mapstruct:mapstruct:1.5.2.Final")
+    kapt("org.mapstruct:mapstruct-processor:1.5.2.Final")
 
     // api
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -171,6 +174,13 @@ tasks.withType<KtLintCheckTask> {
 ktlint {
     filter {
         exclude { projectDir.toURI().relativize(it.file.toURI()).path.contains("/generated/") }
+    }
+}
+
+kapt {
+    arguments {
+        arg("mapstruct.defaultComponentModel", "spring")
+        arg("mapstruct.unmappedTargetPolicy", "IGNORE")
     }
 }
 

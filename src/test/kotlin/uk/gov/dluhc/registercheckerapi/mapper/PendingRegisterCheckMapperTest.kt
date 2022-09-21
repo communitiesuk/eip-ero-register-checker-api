@@ -10,6 +10,7 @@ import uk.gov.dluhc.registercheckerapi.dto.AddressDto
 import uk.gov.dluhc.registercheckerapi.dto.PendingRegisterCheckDto
 import uk.gov.dluhc.registercheckerapi.dto.PersonalDetailDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPendingRegisterCheckDto
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildInitiateRegisterCheckMessage
 import java.util.UUID
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType as EntitySourceType
@@ -103,5 +104,44 @@ internal class PendingRegisterCheckMapperTest {
         assertThat(actual.id).isNotNull
         assertThat(actual.status).isEqualTo(CheckStatus.PENDING)
         assertThat(actual.dateCreated).isNull()
+    }
+
+    @Test
+    fun `should map entity to dto`() {
+        // Given
+        val registerCheckEntity = buildRegisterCheck()
+        val expected = PendingRegisterCheckDto(
+            correlationId = registerCheckEntity.correlationId!!,
+            sourceType = DtoSourceType.VOTER_CARD,
+            sourceReference = registerCheckEntity.sourceReference!!,
+            sourceCorrelationId = registerCheckEntity.sourceCorrelationId!!,
+            createdBy = registerCheckEntity.createdBy!!,
+            gssCode = registerCheckEntity.gssCode!!,
+            personalDetail = PersonalDetailDto(
+                firstName = registerCheckEntity.personalDetail!!.firstName!!,
+                middleNames = registerCheckEntity.personalDetail!!.middleNames,
+                surname = registerCheckEntity.personalDetail!!.surname!!,
+                dateOfBirth = registerCheckEntity.personalDetail!!.dateOfBirth,
+                phone = registerCheckEntity.personalDetail!!.phoneNumber,
+                email = registerCheckEntity.personalDetail!!.email,
+                address = AddressDto(
+                    property = registerCheckEntity.personalDetail!!.address!!.property,
+                    street = registerCheckEntity.personalDetail!!.address!!.street!!,
+                    locality = registerCheckEntity.personalDetail!!.address!!.locality,
+                    town = registerCheckEntity.personalDetail!!.address!!.town,
+                    area = registerCheckEntity.personalDetail!!.address!!.area,
+                    postcode = registerCheckEntity.personalDetail!!.address!!.postcode!!,
+                    uprn = registerCheckEntity.personalDetail!!.address!!.uprn,
+                )
+            )
+        )
+
+        // When
+        val actual = mapper.registerCheckEntityToPendingRegisterCheckDto(registerCheckEntity)
+
+        // Then
+        assertThat(actual)
+            .usingRecursiveComparison()
+            .isEqualTo(expected)
     }
 }

@@ -8,6 +8,10 @@ import uk.gov.dluhc.registercheckerapi.dto.PendingRegisterCheckDto
 import uk.gov.dluhc.registercheckerapi.dto.PersonalDetailDto
 import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckMessage
 
+/**
+ * Maps incoming [InitiateRegisterCheckMessage] to [PendingRegisterCheckDto]. Maps the entity class [RegisterCheck]
+ * to/from the corresponding [PendingRegisterCheckDto].
+ */
 @Mapper
 interface PendingRegisterCheckMapper {
 
@@ -20,6 +24,12 @@ interface PendingRegisterCheckMapper {
     @Mapping(target = "dateCreated", source = "createdAt")
     fun pendingRegisterCheckDtoToRegisterCheckEntity(pendingRegisterCheckDto: PendingRegisterCheckDto): RegisterCheck
 
+    @Mapping(target = "createdAt", source = "dateCreated")
+    fun registerCheckEntityToPendingRegisterCheckDto(registerCheck: RegisterCheck): PendingRegisterCheckDto
+
     @Mapping(target = "phoneNumber", source = "phone")
     fun personalDetailDtoToPersonalDetailEntity(personalDetailDto: PersonalDetailDto): PersonalDetail
+
+    @Mapping(target = "phone", source = "phoneNumber")
+    fun personalDetailEntityToPersonalDetailDto(personalDetail: PersonalDetail): PersonalDetailDto
 }

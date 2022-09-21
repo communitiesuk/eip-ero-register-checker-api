@@ -33,14 +33,14 @@ class PersonalDetail(
 
     @NotNull
     @Size(max = 255)
-    var firstName: String? = null,
+    var firstName: String,
 
     @Size(max = 255)
     var middleNames: String? = null,
 
     @NotNull
     @Size(max = 255)
-    var surname: String? = null,
+    var surname: String,
 
     var dateOfBirth: LocalDate? = null,
 
@@ -57,16 +57,16 @@ class PersonalDetail(
     )
     @JoinColumn(name = "address_id")
     @NotFound(action = NotFoundAction.EXCEPTION)
-    var address: Address? = null,
+    var address: Address,
 
     @NotNull
     @CreationTimestamp
-    var dateCreated: Instant? = null,
+    var dateCreated: Instant,
 
     @NotNull
     @Size(max = 255)
     @CreatedBy
-    var createdBy: String? = null
+    var createdBy: String
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

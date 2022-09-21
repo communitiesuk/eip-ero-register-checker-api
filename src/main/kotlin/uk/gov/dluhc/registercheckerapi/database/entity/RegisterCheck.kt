@@ -34,29 +34,29 @@ class RegisterCheck(
 
     @NotNull
     @Type(type = UUIDCharType)
-    var correlationId: UUID? = null,
+    var correlationId: UUID,
 
     @NotNull
     @Size(max = 36)
-    var sourceReference: String? = null,
+    var sourceReference: String,
 
     @NotNull
     @Type(type = UUIDCharType)
-    var sourceCorrelationId: UUID? = null,
+    var sourceCorrelationId: UUID,
 
     @NotNull
     @Size(max = 100)
     @Enumerated(EnumType.STRING)
-    var sourceType: SourceType? = null,
+    var sourceType: SourceType,
 
     @NotNull
     @Size(max = 80)
-    var gssCode: String? = null,
+    var gssCode: String,
 
     @NotNull
     @Size(max = 100)
     @Enumerated(EnumType.STRING)
-    var status: CheckStatus? = null,
+    var status: CheckStatus,
 
     @OneToOne(
         cascade = [CascadeType.ALL],
@@ -64,7 +64,7 @@ class RegisterCheck(
         fetch = FetchType.EAGER
     )
     @JoinColumn(name = "personal_detail_id")
-    var personalDetail: PersonalDetail? = null,
+    var personalDetail: PersonalDetail,
 
     var matchCount: Int? = null,
 
@@ -73,18 +73,18 @@ class RegisterCheck(
     @NotNull
     @Size(max = 255)
     @CreatedBy
-    var createdBy: String? = null,
+    var createdBy: String,
 
     @NotNull
     @CreationTimestamp
-    var dateCreated: Instant? = null,
+    var dateCreated: Instant,
 
     @NotNull
     @UpdateTimestamp
-    var updatedAt: Instant? = null,
+    var updatedAt: Instant,
 
     @Version
-    var version: Long? = null
+    var version: Long
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

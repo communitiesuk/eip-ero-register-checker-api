@@ -67,7 +67,6 @@ internal class PendingRegisterCheckMapperTest {
         // Given
         val pendingRegisterCheckDto = buildPendingRegisterCheckDto()
         val expected = RegisterCheck(
-            id = UUID.randomUUID(),
             correlationId = pendingRegisterCheckDto.correlationId,
             sourceType = EntitySourceType.VOTER_CARD,
             sourceReference = pendingRegisterCheckDto.sourceReference,
@@ -100,9 +99,8 @@ internal class PendingRegisterCheckMapperTest {
         // Then
         assertThat(actual)
             .usingRecursiveComparison()
-            .ignoringFields("id", "status")
+            .ignoringFields("status")
             .isEqualTo(expected)
-        assertThat(actual.id).isNotNull
         assertThat(actual.status).isEqualTo(CheckStatus.PENDING)
         assertThat(actual.dateCreated).isNull()
     }

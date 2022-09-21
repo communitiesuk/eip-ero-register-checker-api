@@ -19,7 +19,6 @@ interface PendingRegisterCheckMapper {
     @Mapping(target = "createdBy", source = "requestedBy")
     fun initiateRegisterCheckMessageToPendingRegisterCheckDto(initiateRegisterCheckMessage: InitiateRegisterCheckMessage): PendingRegisterCheckDto
 
-    @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID())")
     @Mapping(target = "status", constant = "PENDING")
     fun pendingRegisterCheckDtoToRegisterCheckEntity(pendingRegisterCheckDto: PendingRegisterCheckDto): RegisterCheck
 

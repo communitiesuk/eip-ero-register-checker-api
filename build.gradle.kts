@@ -74,7 +74,6 @@ dependencies {
 
     // AWS dependencies (that are defined in the BOM "software.amazon.awssdk")
     implementation("software.amazon.awssdk:sts")
-    implementation("software.amazon.awssdk:sqs")
 
     // messaging
     implementation("org.springframework:spring-messaging")
@@ -84,6 +83,7 @@ dependencies {
     implementation("io.github.acm19:aws-request-signing-apache-interceptor:2.1.1")
 
     // tests
+    testImplementation("software.amazon.awssdk:sqs") // required to send messages to a queue, which we only need to do in test at the moment
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
     testImplementation("com.github.tomakehurst:wiremock-jre8:2.33.2")

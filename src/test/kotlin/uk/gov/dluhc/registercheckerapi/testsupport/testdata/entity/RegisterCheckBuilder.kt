@@ -6,7 +6,6 @@ import uk.gov.dluhc.registercheckerapi.database.entity.PersonalDetail
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.VOTER_CARD
-import java.time.Instant
 import java.util.UUID
 
 fun buildRegisterCheck(
@@ -17,10 +16,7 @@ fun buildRegisterCheck(
     gssCode: String = "E09000021",
     status: CheckStatus = PENDING,
     personalDetail: PersonalDetail = buildPersonalDetail(),
-    createdBy: String = "system",
-    dateCreated: Instant = Instant.now(),
-    updatedAt: Instant = Instant.now(),
-    version: Long = 0,
+    createdBy: String = "system"
 ) = RegisterCheck(
     correlationId = correlationId,
     sourceReference = sourceReference,
@@ -29,8 +25,5 @@ fun buildRegisterCheck(
     gssCode = gssCode,
     status = status,
     personalDetail = personalDetail,
-    createdBy = createdBy,
-    dateCreated = dateCreated,
-    updatedAt = updatedAt,
-    version = version,
+    createdBy = createdBy
 )

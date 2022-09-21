@@ -71,7 +71,7 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         registerCheckRepository.saveAll(listOf(registerCheck1, registerCheck2))
 
         // When
-        val actual = registerCheckRepository.findByCorrelationId(registerCheck1.correlationId!!)
+        val actual = registerCheckRepository.findByCorrelationId(registerCheck1.correlationId)
 
         // Then
         assertThat(actual).isNotNull

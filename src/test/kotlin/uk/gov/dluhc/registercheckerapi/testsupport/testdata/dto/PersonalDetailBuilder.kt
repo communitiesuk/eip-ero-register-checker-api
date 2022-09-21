@@ -1,24 +1,24 @@
-package uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity
+package uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto
 
-import uk.gov.dluhc.registercheckerapi.database.entity.Address
-import uk.gov.dluhc.registercheckerapi.database.entity.PersonalDetail
+import uk.gov.dluhc.registercheckerapi.dto.AddressDto
+import uk.gov.dluhc.registercheckerapi.dto.PersonalDetailDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.DataFaker.Companion.faker
 import java.time.LocalDate
 
-fun buildPersonalDetail(
+fun buildPersonalDetailDto(
     firstName: String = faker.name().firstName(),
     middleNames: String? = faker.name().firstName(),
     surname: String = faker.name().lastName(),
     dateOfBirth: LocalDate? = faker.date().birthday().toLocalDateTime().toLocalDate(),
     email: String? = faker.internet().emailAddress(),
-    phoneNumber: String? = faker.phoneNumber().cellPhone(),
-    address: Address = buildAddress(),
-) = PersonalDetail(
+    phone: String? = faker.phoneNumber().cellPhone(),
+    address: AddressDto = buildAddressDto()
+) = PersonalDetailDto(
     firstName = firstName,
     middleNames = middleNames,
     surname = surname,
     dateOfBirth = dateOfBirth,
     email = email,
-    phoneNumber = phoneNumber,
+    phone = phone,
     address = address
 )

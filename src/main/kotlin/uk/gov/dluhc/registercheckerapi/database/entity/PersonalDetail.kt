@@ -6,7 +6,6 @@ import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.NotFound
 import org.hibernate.annotations.NotFoundAction
 import org.hibernate.annotations.Type
-import org.springframework.data.annotation.CreatedBy
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
@@ -61,12 +60,7 @@ class PersonalDetail(
 
     @NotNull
     @CreationTimestamp
-    var dateCreated: Instant,
-
-    @NotNull
-    @Size(max = 255)
-    @CreatedBy
-    var createdBy: String
+    var dateCreated: Instant? = null
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -80,6 +74,6 @@ class PersonalDetail(
 
     @Override
     override fun toString(): String {
-        return this::class.simpleName + "(id = $id , dateCreated = $dateCreated , createdBy = $createdBy)"
+        return this::class.simpleName + "(id = $id , dateCreated = $dateCreated)"
     }
 }

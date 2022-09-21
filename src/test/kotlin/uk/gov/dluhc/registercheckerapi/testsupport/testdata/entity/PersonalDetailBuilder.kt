@@ -3,7 +3,6 @@ package uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity
 import uk.gov.dluhc.registercheckerapi.database.entity.Address
 import uk.gov.dluhc.registercheckerapi.database.entity.PersonalDetail
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.DataFaker.Companion.faker
-import java.time.Instant
 import java.time.LocalDate
 
 fun buildPersonalDetail(
@@ -14,8 +13,6 @@ fun buildPersonalDetail(
     email: String? = faker.internet().emailAddress(),
     phoneNumber: String? = faker.phoneNumber().cellPhone(),
     address: Address = buildAddress(),
-    createdBy: String = "system",
-    dateCreated: Instant = Instant.now(),
 ) = PersonalDetail(
     firstName = firstName,
     middleNames = middleNames,
@@ -23,7 +20,5 @@ fun buildPersonalDetail(
     dateOfBirth = dateOfBirth,
     email = email,
     phoneNumber = phoneNumber,
-    address = address,
-    createdBy = createdBy,
-    dateCreated = dateCreated,
+    address = address
 )

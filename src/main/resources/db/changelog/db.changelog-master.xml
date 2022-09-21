@@ -9,5 +9,7 @@
     <include relativeToChangelogFile="true" file="ddl/0001_register_check.yaml"/>
     <include relativeToChangelogFile="true" file="ddl/0002_personal_detail.yaml"/>
     <include relativeToChangelogFile="true" file="ddl/0003_address.yaml"/>
+    <include relativeToChangelogFile="true" file="ddl/0004_alter_personal_detail.xml"/>
+    <include relativeToChangelogFile="true" file="ddl/0005_alter_address.xml"/>
 
 </databaseChangeLog>

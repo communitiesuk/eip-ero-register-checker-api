@@ -5,7 +5,6 @@ import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.Type
 import org.hibernate.annotations.UpdateTimestamp
-import org.springframework.data.annotation.CreatedBy
 import java.time.Instant
 import java.util.UUID
 import javax.persistence.CascadeType
@@ -72,19 +71,18 @@ class RegisterCheck(
 
     @NotNull
     @Size(max = 255)
-    @CreatedBy
     var createdBy: String,
 
     @NotNull
     @CreationTimestamp
-    var dateCreated: Instant,
+    var dateCreated: Instant? = null,
 
     @NotNull
     @UpdateTimestamp
-    var updatedAt: Instant,
+    var updatedAt: Instant? = null,
 
     @Version
-    var version: Long
+    var version: Long? = null,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

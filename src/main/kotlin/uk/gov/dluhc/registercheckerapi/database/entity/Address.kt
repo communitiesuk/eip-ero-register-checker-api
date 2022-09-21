@@ -4,7 +4,6 @@ import org.hibernate.Hibernate
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.Type
-import org.springframework.data.annotation.CreatedBy
 import java.time.Instant
 import java.util.UUID
 import javax.persistence.Entity
@@ -49,12 +48,7 @@ class Address(
 
     @NotNull
     @CreationTimestamp
-    var dateCreated: Instant? = null,
-
-    @NotNull
-    @Size(max = 255)
-    @CreatedBy
-    var createdBy: String? = null
+    var dateCreated: Instant? = null
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -68,6 +62,6 @@ class Address(
 
     @Override
     override fun toString(): String {
-        return this::class.simpleName + "(id = $id , dateCreated = $dateCreated , createdBy = $createdBy)"
+        return this::class.simpleName + "(id = $id , dateCreated = $dateCreated)"
     }
 }

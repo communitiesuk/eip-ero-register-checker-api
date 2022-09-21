@@ -74,6 +74,7 @@ internal class PendingRegisterCheckMapperTest {
             sourceCorrelationId = pendingRegisterCheckDto.sourceCorrelationId,
             createdBy = pendingRegisterCheckDto.createdBy,
             gssCode = pendingRegisterCheckDto.gssCode,
+            status = CheckStatus.PENDING,
             personalDetail = PersonalDetail(
                 firstName = pendingRegisterCheckDto.personalDetail.firstName,
                 middleNames = pendingRegisterCheckDto.personalDetail.middleNames,
@@ -111,27 +112,28 @@ internal class PendingRegisterCheckMapperTest {
         // Given
         val registerCheckEntity = buildRegisterCheck()
         val expected = PendingRegisterCheckDto(
-            correlationId = registerCheckEntity.correlationId!!,
+            correlationId = registerCheckEntity.correlationId,
             sourceType = DtoSourceType.VOTER_CARD,
-            sourceReference = registerCheckEntity.sourceReference!!,
-            sourceCorrelationId = registerCheckEntity.sourceCorrelationId!!,
-            createdBy = registerCheckEntity.createdBy!!,
-            gssCode = registerCheckEntity.gssCode!!,
+            sourceReference = registerCheckEntity.sourceReference,
+            sourceCorrelationId = registerCheckEntity.sourceCorrelationId,
+            createdBy = registerCheckEntity.createdBy,
+            gssCode = registerCheckEntity.gssCode,
+            createdAt = registerCheckEntity.dateCreated,
             personalDetail = PersonalDetailDto(
-                firstName = registerCheckEntity.personalDetail!!.firstName!!,
-                middleNames = registerCheckEntity.personalDetail!!.middleNames,
-                surname = registerCheckEntity.personalDetail!!.surname!!,
-                dateOfBirth = registerCheckEntity.personalDetail!!.dateOfBirth,
-                phone = registerCheckEntity.personalDetail!!.phoneNumber,
-                email = registerCheckEntity.personalDetail!!.email,
+                firstName = registerCheckEntity.personalDetail.firstName,
+                middleNames = registerCheckEntity.personalDetail.middleNames,
+                surname = registerCheckEntity.personalDetail.surname,
+                dateOfBirth = registerCheckEntity.personalDetail.dateOfBirth,
+                phone = registerCheckEntity.personalDetail.phoneNumber,
+                email = registerCheckEntity.personalDetail.email,
                 address = AddressDto(
-                    property = registerCheckEntity.personalDetail!!.address!!.property,
-                    street = registerCheckEntity.personalDetail!!.address!!.street!!,
-                    locality = registerCheckEntity.personalDetail!!.address!!.locality,
-                    town = registerCheckEntity.personalDetail!!.address!!.town,
-                    area = registerCheckEntity.personalDetail!!.address!!.area,
-                    postcode = registerCheckEntity.personalDetail!!.address!!.postcode!!,
-                    uprn = registerCheckEntity.personalDetail!!.address!!.uprn,
+                    property = registerCheckEntity.personalDetail.address.property,
+                    street = registerCheckEntity.personalDetail.address.street,
+                    locality = registerCheckEntity.personalDetail.address.locality,
+                    town = registerCheckEntity.personalDetail.address.town,
+                    area = registerCheckEntity.personalDetail.address.area,
+                    postcode = registerCheckEntity.personalDetail.address.postcode,
+                    uprn = registerCheckEntity.personalDetail.address.uprn,
                 )
             )
         )

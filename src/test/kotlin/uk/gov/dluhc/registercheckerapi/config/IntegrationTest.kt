@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import software.amazon.awssdk.services.sqs.SqsClient
@@ -22,7 +22,7 @@ import uk.gov.dluhc.registercheckerapi.testsupport.WiremockService
 @AutoConfigureWebTestClient(timeout = "PT5M")
 internal abstract class IntegrationTest {
 
-    @MockBean
+    @SpyBean
     protected lateinit var registerCheckService: RegisterCheckService
 
     @Autowired

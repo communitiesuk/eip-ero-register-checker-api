@@ -24,8 +24,9 @@ class Address(
     @GenericGenerator(name = "UUID", strategy = UseExistingOrGenerateUUID.NAME)
     var id: UUID? = null,
 
+    @NotNull
     @Size(max = 255)
-    var street: String? = null,
+    var street: String,
 
     @Size(max = 255)
     var property: String? = null,
@@ -39,8 +40,9 @@ class Address(
     @Size(max = 255)
     var area: String? = null,
 
+    @NotNull
     @Size(max = 10)
-    var postcode: String? = null,
+    var postcode: String,
 
     @Size(max = 12)
     var uprn: String? = null,

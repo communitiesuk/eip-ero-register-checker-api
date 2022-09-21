@@ -3,6 +3,7 @@ package uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity
 import org.apache.commons.lang3.RandomStringUtils
 import uk.gov.dluhc.registercheckerapi.database.entity.Address
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.DataFaker.Companion.faker
+import java.time.Instant
 
 fun buildAddress(
     street: String = faker.address().streetName(),
@@ -12,7 +13,8 @@ fun buildAddress(
     area: String = faker.address().state(),
     postcode: String = faker.address().postcode(),
     uprn: String = RandomStringUtils.randomNumeric(12),
-    createdBy: String = "system"
+    createdBy: String = "system",
+    dateCreated: Instant = Instant.now(),
 ) = Address(
     street = street,
     property = property,
@@ -21,5 +23,6 @@ fun buildAddress(
     area = area,
     postcode = postcode,
     uprn = uprn,
-    createdBy = createdBy
+    createdBy = createdBy,
+    dateCreated = dateCreated,
 )

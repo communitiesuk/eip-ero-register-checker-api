@@ -1,0 +1,751 @@
+openapi: 3.0.0
+security:
+  - bearerAuth: []
+info:
+  title: EROManagementAPIs
+  version: '1.0'
+  description: API for viewing and managing ERO Users and ERO Details.
+  contact:
+    name: Krister Bone
+    email: krister.bone@valtech.com
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  '/eros/{eroId}':
+    parameters:
+      - schema:
+          type: string
+        name: eroId
+        in: path
+        required: true
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - CORS
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: { }
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+            responseTemplates:
+              application/json: |
+                {}
+    get:
+      summary: Return an ERO by its ID
+      tags: []
+      responses:
+        '200':
+          $ref: '#/components/responses/ElectoralRegistrationOffice'
+      operationId: get-ero
+      description: |-
+        Get an Electoral Registration Office by its ID.
+      security:
+        - eroUserCognitoUserPoolAuthorizer: []
+      x-amazon-apigateway-integration:
+        type: HTTP_PROXY
+        uri: ${base_uri}/eros/{eroId}
+        requestParameters:
+          integration.request.path.eroId: "method.request.path.eroId"
+        responseParameters:
+          method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+          method.response.header.Access-Control-Allow-Methods: '''*'''
+          method.response.header.Access-Control-Allow-Origin: '''*'''
+        connectionType: VPC_LINK
+        connectionId: ${vpc_connection_id}
+        httpMethod: GET
+  '/eros/{eroId}/users':
+    parameters:
+      - schema:
+          type: string
+        name: eroId
+        in: path
+        required: true
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - CORS
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: { }
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+            responseTemplates:
+              application/json: |
+                {}
+    get:
+      summary: Return all users within an ERO
+      tags: []
+      responses:
+        '200':
+          $ref: '#/components/responses/Users'
+        '403':
+          description: Forbidden
+      operationId: get-ero-users
+      description: |-
+        Secured by ERO Cognito User Pool 
+        - users need to be in ero-admin-{eroId} group to call the endpoint WITHOUT the "role" query parameter.
+        - users need to be in ero-vc-admin-{eroId} group to call the endpoint WITH the "role" query parameter. The groups attribute of returned users will only contain the role in the query parameter.
+        
+        Get list of users from Cognito within the ERO district base group and optionally filter users by role.
+        The only role that can be used as a filter is "vc-admin".
+        
+        See https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_ListUsersInGroup.html
+      parameters:
+        - name: role
+          description: Filter by the user's role. Only a user in the `ero-vc-admin-{eroId}` group can pass the `role` query parameter. `vc-admin` is the only value supported by this parameter.
+          schema:
+            $ref: '#/components/schemas/FilterUsersByRole'
+          example: vc-admin
+          in: query
+          required: false
+      security:
+        - eroUserCognitoUserPoolAuthorizer: []
+      x-amazon-apigateway-integration:
+        type: HTTP_PROXY
+        uri: ${base_uri}/eros/{eroId}/users
+        requestParameters:
+          integration.request.path.eroId: "method.request.path.eroId"
+        responseParameters:
+          method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+          method.response.header.Access-Control-Allow-Methods: '''*'''
+          method.response.header.Access-Control-Allow-Origin: '''*'''
+        connectionType: VPC_LINK
+        connectionId: ${vpc_connection_id}
+        httpMethod: GET
+  '/eros/{eroId}/users/{userId}/groups':
+    parameters:
+      - schema:
+          type: string
+        name: eroId
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: userId
+        in: path
+        required: true
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - CORS
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: { }
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+            responseTemplates:
+              application/json: |
+                {}
+    put:
+      summary: Add User to Group(s)
+      operationId: add-ero-user-to-groups
+      responses:
+        '200':
+          $ref: '#/components/responses/User'
+        '400':
+          description: Bad Request Invalid Group
+        '403':
+          description: Forbidden
+        '404':
+          description: User not found
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                groups:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/EroGroup'
+      description: Replaces the users groups for this ERO with the groups provided.
+      security:
+        - eroUserCognitoUserPoolAuthorizer: []
+      x-amazon-apigateway-integration:
+        type: HTTP_PROXY
+        uri: ${base_uri}/eros/{eroId}/users/{userId}/groups
+        requestParameters:
+          integration.request.path.eroId: "method.request.path.eroId"
+          integration.request.path.userId: "method.request.path.userId"
+        responseParameters:
+          method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+          method.response.header.Access-Control-Allow-Methods: '''*'''
+          method.response.header.Access-Control-Allow-Origin: '''*'''
+        connectionType: VPC_LINK
+        connectionId: ${vpc_connection_id}
+        httpMethod: PUT
+  /user/eros:
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - CORS
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: { }
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+            responseTemplates:
+              application/json: |
+                {}
+    get:
+      summary: Returns a list of the EROs the current user is a member of.
+      tags: []
+      responses:
+        '200':
+          $ref: '#/components/responses/ElectoralRegistrationOffices'
+        '401':
+          description: Unauthorised
+      operationId: get-user-eros
+      description: |-
+        Secured by ERO Cognito User Pool
+        Returns a list of the EROs the current user is a member of.
+      security:
+        - eroUserCognitoUserPoolAuthorizer: []
+      x-amazon-apigateway-integration:
+        type: HTTP_PROXY
+        uri: ${base_uri}/user/eros
+        responseParameters:
+          method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+          method.response.header.Access-Control-Allow-Methods: '''*'''
+          method.response.header.Access-Control-Allow-Origin: '''*'''
+        connectionType: VPC_LINK
+        connectionId: ${vpc_connection_id}
+        httpMethod: GET
+  '/users/{userId}':
+    parameters:
+      - schema:
+          type: string
+        name: userId
+        in: path
+        required: true
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - CORS
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: { }
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+            responseTemplates:
+              application/json: |
+                {}
+    get:
+      summary: Get user by ID (email address)
+      tags: []
+      responses:
+        '200':
+          $ref: '#/components/responses/User'
+        '404':
+          description: ERO district not found
+      operationId: get-ero-user
+      description: |-
+        Secured by ERO Cognito User Pool
+        Gets a user by email address
+        Secured by ero-admin-*
+      security:
+        - eroUserCognitoUserPoolAuthorizer: []
+      x-amazon-apigateway-integration:
+        type: HTTP_PROXY
+        uri: ${base_uri}/users/{userId}
+        requestParameters:
+          integration.request.path.userId: "method.request.path.userId"
+        responseParameters:
+          method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+          method.response.header.Access-Control-Allow-Methods: '''*'''
+          method.response.header.Access-Control-Allow-Origin: '''*'''
+        connectionType: VPC_LINK
+        connectionId: ${vpc_connection_id}
+        httpMethod: GET
+  /users:
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - CORS
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: { }
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+            responseTemplates:
+              application/json: |
+                {}
+    post:
+      summary: Create user in ERO Cognito User Pool
+      operationId: post-user-username
+      responses:
+        '201':
+          $ref: '#/components/responses/User'
+      description: |-
+        Secured by ERO Cognito User Pool
+        Create a user regardless in the ERO
+        Fails silently if user already exists
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        description: New user details
+      security:
+        - eroUserCognitoUserPoolAuthorizer: []
+      x-amazon-apigateway-integration:
+        type: HTTP_PROXY
+        uri: ${base_uri}/users
+        responseParameters:
+          method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+          method.response.header.Access-Control-Allow-Methods: '''*'''
+          method.response.header.Access-Control-Allow-Origin: '''*'''
+        connectionType: VPC_LINK
+        connectionId: ${vpc_connection_id}
+        httpMethod: POST
+  /eros:
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - CORS
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: { }
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+            responseTemplates:
+              application/json: |
+                {}
+    get:
+      summary: List EROs, optionally filtered by gssCode
+      operationId: get-eros
+      parameters:
+        - schema:
+            type: string
+          name: gssCode
+          in: query
+          required: false
+      responses:
+        '200':
+          $ref: '#/components/responses/ElectoralRegistrationOffices'
+      description: |-
+        List EROs, optionally filtered by gssCode
+        Publicly available, not sensitive data and needed by DLUHC admins in different user pool.
+      x-amazon-apigateway-integration:
+        type: HTTP_PROXY
+        uri: ${base_uri}/eros
+        responseParameters:
+          method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+          method.response.header.Access-Control-Allow-Methods: '''*'''
+          method.response.header.Access-Control-Allow-Origin: '''*'''
+        connectionType: VPC_LINK
+        connectionId: ${vpc_connection_id}
+        httpMethod: GET
+
+components:
+  schemas:
+    UserResponse:
+      title: UserResponse
+      type: object
+      description: Response for a single User
+      example:
+        firstName: Alice
+        surname: Smith
+        email: alice.smith@gmail.com
+        phoneNumber: '079701234566'
+        groups: [
+            oe-viewer
+        ]
+      properties:
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        firstName:
+          type: string
+        surname:
+          type: string
+        groups:
+          type: array
+          items:
+            type: string
+    UsersResponse:
+      title: UsersResponse
+      type: object
+      description: Response containing an array of Users
+      example:
+        users: [
+          {
+            firstName: Alice,
+            surname: Smith,
+            email: alice.smith@gmail.com,
+            phoneNumber: '+44079701234566',
+            groups: [
+                oe-viewer
+            ]
+          },
+          {
+            firstName: John,
+            surname: Smith,
+            email: john.smith@gmail.com,
+            phoneNumber: '+44079701234566',
+            groups: [
+                oe-viewer, vc-admin
+            ]
+          }
+        ]
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserResponse'
+    UserRequest:
+      title: UserRequest
+      type: object
+      description: Create AWS Cognito User Request
+      example:
+        firstName: Alice
+        surname: Smith
+        email: alice.smith@gmail.com
+        phoneNumber: '079701234566'
+      properties:
+        email:
+          type: string
+          format: email
+        phoneNumber:
+          type: string
+          pattern: ^\+\d+$
+        firstName:
+          type: string
+          minLength: 2
+          maxLength: 255
+        surname:
+          type: string
+          minLength: 2
+          maxLength: 255
+      required:
+        - email
+        - phoneNumber
+        - firstName
+        - surname
+    EroGroup:
+      title: EroGroup
+      type: string
+      enum:
+        - admin
+        - vc-admin
+        - vc-viewer
+        - postal-admin
+        - postal-viewer
+        - proxy-admin
+        - proxy-viewer
+        - oe-admin
+        - oe-viewer
+      description: Enumeration of allowed ERO groups
+    LocalAuthorityResponse:
+      title: LocalAuthorityResponse
+      type: object
+      description: Response for a single Local Authority
+      example:
+        gssCode: E06000001
+        name: Hartlepool
+      properties:
+        gssCode:
+          type: string
+        name:
+          type: string
+    ElectoralRegistrationOfficeResponse:
+      title: ElectoralRegistrationOfficeResponse
+      type: object
+      description: Response for a single Electoral Registration Office
+      example:
+        id: 'south-oxfordshire-district-council-vale-of-white-horse-district-council'
+        name: 'South Oxfordshire District Council'
+        localAuthorities: [
+          {
+            gssCode: 'E07000180',
+            name: 'Vale of White Horse District Council'
+          },
+          {
+            gssCode: 'E07000179',
+            name: 'South Oxfordshire District Council'
+          },
+        ]
+        roles: [
+          "vc-admin",
+          "admin"
+        ]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        localAuthorities:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocalAuthorityResponse'
+        roles:
+          description: Optional list of roles that an authenticated user has for the given Electoral Registration Office. Only populated when the API is called by an authenticated user.
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - name
+        - localAuthorities
+    ElectoralRegistrationOfficesResponse:
+      title: ElectoralRegistrationOfficesResponse
+      type: object
+      description: Response containing an array of Electoral Registration Offices
+      properties:
+        eros:
+          type: array
+          items:
+            $ref: '#/components/schemas/ElectoralRegistrationOfficeResponse'
+      required:
+        - eros
+    FilterUsersByRole:
+      title: FilterUsersByRole
+      type: string
+      description: Filters list of users
+      enum:
+        - vc-admin
+  responses:
+    ElectoralRegistrationOffice:
+      description: Response containing a single Electoral Registration Office (ERO)
+      headers:
+        Access-Control-Allow-Origin:
+          schema:
+            type: string
+        Access-Control-Allow-Methods:
+          schema:
+            type: string
+        Access-Control-Allow-Headers:
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ElectoralRegistrationOfficeResponse'
+    ElectoralRegistrationOffices:
+      description: Response containing an array of Electoral Registration Offices (EROs)
+      headers:
+        Access-Control-Allow-Origin:
+          schema:
+            type: string
+        Access-Control-Allow-Methods:
+          schema:
+            type: string
+        Access-Control-Allow-Headers:
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ElectoralRegistrationOfficesResponse'
+    User:
+      description: Response for a single User
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserResponse'
+    Users:
+      description: Response containing an array of Users
+      headers:
+        Access-Control-Allow-Origin:
+          schema:
+            type: string
+        Access-Control-Allow-Methods:
+          schema:
+            type: string
+        Access-Control-Allow-Headers:
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UsersResponse'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    eroUserCognitoUserPoolAuthorizer:
+      type: "apiKey"
+      name: "Authorization"
+      in: "header"
+      x-amazon-apigateway-authtype: "cognito_user_pools"
+      x-amazon-apigateway-authorizer:
+        providerARNs:
+          - "${cognito_ero_user_pool_arn}"
+        type: "cognito_user_pools"

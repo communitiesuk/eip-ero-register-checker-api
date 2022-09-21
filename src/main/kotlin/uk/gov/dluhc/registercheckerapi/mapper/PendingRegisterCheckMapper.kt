@@ -21,7 +21,6 @@ interface PendingRegisterCheckMapper {
 
     @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID())")
     @Mapping(target = "status", constant = "PENDING")
-    @Mapping(target = "dateCreated", source = "createdAt")
     fun pendingRegisterCheckDtoToRegisterCheckEntity(pendingRegisterCheckDto: PendingRegisterCheckDto): RegisterCheck
 
     @Mapping(target = "createdAt", source = "dateCreated")

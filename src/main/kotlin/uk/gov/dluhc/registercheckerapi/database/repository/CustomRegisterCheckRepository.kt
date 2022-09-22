@@ -4,5 +4,5 @@ import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 
 interface CustomRegisterCheckRepository {
 
-    fun findPendingEntriesByGssCode(gssCode: String, limit: Int = 100): List<RegisterCheck>
+    fun findPendingEntriesByGssCodes(gssCodes: List<String>, limit: Int = 100): List<RegisterCheck>
 }

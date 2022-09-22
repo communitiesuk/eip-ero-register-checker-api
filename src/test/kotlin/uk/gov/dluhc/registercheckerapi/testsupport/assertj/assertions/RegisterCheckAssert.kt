@@ -6,7 +6,6 @@ import org.assertj.core.api.Assertions
 import org.assertj.core.api.InstanceOfAssertFactories
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import java.time.Instant
-import java.lang.Error
 
 private val logger = KotlinLogging.logger { }
 

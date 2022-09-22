@@ -38,7 +38,7 @@ internal class RegisterCheckServiceTest {
     @Nested
     inner class SaveRegisterChecks {
         @Test
-        fun `should save an PendingRegisterCheckDto`() {
+        fun `should save a PendingRegisterCheckDto`() {
             // Given
             val pendingRegisterCheckDto = buildPendingRegisterCheckDto()
             val registerCheck = buildRegisterCheck()

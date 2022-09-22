@@ -17,15 +17,17 @@ class RegisterCheckAssert(private val actualJpaEntity: RegisterCheck?) :
     private var ignoringFields = arrayOf<String>()
 
     companion object {
-        private val ID_AND_AUDIT_FIELDS = arrayOf(
+        private val ID_FIELDS = arrayOf(
             "id",
             "personalDetail.id",
             "personalDetail.address.id",
+            "correlationId",
+        )
+        private val AUDIT_FIELDS = arrayOf(
             "dateCreated",
             "personalDetail.dateCreated",
             "personalDetail.address.dateCreated",
             "updatedAt",
-            "correlationId",
         )
 
         fun assertThat(actual: RegisterCheck?): RegisterCheckAssert {
@@ -62,8 +64,13 @@ class RegisterCheckAssert(private val actualJpaEntity: RegisterCheck?) :
             .isAfter(earliestInstant)
     }
 
-    fun ignoringIdAndAuditFields(): RegisterCheckAssert {
-        ignoringFields = ID_AND_AUDIT_FIELDS
+    fun ignoringIdFields(): RegisterCheckAssert {
+        ignoringFields += ID_FIELDS
+        return this
+    }
+
+    fun ignoringAuditFields(): RegisterCheckAssert {
+        ignoringFields += AUDIT_FIELDS
         return this
     }
 }

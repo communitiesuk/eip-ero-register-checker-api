@@ -69,13 +69,14 @@ internal class InitiateRegisterCheckMessageListenerIntegrationTest : Integration
 
         // Then
         val stopWatch = StopWatch.createStarted()
-        await().atMost(5000, TimeUnit.SECONDS).untilAsserted {
+        await().atMost(5, TimeUnit.SECONDS).untilAsserted {
             val actualRegisterCheckJpaEntity = getActualRegisterCheckJpaEntity(message)
             logger.info("found actualRegisterCheckJpaEntitys[${actualRegisterCheckJpaEntity.size}]")
             Assertions.assertThat(actualRegisterCheckJpaEntity).hasSize(1)
 
             RegisterCheckAssert.assertThat(actualRegisterCheckJpaEntity.first())
-                .ignoringIdAndAuditFields()
+                .ignoringIdFields()
+                .ignoringAuditFields()
                 .isRecursivelyEqual(expected)
                 .hasIdAndDbAuditFieldsAfter(earliestDateCreated)
 

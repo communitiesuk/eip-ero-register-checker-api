@@ -79,9 +79,13 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/PendingRegisterChecks'
+      security:
+        - emsCertificateLambdaAuthorizer: [ ]
       x-amazon-apigateway-integration:
         type: HTTP_PROXY
         uri: ${base_uri}/registerchecks
+        requestParameters:
+          integration.request.header.client-cert-serial: "context.authorizer.client-cert-serial"
         connectionType: VPC_LINK
         connectionId: ${vpc_connection_id}
         httpMethod: GET
@@ -147,11 +151,14 @@ paths:
       responses:
         '201':
           description: Pending Register Check updated successfully.
+      security:
+        - emsCertificateLambdaAuthorizer: [ ]
       x-amazon-apigateway-integration:
         type: HTTP_PROXY
         uri: ${base_uri}/registerchecks/{requestid}
         requestParameters:
           integration.request.path.requestid: "method.request.path.requestid"
+          integration.request.header.client-cert-serial: "context.authorizer.client-cert-serial"
         connectionType: VPC_LINK
         connectionId: ${vpc_connection_id}
         httpMethod: POST
@@ -405,13 +412,13 @@ components:
           description: Date in ISO-8601 format. If set, the elector has a postal vote for the election(s) and referendum(s) to be held on the specified date.
           format: date
         postalVoteStartDate:
-            type: string
-            description: Date in ISO-8601 format. If set, the elector has a postal vote for the period defined by the two dates.
-            format: date
+          type: string
+          description: Date in ISO-8601 format. If set, the elector has a postal vote for the period defined by the two dates.
+          format: date
         postalVoteEndDate:
-            type: string
-            description: Date in ISO-8601 format. If set, the elector has a postal vote for the period defined by the two dates.
-            format: date
+          type: string
+          description: Date in ISO-8601 format. If set, the elector has a postal vote for the period defined by the two dates.
+          format: date
         ballotproperty:
           type: string
           description: The property name of the address to which the applicant has requested the ballot paper is sent (if different to their registered address).
@@ -543,3 +550,15 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/RegisterCheckResultRequest'
+  securitySchemes:
+    emsCertificateLambdaAuthorizer:
+      type: 'apiKey'
+      name: 'Authorization'
+      in: 'header'
+      x-amazon-apigateway-authtype: 'custom'
+      x-amazon-apigateway-authorizer:
+        type: 'request'
+        authorizerUri: '${ems_certificate_authorizer_id}'
+        authorizerCredentials: '${ems_certificate_authorizer_role}'
+        authorizerPayloadFormatVersion: '1.0'
+        authorizerResultTtlInSeconds: 0

@@ -15,6 +15,10 @@ import uk.gov.dluhc.external.ier.models.EROCertificateMapping
 import uk.gov.dluhc.registercheckerapi.client.IerApiClient
 import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
 import uk.gov.dluhc.registercheckerapi.client.IerGeneralException
+import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
+import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPendingRegisterCheckDto
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 
 @ExtendWith(MockitoExtension::class)
 internal class RegisterCheckServiceTest {
@@ -22,8 +26,32 @@ internal class RegisterCheckServiceTest {
     @Mock
     private lateinit var ierApiClient: IerApiClient
 
+    @Mock
+    private lateinit var registerCheckRepository: RegisterCheckRepository
+
+    @Mock
+    private lateinit var pendingRegisterCheckMapper: PendingRegisterCheckMapper
+
     @InjectMocks
     private lateinit var registerCheckService: RegisterCheckService
+
+    @Nested
+    inner class SaveRegisterChecks {
+        @Test
+        fun `should save an PendingRegisterCheckDto`() {
+            // Given
+            val pendingRegisterCheckDto = buildPendingRegisterCheckDto()
+            val registerCheck = buildRegisterCheck()
+            given(pendingRegisterCheckMapper.pendingRegisterCheckDtoToRegisterCheckEntity(any())).willReturn(registerCheck)
+
+            // When
+            registerCheckService.save(pendingRegisterCheckDto)
+
+            // Then
+            verify(pendingRegisterCheckMapper).pendingRegisterCheckDtoToRegisterCheckEntity(pendingRegisterCheckDto)
+            verify(registerCheckRepository).save(registerCheck)
+        }
+    }
 
     @Nested
     inner class GetPendingRegisterChecks {

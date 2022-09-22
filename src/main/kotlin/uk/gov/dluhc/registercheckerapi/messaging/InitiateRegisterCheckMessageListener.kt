@@ -4,6 +4,7 @@ import io.awspring.cloud.messaging.listener.annotation.SqsListener
 import mu.KotlinLogging
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.stereotype.Component
+import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckMessage
 import uk.gov.dluhc.registercheckerapi.service.RegisterCheckService
 import javax.validation.Valid
@@ -15,7 +16,8 @@ private val logger = KotlinLogging.logger { }
  */
 @Component
 class InitiateRegisterCheckMessageListener(
-    val registerCheckService: RegisterCheckService
+    private val registerCheckService: RegisterCheckService,
+    private val mapper: PendingRegisterCheckMapper
 ) :
     MessageListener<InitiateRegisterCheckMessage> {
 
@@ -27,7 +29,9 @@ class InitiateRegisterCheckMessageListener(
                     "sourceReference: $sourceReference and " +
                     "sourceCorrelationId: $sourceCorrelationId"
             }
-            registerCheckService.initiateRegisterCheck()
+            val initiateRegisterCheckMessageToPendingRegisterCheckDto =
+                mapper.initiateRegisterCheckMessageToPendingRegisterCheckDto(this)
+            registerCheckService.save(initiateRegisterCheckMessageToPendingRegisterCheckDto)
         }
     }
 }

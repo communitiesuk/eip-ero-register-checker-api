@@ -77,7 +77,7 @@ internal class InitiateRegisterCheckMessageListenerIntegrationTest : Integration
             RegisterCheckAssert.assertThat(actualRegisterCheckJpaEntity.first())
                 .ignoringIdAndAuditFields()
                 .isRecursivelyEqual(expected)
-                .hasDbAuditFieldsAfter(earliestDateCreated)
+                .hasIdAndDbAuditFieldsAfter(earliestDateCreated)
 
             stopWatch.stop()
             logger.info("completed assertions in $stopWatch")

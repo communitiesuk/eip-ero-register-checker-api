@@ -47,10 +47,15 @@ class RegisterCheckAssert(private val actualJpaEntity: RegisterCheck?) :
         return this
     }
 
-    fun hasDbAuditFieldsAfter(earliestInstant: Instant) {
+    fun hasIdAndDbAuditFieldsAfter(earliestInstant: Instant) {
         Assertions.assertThat(actual!!.id!!).isNotNull
         Assertions.assertThat(actual!!.personalDetail.id!!).isNotNull
         Assertions.assertThat(actual!!.personalDetail.address.id!!).isNotNull
+
+        Assertions.assertThat(actual!!)
+            .extracting { it.dateCreated!! }
+            .asInstanceOf(InstanceOfAssertFactories.INSTANT)
+            .isAfter(earliestInstant)
 
         Assertions.assertThat(actual!!)
             .extracting { it.updatedAt!! }

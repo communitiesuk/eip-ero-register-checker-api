@@ -29,9 +29,8 @@ class InitiateRegisterCheckMessageListener(
                     "sourceReference: $sourceReference and " +
                     "sourceCorrelationId: $sourceCorrelationId"
             }
-            val initiateRegisterCheckMessageToPendingRegisterCheckDto =
-                mapper.initiateRegisterCheckMessageToPendingRegisterCheckDto(this)
-            registerCheckService.save(initiateRegisterCheckMessageToPendingRegisterCheckDto)
+            val pendingRegisterCheckDto = mapper.initiateRegisterCheckMessageToPendingRegisterCheckDto(this)
+            registerCheckService.save(pendingRegisterCheckDto)
         }
     }
 }

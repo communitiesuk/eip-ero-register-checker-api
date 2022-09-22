@@ -18,7 +18,6 @@ import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildInitiate
 import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-import javax.persistence.TypedQuery
 import javax.persistence.criteria.CriteriaQuery
 
 private val logger = KotlinLogging.logger {}
@@ -89,11 +88,14 @@ internal class InitiateRegisterCheckMessageListenerIntegrationTest : Integration
         val entityManager = entityManagerFactory.createEntityManager()
         try {
             val cb = entityManager.criteriaBuilder
-            val cr: CriteriaQuery<RegisterCheck> = cb.createQuery(RegisterCheck::class.java)
-            val root = cr.from(RegisterCheck::class.java)
-            cr.select(root).where(cb.equal(root.get<UUID>("sourceCorrelationId"), message.sourceCorrelationId))
-            val query: TypedQuery<RegisterCheck> = entityManager.createQuery(cr)
-            return query.resultList
+            val queryDef: CriteriaQuery<RegisterCheck> = cb.createQuery(RegisterCheck::class.java)
+            val rc = queryDef.from(RegisterCheck::class.java)
+            queryDef.select(
+                rc
+            ).where(
+                cb.equal(rc.get<UUID>("sourceCorrelationId"), message.sourceCorrelationId)
+            )
+            return entityManager.createQuery(queryDef).resultList
         } finally {
             entityManager.close()
         }

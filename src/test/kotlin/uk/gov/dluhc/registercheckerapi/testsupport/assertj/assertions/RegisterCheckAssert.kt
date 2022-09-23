@@ -23,7 +23,7 @@ class RegisterCheckAssert(private val actualJpaEntity: RegisterCheck?) :
             "personalDetail.address.id",
             "correlationId",
         )
-        private val AUDIT_FIELDS = arrayOf(
+        private val DATE_FIELDS = arrayOf(
             "dateCreated",
             "personalDetail.dateCreated",
             "personalDetail.address.dateCreated",
@@ -69,8 +69,8 @@ class RegisterCheckAssert(private val actualJpaEntity: RegisterCheck?) :
         return this
     }
 
-    fun ignoringAuditFields(): RegisterCheckAssert {
-        ignoringFields += AUDIT_FIELDS
+    fun ignoringDateFields(): RegisterCheckAssert {
+        ignoringFields += DATE_FIELDS
         return this
     }
 }

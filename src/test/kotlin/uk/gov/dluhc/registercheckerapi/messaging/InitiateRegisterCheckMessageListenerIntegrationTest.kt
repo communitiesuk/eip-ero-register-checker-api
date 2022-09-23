@@ -75,7 +75,7 @@ internal class InitiateRegisterCheckMessageListenerIntegrationTest : Integration
 
             RegisterCheckAssert.assertThat(actualRegisterCheckJpaEntity.first())
                 .ignoringIdFields()
-                .ignoringAuditFields()
+                .ignoringDateFields()
                 .isRecursivelyEqual(expected)
                 .hasIdAndDbAuditFieldsAfter(earliestDateCreated)
 

@@ -12,15 +12,11 @@ import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.PersonalDetail
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType
-import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckMessage
-import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.RegisterCheckAssert
+import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.entity.RegisterCheckAssert
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildInitiateRegisterCheckMessage
 import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-import javax.persistence.criteria.CriteriaBuilder
-import javax.persistence.criteria.CriteriaQuery
-import javax.persistence.criteria.Root
 
 private val logger = KotlinLogging.logger {}
 
@@ -71,7 +67,7 @@ internal class InitiateRegisterCheckMessageListenerIntegrationTest : Integration
         // Then
         val stopWatch = StopWatch.createStarted()
         await().atMost(5, TimeUnit.SECONDS).untilAsserted {
-            val actualRegisterCheckJpaEntity = getActualRegisterCheckJpaEntity(message)
+            val actualRegisterCheckJpaEntity = getActualRegisterCheckJpaEntity(message.sourceCorrelationId)
             logger.info("found actualRegisterCheckJpaEntitys[${actualRegisterCheckJpaEntity.size}]")
             Assertions.assertThat(actualRegisterCheckJpaEntity).hasSize(1)
 
@@ -85,9 +81,4 @@ internal class InitiateRegisterCheckMessageListenerIntegrationTest : Integration
             logger.info("completed assertions in $stopWatch")
         }
     }
-
-    private fun getActualRegisterCheckJpaEntity(message: InitiateRegisterCheckMessage): List<RegisterCheck> =
-        registerCheckRepository.findAll { root: Root<RegisterCheck>, _: CriteriaQuery<*>, cb: CriteriaBuilder ->
-            cb.equal(root.get<UUID>("sourceCorrelationId"), message.sourceCorrelationId)
-        }
 }

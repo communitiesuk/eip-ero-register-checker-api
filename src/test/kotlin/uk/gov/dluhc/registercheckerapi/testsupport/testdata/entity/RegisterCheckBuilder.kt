@@ -9,6 +9,7 @@ import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.VOTER_CARD
 import java.util.UUID
 
 fun buildRegisterCheck(
+    id: UUID = UUID.randomUUID(),
     correlationId: UUID = UUID.randomUUID(),
     sourceReference: String = UUID.randomUUID().toString(),
     sourceCorrelationId: UUID = UUID.randomUUID(),
@@ -18,6 +19,7 @@ fun buildRegisterCheck(
     personalDetail: PersonalDetail = buildPersonalDetail(),
     createdBy: String = "system"
 ) = RegisterCheck(
+    id = id,
     correlationId = correlationId,
     sourceReference = sourceReference,
     sourceCorrelationId = sourceCorrelationId,

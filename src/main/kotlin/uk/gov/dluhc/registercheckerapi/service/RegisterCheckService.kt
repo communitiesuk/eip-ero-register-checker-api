@@ -10,12 +10,15 @@ import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 @Service
 class RegisterCheckService(
     private val ierApiClient: IerApiClient,
+    private val eroService: EroService,
     private val registerCheckRepository: RegisterCheckRepository,
-    private val pendingRegisterCheckMapper: PendingRegisterCheckMapper,
+    private val pendingRegisterCheckMapper: PendingRegisterCheckMapper
 ) {
 
-    fun getPendingRegisterChecks(certificateSerial: String): String =
-        ierApiClient.getEroIdentifier(certificateSerial).eroId!!
+    fun getPendingRegisterChecks(certificateSerial: String): List<PendingRegisterCheckDto> {
+        val eroIdFromIer = ierApiClient.getEroIdentifier(certificateSerial).eroId!!
+        return findPendingRegisterChecksByGssCodes(eroId = eroIdFromIer)
+    }
 
     @Transactional
     fun save(pendingRegisterCheckDto: PendingRegisterCheckDto) {
@@ -23,4 +26,10 @@ class RegisterCheckService(
             registerCheckRepository.save(this)
         }
     }
+
+    private fun findPendingRegisterChecksByGssCodes(eroId: String): List<PendingRegisterCheckDto> =
+        eroService.lookupGssCodesForEro(eroId).let { gssCodes ->
+            registerCheckRepository.findPendingEntriesByGssCodes(gssCodes = gssCodes)
+                .map { pendingRegisterCheckMapper.registerCheckEntityToPendingRegisterCheckDto(it) }
+        }
 }

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
+import uk.gov.dluhc.registercheckerapi.client.ElectoralRegistrationOfficeManagementApiException
 import uk.gov.dluhc.registercheckerapi.client.IerApiException
 import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
 
@@ -34,5 +35,13 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         request: WebRequest
     ): ResponseEntity<Any?>? {
         return handleExceptionInternal(e, "${e.message}", HttpHeaders(), NOT_FOUND, request)
+    }
+
+    @ExceptionHandler(value = [ElectoralRegistrationOfficeManagementApiException::class])
+    protected fun handleElectoralRegistrationOfficeManagementApiException(
+        e: ElectoralRegistrationOfficeManagementApiException,
+        request: WebRequest
+    ): ResponseEntity<Any?>? {
+        return handleExceptionInternal(e, "Error retrieving GSS codes", HttpHeaders(), INTERNAL_SERVER_ERROR, request)
     }
 }

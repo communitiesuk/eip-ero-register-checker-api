@@ -6,12 +6,14 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.matching
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
 import com.github.tomakehurst.wiremock.matching.StringValuePattern
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 
 private const val IER_ERO_GET_URL = "/ier-ero/.*"
+private const val ERO_MANAGEMENT_ERO_GET_URL = "/ero-management-api/eros/.*"
 
 @Service
 class WiremockService(private val wireMockServer: WireMockServer) {
@@ -26,6 +28,18 @@ class WiremockService(private val wireMockServer: WireMockServer) {
 
     fun verifyGetEroIdentifierCalled(count: Int) {
         wireMockServer.verify(count, getRequestedFor(urlPathMatching(IER_ERO_GET_URL)))
+    }
+
+    fun verifyEroManagementGetEroIdentifierCalledOnce() {
+        verifyEroManagementGetEroIdentifierCalled(1)
+    }
+
+    fun verifyEroManagementGetEroIdentifierCalled(count: Int) {
+        wireMockServer.verify(count, getRequestedFor(urlPathMatching(ERO_MANAGEMENT_ERO_GET_URL)))
+    }
+
+    fun verifyEroManagementGetEroIdentifierNeverCalled() {
+        verifyEroManagementGetEroIdentifierCalled(0)
     }
 
     fun stubIerApiGetEroIdentifier(certificateSerial: String, eroId: String) {
@@ -48,15 +62,54 @@ class WiremockService(private val wireMockServer: WireMockServer) {
         )
     }
 
-    fun stubIerApiGetEroIdentifier(certificateSerial: String) {
-        stubIerApiGetEroIdentifier(certificateSerial, "1234")
-    }
-
     fun stubIerApiGetEroIdentifierThrowsInternalServerError(certificateSerial: String) =
         stubIerApiGetEroIdentifierThrowsException(certificateSerial, 500)
 
     fun stubIerApiGetEroIdentifierThrowsNotFoundError(certificateSerial: String) =
         stubIerApiGetEroIdentifierThrowsException(certificateSerial, 404)
+
+    fun stubEroManagementGetEro(eroId: String = "1234", gssCode1: String = "E12345678", gssCode2: String = "E98765432") {
+        wireMockServer.stubFor(
+            get(urlPathEqualTo("/ero-management-api/eros/$eroId"))
+                .willReturn(
+                    responseDefinition()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(
+                            """
+                                {
+                                    "id": "$eroId",
+                                    "name": "Test ERO",
+                                    "localAuthorities": [
+                                        { "gssCode": "$gssCode1", "name": "Local Authority 1" },                        
+                                        { "gssCode": "$gssCode2", "name": "Local Authority 2" }                        
+                                    ]
+                                }
+                            """.trimIndent()
+                        )
+                )
+        )
+    }
+
+    fun stubEroManagementGetEroThrowsNotFoundError() {
+        wireMockServer.stubFor(
+            get(urlPathMatching(ERO_MANAGEMENT_ERO_GET_URL))
+                .willReturn(
+                    responseDefinition()
+                        .withStatus(404)
+                )
+        )
+    }
+
+    fun stubEroManagementGetEroThrowsInternalServerError() {
+        wireMockServer.stubFor(
+            get(urlPathMatching(ERO_MANAGEMENT_ERO_GET_URL))
+                .willReturn(
+                    responseDefinition()
+                        .withStatus(500)
+                )
+        )
+    }
 
     private fun stubIerApiGetEroIdentifierThrowsException(
         certificateSerial: String,

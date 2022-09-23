@@ -37,24 +37,24 @@ internal class EroServiceTest {
                 "Test ERO",
                 listOf(
                     LocalAuthorityResponse(
-                        gssCode = "E123456789",
+                        gssCode = "E12345678",
                         name = "Local Authority 1"
                     ),
                     LocalAuthorityResponse(
-                        gssCode = "E987654321",
+                        gssCode = "E98765432",
                         name = "Local Authority 2"
                     ),
                 )
             )
         )
 
-        val expectedGssCodes = listOf("E123456789", "E987654321")
+        val expectedGssCodes = listOf("E12345678", "E98765432")
 
         // When
         val gssCodes = eroService.lookupGssCodesForEro(eroId)
 
         // Then
-        assertThat(gssCodes).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(expectedGssCodes)
+        assertThat(gssCodes).containsExactlyInAnyOrderElementsOf(expectedGssCodes)
         verify(electoralRegistrationOfficeManagementApiClient).getElectoralRegistrationOffice(eroId)
     }
 

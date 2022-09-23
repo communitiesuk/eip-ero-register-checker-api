@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.matching
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
 import com.github.tomakehurst.wiremock.matching.StringValuePattern
 import org.springframework.http.MediaType
@@ -37,6 +38,10 @@ class WiremockService(private val wireMockServer: WireMockServer) {
         wireMockServer.verify(count, getRequestedFor(urlPathMatching(ERO_MANAGEMENT_ERO_GET_URL)))
     }
 
+    fun verifyEroManagementGetEroIdentifierNeverCalled() {
+        verifyEroManagementGetEroIdentifierCalled(0)
+    }
+
     fun stubIerApiGetEroIdentifier(certificateSerial: String, eroId: String) {
         wireMockServer.stubFor(
             get(urlEqualTo(buildGetIerEndpointUrl(certificateSerial)))
@@ -63,9 +68,9 @@ class WiremockService(private val wireMockServer: WireMockServer) {
     fun stubIerApiGetEroIdentifierThrowsNotFoundError(certificateSerial: String) =
         stubIerApiGetEroIdentifierThrowsException(certificateSerial, 404)
 
-    fun stubEroManagementGetEro(eroId: String = "1234", gssCode1: String = "E123456789", gssCode2: String = "E987654321") {
+    fun stubEroManagementGetEro(eroId: String = "1234", gssCode1: String = "E12345678", gssCode2: String = "E98765432") {
         wireMockServer.stubFor(
-            get(urlPathMatching("/ero-management-api/eros/.*"))
+            get(urlPathEqualTo("/ero-management-api/eros/$eroId"))
                 .willReturn(
                     responseDefinition()
                         .withStatus(200)

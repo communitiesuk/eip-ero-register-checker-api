@@ -22,7 +22,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
             .expectStatus()
             .isForbidden
         wireMockService.verifyGetEroIdentifierCalled(0)
-        wireMockService.verifyEroManagementGetEroIdentifierCalled(0)
+        wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
     }
 
     @Test
@@ -30,8 +30,8 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
     fun `should return ok with multiple pending register check records given valid header key is present`() {
         // Given
         val eroIdFromIerApi = "camden-city-council"
-        val firstGssCodeFromEroApi = "E1234561"
-        val secondGssCodeFromEroApi = "E567892"
+        val firstGssCodeFromEroApi = "E12345678"
+        val secondGssCodeFromEroApi = "E98764532"
 
         wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
         wireMockService.stubEroManagementGetEro(eroIdFromIerApi, firstGssCodeFromEroApi, secondGssCodeFromEroApi)
@@ -71,7 +71,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
         assertThat(actual).isNotNull
         assertThat(actual).isEqualTo("EROCertificateMapping for certificateSerial=[543219999] not found")
         wireMockService.verifyGetEroIdentifierCalledOnce()
-        wireMockService.verifyEroManagementGetEroIdentifierCalled(0)
+        wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
     }
 
     @Test
@@ -92,7 +92,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
         assertThat(actual).isNotNull
         assertThat(actual).isEqualTo("Error getting eroId for certificate serial")
         wireMockService.verifyGetEroIdentifierCalledOnce()
-        wireMockService.verifyEroManagementGetEroIdentifierCalled(0)
+        wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
     }
 
     @Test

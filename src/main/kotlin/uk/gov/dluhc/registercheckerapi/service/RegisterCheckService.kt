@@ -27,15 +27,9 @@ class RegisterCheckService(
         }
     }
 
-    private fun findPendingRegisterChecksByGssCodes(eroId: String): List<PendingRegisterCheckDto> {
-        val pendingRegisterChecks = mutableListOf<PendingRegisterCheckDto>()
+    private fun findPendingRegisterChecksByGssCodes(eroId: String): List<PendingRegisterCheckDto> =
         eroService.lookupGssCodesForEro(eroId).let { gssCodes ->
             registerCheckRepository.findPendingEntriesByGssCodes(gssCodes = gssCodes)
-                .listIterator()
-                .forEach { foundRegisterCheckEntity ->
-                    pendingRegisterChecks.add(pendingRegisterCheckMapper.registerCheckEntityToPendingRegisterCheckDto(foundRegisterCheckEntity))
-                }
+                .map { pendingRegisterCheckMapper.registerCheckEntityToPendingRegisterCheckDto(it) }
         }
-        return pendingRegisterChecks.toList()
-    }
 }

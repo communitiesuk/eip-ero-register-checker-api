@@ -2,6 +2,7 @@ package uk.gov.dluhc.registercheckerapi.mapper
 
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
+import org.mapstruct.Named
 import org.mapstruct.ValueMapping
 import uk.gov.dluhc.registercheckerapi.database.entity.PersonalDetail
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
@@ -17,22 +18,22 @@ import uk.gov.dluhc.registercheckerapi.models.SourceSystem
  * to/from the corresponding [PendingRegisterCheckDto].
  */
 @Mapper
-interface PendingRegisterCheckMapper {
+abstract class PendingRegisterCheckMapper {
 
     @Mapping(target = "correlationId", expression = "java(java.util.UUID.randomUUID())")
     @Mapping(target = "createdBy", source = "requestedBy")
-    fun initiateRegisterCheckMessageToPendingRegisterCheckDto(initiateRegisterCheckMessage: InitiateRegisterCheckMessage): PendingRegisterCheckDto
+    abstract fun initiateRegisterCheckMessageToPendingRegisterCheckDto(initiateRegisterCheckMessage: InitiateRegisterCheckMessage): PendingRegisterCheckDto
 
     @Mapping(target = "status", constant = "PENDING")
-    fun pendingRegisterCheckDtoToRegisterCheckEntity(pendingRegisterCheckDto: PendingRegisterCheckDto): RegisterCheck
+    abstract fun pendingRegisterCheckDtoToRegisterCheckEntity(pendingRegisterCheckDto: PendingRegisterCheckDto): RegisterCheck
 
     @Mapping(target = "createdAt", source = "dateCreated")
-    fun registerCheckEntityToPendingRegisterCheckDto(registerCheck: RegisterCheck): PendingRegisterCheckDto
+    abstract fun registerCheckEntityToPendingRegisterCheckDto(registerCheck: RegisterCheck): PendingRegisterCheckDto
 
     @Mapping(target = "requestid", source = "correlationId")
     @Mapping(target = "source", source = "sourceType")
     @Mapping(target = "gssCode", source = "gssCode")
-    @Mapping(target = "actingStaffId", constant = "EROP") // TODO - will contain userId when manual checks are allowed in future
+    @Mapping(target = "actingStaffId", source = "createdBy", qualifiedByName = ["createdByToActingStaffId"])
     @Mapping(target = "fn", source = "pendingRegisterCheckDto.personalDetail.firstName")
     @Mapping(target = "mn", source = "pendingRegisterCheckDto.personalDetail.middleNames")
     @Mapping(target = "ln", source = "pendingRegisterCheckDto.personalDetail.surname")
@@ -47,14 +48,22 @@ interface PendingRegisterCheckMapper {
     @Mapping(target = "regarea", source = "pendingRegisterCheckDto.personalDetail.address.area")
     @Mapping(target = "reguprn", source = "pendingRegisterCheckDto.personalDetail.address.uprn")
     @Mapping(target = "createdAt", expression = "java(pendingRegisterCheckDto.getCreatedAt().atOffset(java.time.ZoneOffset.UTC))")
-    fun pendingRegisterCheckDtoToPendingRegisterCheckModel(pendingRegisterCheckDto: PendingRegisterCheckDto): PendingRegisterCheck
+    abstract fun pendingRegisterCheckDtoToPendingRegisterCheckModel(pendingRegisterCheckDto: PendingRegisterCheckDto): PendingRegisterCheck
 
     @Mapping(target = "phoneNumber", source = "phone")
-    fun personalDetailDtoToPersonalDetailEntity(personalDetailDto: PersonalDetailDto): PersonalDetail
+    abstract fun personalDetailDtoToPersonalDetailEntity(personalDetailDto: PersonalDetailDto): PersonalDetail
 
     @Mapping(target = "phone", source = "phoneNumber")
-    fun personalDetailEntityToPersonalDetailDto(personalDetail: PersonalDetail): PersonalDetailDto
+    abstract fun personalDetailEntityToPersonalDetailDto(personalDetail: PersonalDetail): PersonalDetailDto
 
     @ValueMapping(source = "VOTER_CARD", target = "EROP")
-    fun sourceTypeToSourceSystem(sourceType: SourceType): SourceSystem
+    abstract fun sourceTypeToSourceSystem(sourceType: SourceType): SourceSystem
+
+    @Named("createdByToActingStaffId")
+    fun createdByToActingStaffId(createdBy: String): String {
+        return when (createdBy) {
+            "system" -> "EROP"
+            else -> createdBy
+        }
+    }
 }

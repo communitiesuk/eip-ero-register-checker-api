@@ -182,4 +182,41 @@ internal class PendingRegisterCheckMapperTest {
             .usingRecursiveComparison()
             .isEqualTo(expected)
     }
+
+    @Test
+    fun `should map manual register check dto to model`() {
+        // Given
+        val pendingRegisterCheckDto = buildPendingRegisterCheckDto(
+            createdAt = Instant.now(),
+            createdBy = "joe.bloggs@gmail.com"
+        )
+        val expected = PendingRegisterCheck(
+            requestid = pendingRegisterCheckDto.correlationId,
+            source = SourceSystem.EROP,
+            gssCode = pendingRegisterCheckDto.gssCode,
+            actingStaffId = "joe.bloggs@gmail.com",
+            createdAt = pendingRegisterCheckDto.createdAt!!.atOffset(ZoneOffset.UTC),
+            fn = pendingRegisterCheckDto.personalDetail.firstName,
+            mn = pendingRegisterCheckDto.personalDetail.middleNames,
+            ln = pendingRegisterCheckDto.personalDetail.surname,
+            dob = pendingRegisterCheckDto.personalDetail.dateOfBirth,
+            phone = pendingRegisterCheckDto.personalDetail.phone,
+            email = pendingRegisterCheckDto.personalDetail.email,
+            regstreet = pendingRegisterCheckDto.personalDetail.address.street,
+            regpostcode = pendingRegisterCheckDto.personalDetail.address.postcode,
+            regproperty = pendingRegisterCheckDto.personalDetail.address.property,
+            reglocality = pendingRegisterCheckDto.personalDetail.address.locality,
+            regtown = pendingRegisterCheckDto.personalDetail.address.town,
+            regarea = pendingRegisterCheckDto.personalDetail.address.area,
+            reguprn = pendingRegisterCheckDto.personalDetail.address.uprn
+        )
+
+        // When
+        val actual = mapper.pendingRegisterCheckDtoToPendingRegisterCheckModel(pendingRegisterCheckDto)
+
+        // Then
+        assertThat(actual)
+            .usingRecursiveComparison()
+            .isEqualTo(expected)
+    }
 }

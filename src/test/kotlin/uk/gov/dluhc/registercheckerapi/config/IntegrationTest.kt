@@ -11,7 +11,6 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import software.amazon.awssdk.services.sqs.SqsClient
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
 import uk.gov.dluhc.registercheckerapi.testsupport.WiremockService
-import javax.persistence.EntityManagerFactory
 
 /**
  * Base class used to bring up the entire Spring ApplicationContext
@@ -20,9 +19,6 @@ import javax.persistence.EntityManagerFactory
 @ActiveProfiles("test")
 @AutoConfigureWebTestClient(timeout = "PT5M")
 internal abstract class IntegrationTest {
-
-    @Autowired
-    protected lateinit var entityManagerFactory: EntityManagerFactory
 
     @Autowired
     protected lateinit var webTestClient: WebTestClient

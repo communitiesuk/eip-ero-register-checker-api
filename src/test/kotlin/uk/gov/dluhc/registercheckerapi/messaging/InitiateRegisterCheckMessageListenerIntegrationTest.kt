@@ -18,7 +18,9 @@ import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildInitiate
 import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.TimeUnit
+import javax.persistence.criteria.CriteriaBuilder
 import javax.persistence.criteria.CriteriaQuery
+import javax.persistence.criteria.Root
 
 private val logger = KotlinLogging.logger {}
 
@@ -84,20 +86,8 @@ internal class InitiateRegisterCheckMessageListenerIntegrationTest : Integration
         }
     }
 
-    private fun getActualRegisterCheckJpaEntity(message: InitiateRegisterCheckMessage): List<RegisterCheck> {
-        val entityManager = entityManagerFactory.createEntityManager()
-        try {
-            val cb = entityManager.criteriaBuilder
-            val queryDef: CriteriaQuery<RegisterCheck> = cb.createQuery(RegisterCheck::class.java)
-            val rc = queryDef.from(RegisterCheck::class.java)
-            queryDef.select(
-                rc
-            ).where(
-                cb.equal(rc.get<UUID>("sourceCorrelationId"), message.sourceCorrelationId)
-            )
-            return entityManager.createQuery(queryDef).resultList
-        } finally {
-            entityManager.close()
+    private fun getActualRegisterCheckJpaEntity(message: InitiateRegisterCheckMessage): List<RegisterCheck> =
+        registerCheckRepository.findAll { root: Root<RegisterCheck>, _: CriteriaQuery<*>, cb: CriteriaBuilder ->
+            cb.equal(root.get<UUID>("sourceCorrelationId"), message.sourceCorrelationId)
         }
-    }
 }

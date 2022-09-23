@@ -17,7 +17,7 @@ class RegisterCheckService(
 
     fun getPendingRegisterChecks(certificateSerial: String): List<PendingRegisterCheckDto> {
         val eroIdFromIer = ierApiClient.getEroIdentifier(certificateSerial).eroId!!
-        return findPendingRegisterChecksByGssCode(eroId = eroIdFromIer)
+        return findPendingRegisterChecksByGssCodes(eroId = eroIdFromIer)
     }
 
     @Transactional
@@ -27,10 +27,10 @@ class RegisterCheckService(
         }
     }
 
-    private fun findPendingRegisterChecksByGssCode(eroId: String): List<PendingRegisterCheckDto> {
+    private fun findPendingRegisterChecksByGssCodes(eroId: String): List<PendingRegisterCheckDto> {
         val pendingRegisterChecks = mutableListOf<PendingRegisterCheckDto>()
         eroService.lookupGssCodesForEro(eroId).let { gssCodes ->
-            registerCheckRepository.findPendingEntriesByGssCode(gssCodes = gssCodes)
+            registerCheckRepository.findPendingEntriesByGssCodes(gssCodes = gssCodes)
                 .listIterator()
                 .forEach { foundRegisterCheckEntity ->
                     pendingRegisterChecks.add(pendingRegisterCheckMapper.registerCheckEntityToPendingRegisterCheckDto(foundRegisterCheckEntity))

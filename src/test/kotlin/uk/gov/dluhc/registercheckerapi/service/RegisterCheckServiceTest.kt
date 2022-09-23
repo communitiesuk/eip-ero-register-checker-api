@@ -81,7 +81,7 @@ internal class RegisterCheckServiceTest {
 
             given(ierApiClient.getEroIdentifier(any())).willReturn(EROCertificateMapping(eroId = eroIdFromIerApi, certificateSerial = certificateSerial))
             given(eroService.lookupGssCodesForEro(any())).willReturn(listOf(gssCodeFromEroApi))
-            given(registerCheckRepository.findPendingEntriesByGssCode(any(), any())).willReturn(emptyList())
+            given(registerCheckRepository.findPendingEntriesByGssCodes(any(), any())).willReturn(emptyList())
 
             // When
             val actualPendingRegisterChecks = registerCheckService.getPendingRegisterChecks(certificateSerial)
@@ -90,7 +90,7 @@ internal class RegisterCheckServiceTest {
             assertThat(actualPendingRegisterChecks).isEmpty()
             verify(ierApiClient).getEroIdentifier(certificateSerial)
             verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
-            verify(registerCheckRepository).findPendingEntriesByGssCode(listOf(gssCodeFromEroApi), DEFAULT_PAGE_SIZE)
+            verify(registerCheckRepository).findPendingEntriesByGssCodes(listOf(gssCodeFromEroApi), DEFAULT_PAGE_SIZE)
             verifyNoInteractions(pendingRegisterCheckMapper)
         }
 
@@ -100,7 +100,7 @@ internal class RegisterCheckServiceTest {
             val certificateSerial = "123456789"
             val eroIdFromIerApi = getRandomEroId()
             val gssCodeFromEroApi = getRandomGssCode()
-            val correlationId = UUID.randomUUID()
+            val correlationId = UUID.fromString("74f66386-a86e-4dbc-af52-3327834f33dc")
             val expectedRecordCount = 1
 
             val matchedRegisterCheckEntity = buildRegisterCheck(correlationId = correlationId, gssCode = gssCodeFromEroApi, status = PENDING)
@@ -108,7 +108,7 @@ internal class RegisterCheckServiceTest {
 
             given(ierApiClient.getEroIdentifier(any())).willReturn(EROCertificateMapping(eroId = eroIdFromIerApi, certificateSerial = certificateSerial))
             given(eroService.lookupGssCodesForEro(any())).willReturn(listOf(gssCodeFromEroApi))
-            given(registerCheckRepository.findPendingEntriesByGssCode(any(), any())).willReturn(listOf(matchedRegisterCheckEntity))
+            given(registerCheckRepository.findPendingEntriesByGssCodes(any(), any())).willReturn(listOf(matchedRegisterCheckEntity))
             given(pendingRegisterCheckMapper.registerCheckEntityToPendingRegisterCheckDto(any())).willReturn(expectedRegisterCheckDto)
 
             val expectedPendingRegisterChecks = listOf(expectedRegisterCheckDto)
@@ -124,9 +124,9 @@ internal class RegisterCheckServiceTest {
                 .ignoringCollectionOrder()
             verify(ierApiClient).getEroIdentifier(certificateSerial)
             verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
-            verify(registerCheckRepository).findPendingEntriesByGssCode(listOf(gssCodeFromEroApi), DEFAULT_PAGE_SIZE)
+            verify(registerCheckRepository).findPendingEntriesByGssCodes(listOf(gssCodeFromEroApi), DEFAULT_PAGE_SIZE)
             verify(pendingRegisterCheckMapper).registerCheckEntityToPendingRegisterCheckDto(matchedRegisterCheckEntity)
-            verifyNoMoreInteractions(pendingRegisterCheckMapper)
+            verifyNoMoreInteractions(registerCheckRepository, pendingRegisterCheckMapper)
         }
 
         @Test
@@ -153,7 +153,7 @@ internal class RegisterCheckServiceTest {
 
             given(ierApiClient.getEroIdentifier(any())).willReturn(EROCertificateMapping(eroId = eroIdFromIerApi, certificateSerial = certificateSerial))
             given(eroService.lookupGssCodesForEro(any())).willReturn(listOf(firstGssCodeFromEroApi, secondGssCodeFromEroApi, anotherGssCodeFromEroApi))
-            given(registerCheckRepository.findPendingEntriesByGssCode(any(), any())).willReturn(listOf(firstRegisterCheckEntity, secondRegisterCheckEntity, thirdRegisterCheckEntity))
+            given(registerCheckRepository.findPendingEntriesByGssCodes(any(), any())).willReturn(listOf(firstRegisterCheckEntity, secondRegisterCheckEntity, thirdRegisterCheckEntity))
             given(pendingRegisterCheckMapper.registerCheckEntityToPendingRegisterCheckDto(eq(firstRegisterCheckEntity))).willReturn(firstRegisterCheckDto)
             given(pendingRegisterCheckMapper.registerCheckEntityToPendingRegisterCheckDto(eq(secondRegisterCheckEntity))).willReturn(secondRegisterCheckDto)
             given(pendingRegisterCheckMapper.registerCheckEntityToPendingRegisterCheckDto(eq(thirdRegisterCheckEntity))).willReturn(thirdRegisterCheckDto)
@@ -171,11 +171,11 @@ internal class RegisterCheckServiceTest {
                 .ignoringCollectionOrder()
             verify(ierApiClient).getEroIdentifier(certificateSerial)
             verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
-            verify(registerCheckRepository).findPendingEntriesByGssCode(listOf(firstGssCodeFromEroApi, secondGssCodeFromEroApi, anotherGssCodeFromEroApi), DEFAULT_PAGE_SIZE)
+            verify(registerCheckRepository).findPendingEntriesByGssCodes(listOf(firstGssCodeFromEroApi, secondGssCodeFromEroApi, anotherGssCodeFromEroApi), DEFAULT_PAGE_SIZE)
             verify(pendingRegisterCheckMapper).registerCheckEntityToPendingRegisterCheckDto(firstRegisterCheckEntity)
             verify(pendingRegisterCheckMapper).registerCheckEntityToPendingRegisterCheckDto(secondRegisterCheckEntity)
             verify(pendingRegisterCheckMapper).registerCheckEntityToPendingRegisterCheckDto(thirdRegisterCheckEntity)
-            verifyNoMoreInteractions(pendingRegisterCheckMapper)
+            verifyNoMoreInteractions(registerCheckRepository, pendingRegisterCheckMapper)
         }
 
         @Test
@@ -194,6 +194,8 @@ internal class RegisterCheckServiceTest {
 
             // Then
             assertThat(ex).isEqualTo(expected)
+            verify(ierApiClient).getEroIdentifier(certificateSerial)
+            verifyNoInteractions(eroService, registerCheckRepository, pendingRegisterCheckMapper)
         }
 
         @Test
@@ -212,6 +214,8 @@ internal class RegisterCheckServiceTest {
 
             // Then
             assertThat(ex).isEqualTo(expected)
+            verify(ierApiClient).getEroIdentifier(certificateSerial)
+            verifyNoInteractions(eroService, registerCheckRepository, pendingRegisterCheckMapper)
         }
 
         @Test
@@ -232,6 +236,9 @@ internal class RegisterCheckServiceTest {
 
             // Then
             assertThat(ex).isEqualTo(expected)
+            verify(ierApiClient).getEroIdentifier(certificateSerial)
+            verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
+            verifyNoInteractions(registerCheckRepository, pendingRegisterCheckMapper)
         }
 
         @Test
@@ -252,6 +259,8 @@ internal class RegisterCheckServiceTest {
 
             // Then
             assertThat(ex).isEqualTo(expected)
+            verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
+            verifyNoInteractions(registerCheckRepository, pendingRegisterCheckMapper)
         }
     }
 }

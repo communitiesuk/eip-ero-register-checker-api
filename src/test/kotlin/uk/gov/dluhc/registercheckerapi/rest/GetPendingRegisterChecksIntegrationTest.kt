@@ -26,7 +26,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
     }
 
     @Test
-    @Disabled(value = "Disabled until subtask EIP1-1859 is completed") // TODO
+    @Disabled(value = "Disabled until subtask EIP1-1859 is completed") // TODO subtask EIP1-1859 completes this
     fun `should return ok with multiple pending register check records given valid header key is present`() {
         // Given
         val eroIdFromIerApi = "camden-city-council"

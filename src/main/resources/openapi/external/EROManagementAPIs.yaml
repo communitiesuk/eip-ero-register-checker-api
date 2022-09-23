@@ -10,7 +10,84 @@ info:
     email: krister.bone@valtech.com
 servers:
   - url: 'http://localhost:3000'
+#
+# --------------------------------------------------------------------------------
+#
 paths:
+  #
+  # --------------------------------------------------------------------------------
+  # RESTful style endpoints start here
+  # --------------------------------------------------------------------------------
+  #
+
+  #
+  # Electoral Registration Offices
+  # --------------------------------------------------------------------------------
+  /eros:
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - Electoral Registration Offices
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: { }
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+            responseTemplates:
+              application/json: |
+                {}
+    get:
+      summary: List EROs, optionally filtered by gssCode
+      operationId: get-eros
+      tags:
+        - Electoral Registration Offices
+      parameters:
+        - schema:
+            type: string
+          name: gssCode
+          in: query
+          required: false
+      responses:
+        '200':
+          $ref: '#/components/responses/ElectoralRegistrationOffices'
+      description: |-
+        List EROs, optionally filtered by gssCode
+        Publicly available, not sensitive data and needed by DLUHC admins in different user pool.
+      x-amazon-apigateway-integration:
+        type: HTTP_PROXY
+        uri: ${base_uri}/eros
+        responseParameters:
+          method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+          method.response.header.Access-Control-Allow-Methods: '''*'''
+          method.response.header.Access-Control-Allow-Origin: '''*'''
+        connectionType: VPC_LINK
+        connectionId: ${vpc_connection_id}
+        httpMethod: GET
   '/eros/{eroId}':
     parameters:
       - schema:
@@ -23,7 +100,7 @@ paths:
       description: |
         Enable CORS by returning correct headers
       tags:
-        - CORS
+        - Electoral Registration Offices
       responses:
         200:
           description: Default response for CORS method
@@ -57,7 +134,8 @@ paths:
                 {}
     get:
       summary: Return an ERO by its ID
-      tags: []
+      tags:
+        - Electoral Registration Offices
       responses:
         '200':
           $ref: '#/components/responses/ElectoralRegistrationOffice'
@@ -78,6 +156,10 @@ paths:
         connectionType: VPC_LINK
         connectionId: ${vpc_connection_id}
         httpMethod: GET
+
+  #
+  # Users within an Electoral Registration Office
+  # --------------------------------------------------------------------------------
   '/eros/{eroId}/users':
     parameters:
       - schema:
@@ -90,7 +172,7 @@ paths:
       description: |
         Enable CORS by returning correct headers
       tags:
-        - CORS
+        - Electoral Registration Office Users
       responses:
         200:
           description: Default response for CORS method
@@ -124,7 +206,8 @@ paths:
                 {}
     get:
       summary: Return all users within an ERO
-      tags: []
+      tags:
+        - Electoral Registration Office Users
       responses:
         '200':
           $ref: '#/components/responses/Users'
@@ -179,7 +262,7 @@ paths:
       description: |
         Enable CORS by returning correct headers
       tags:
-        - CORS
+        - Electoral Registration Office Users
       responses:
         200:
           description: Default response for CORS method
@@ -214,6 +297,8 @@ paths:
     put:
       summary: Add User to Group(s)
       operationId: add-ero-user-to-groups
+      tags:
+        - Electoral Registration Office Users
       responses:
         '200':
           $ref: '#/components/responses/User'
@@ -249,146 +334,17 @@ paths:
         connectionType: VPC_LINK
         connectionId: ${vpc_connection_id}
         httpMethod: PUT
-  /user/eros:
-    options:
-      summary: CORS support
-      description: |
-        Enable CORS by returning correct headers
-      tags:
-        - CORS
-      responses:
-        200:
-          description: Default response for CORS method
-          headers:
-            Access-Control-Allow-Origin:
-              schema:
-                type: string
-            Access-Control-Allow-Methods:
-              schema:
-                type: string
-            Access-Control-Allow-Headers:
-              schema:
-                type: string
-          content: { }
-      x-amazon-apigateway-integration:
-        type: mock
-        requestTemplates:
-          application/json: |
-            {
-              "statusCode" : 200
-            }
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
-              method.response.header.Access-Control-Allow-Methods: '''*'''
-              method.response.header.Access-Control-Allow-Origin: '''*'''
-            responseTemplates:
-              application/json: |
-                {}
-    get:
-      summary: Returns a list of the EROs the current user is a member of.
-      tags: []
-      responses:
-        '200':
-          $ref: '#/components/responses/ElectoralRegistrationOffices'
-        '401':
-          description: Unauthorised
-      operationId: get-user-eros
-      description: |-
-        Secured by ERO Cognito User Pool
-        Returns a list of the EROs the current user is a member of.
-      security:
-        - eroUserCognitoUserPoolAuthorizer: []
-      x-amazon-apigateway-integration:
-        type: HTTP_PROXY
-        uri: ${base_uri}/user/eros
-        responseParameters:
-          method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
-          method.response.header.Access-Control-Allow-Methods: '''*'''
-          method.response.header.Access-Control-Allow-Origin: '''*'''
-        connectionType: VPC_LINK
-        connectionId: ${vpc_connection_id}
-        httpMethod: GET
-  '/users/{userId}':
-    parameters:
-      - schema:
-          type: string
-        name: userId
-        in: path
-        required: true
-    options:
-      summary: CORS support
-      description: |
-        Enable CORS by returning correct headers
-      tags:
-        - CORS
-      responses:
-        200:
-          description: Default response for CORS method
-          headers:
-            Access-Control-Allow-Origin:
-              schema:
-                type: string
-            Access-Control-Allow-Methods:
-              schema:
-                type: string
-            Access-Control-Allow-Headers:
-              schema:
-                type: string
-          content: { }
-      x-amazon-apigateway-integration:
-        type: mock
-        requestTemplates:
-          application/json: |
-            {
-              "statusCode" : 200
-            }
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
-              method.response.header.Access-Control-Allow-Methods: '''*'''
-              method.response.header.Access-Control-Allow-Origin: '''*'''
-            responseTemplates:
-              application/json: |
-                {}
-    get:
-      summary: Get user by ID (email address)
-      tags: []
-      responses:
-        '200':
-          $ref: '#/components/responses/User'
-        '404':
-          description: ERO district not found
-      operationId: get-ero-user
-      description: |-
-        Secured by ERO Cognito User Pool
-        Gets a user by email address
-        Secured by ero-admin-*
-      security:
-        - eroUserCognitoUserPoolAuthorizer: []
-      x-amazon-apigateway-integration:
-        type: HTTP_PROXY
-        uri: ${base_uri}/users/{userId}
-        requestParameters:
-          integration.request.path.userId: "method.request.path.userId"
-        responseParameters:
-          method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
-          method.response.header.Access-Control-Allow-Methods: '''*'''
-          method.response.header.Access-Control-Allow-Origin: '''*'''
-        connectionType: VPC_LINK
-        connectionId: ${vpc_connection_id}
-        httpMethod: GET
+
+  #
+  # Users
+  # --------------------------------------------------------------------------------
   /users:
     options:
       summary: CORS support
       description: |
         Enable CORS by returning correct headers
       tags:
-        - CORS
+        - Users
       responses:
         200:
           description: Default response for CORS method
@@ -423,6 +379,8 @@ paths:
     post:
       summary: Create user in ERO Cognito User Pool
       operationId: post-user-username
+      tags:
+        - Users
       responses:
         '201':
           $ref: '#/components/responses/User'
@@ -448,13 +406,19 @@ paths:
         connectionType: VPC_LINK
         connectionId: ${vpc_connection_id}
         httpMethod: POST
-  /eros:
+  '/users/{userId}':
+    parameters:
+      - schema:
+          type: string
+        name: userId
+        in: path
+        required: true
     options:
       summary: CORS support
       description: |
         Enable CORS by returning correct headers
       tags:
-        - CORS
+        - Users
       responses:
         200:
           description: Default response for CORS method
@@ -487,23 +451,26 @@ paths:
               application/json: |
                 {}
     get:
-      summary: List EROs, optionally filtered by gssCode
-      operationId: get-eros
-      parameters:
-        - schema:
-            type: string
-          name: gssCode
-          in: query
-          required: false
+      summary: Get user by ID (email address)
+      tags:
+        - Users
       responses:
         '200':
-          $ref: '#/components/responses/ElectoralRegistrationOffices'
+          $ref: '#/components/responses/User'
+        '404':
+          description: ERO district not found
+      operationId: get-ero-user
       description: |-
-        List EROs, optionally filtered by gssCode
-        Publicly available, not sensitive data and needed by DLUHC admins in different user pool.
+        Secured by ERO Cognito User Pool
+        Gets a user by email address
+        Secured by ero-admin-*
+      security:
+        - eroUserCognitoUserPoolAuthorizer: []
       x-amazon-apigateway-integration:
         type: HTTP_PROXY
-        uri: ${base_uri}/eros
+        uri: ${base_uri}/users/{userId}
+        requestParameters:
+          integration.request.path.userId: "method.request.path.userId"
         responseParameters:
           method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
           method.response.header.Access-Control-Allow-Methods: '''*'''
@@ -512,7 +479,80 @@ paths:
         connectionId: ${vpc_connection_id}
         httpMethod: GET
 
+  #
+  # Current user
+  # --------------------------------------------------------------------------------
+  /user/eros:
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - Current User
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: { }
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+            responseTemplates:
+              application/json: |
+                {}
+    get:
+      summary: Returns a list of the EROs the current user is a member of.
+      tags:
+        - Current User
+      responses:
+        '200':
+          $ref: '#/components/responses/ElectoralRegistrationOffices'
+        '401':
+          description: Unauthorised
+      operationId: get-user-eros
+      description: |-
+        Secured by ERO Cognito User Pool
+        Returns a list of the EROs the current user is a member of.
+      security:
+        - eroUserCognitoUserPoolAuthorizer: []
+      x-amazon-apigateway-integration:
+        type: HTTP_PROXY
+        uri: ${base_uri}/user/eros
+        responseParameters:
+          method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+          method.response.header.Access-Control-Allow-Methods: '''*'''
+          method.response.header.Access-Control-Allow-Origin: '''*'''
+        connectionType: VPC_LINK
+        connectionId: ${vpc_connection_id}
+        httpMethod: GET
+
+#
+# --------------------------------------------------------------------------------
+#
 components:
+  #
+  # Schema and Enum Definitions
+  # --------------------------------------------------------------------------------
   schemas:
     UserResponse:
       title: UserResponse
@@ -680,6 +720,9 @@ components:
       description: Filters list of users
       enum:
         - vc-admin
+  #
+  # Response Body Definitions
+  # --------------------------------------------------------------------------------
   responses:
     ElectoralRegistrationOffice:
       description: Response containing a single Electoral Registration Office (ERO)

@@ -7,8 +7,8 @@ import uk.gov.dluhc.registercheckerapi.models.PendingRegisterCheck
 import uk.gov.dluhc.registercheckerapi.models.SourceSystem
 import java.time.ZoneOffset
 
-class PendingRegisterCheckAssert(actual: PendingRegisterCheck?) :
-    AbstractAssert<PendingRegisterCheckAssert, PendingRegisterCheck?>(
+class PendingRegisterCheckAssert(actual: List<PendingRegisterCheck>?) :
+    AbstractAssert<PendingRegisterCheckAssert, List<PendingRegisterCheck>?>(
         actual,
         PendingRegisterCheckAssert::class.java
     ) {
@@ -19,24 +19,34 @@ class PendingRegisterCheckAssert(actual: PendingRegisterCheck?) :
             "createdAt"
         )
 
-        fun assertThat(actual: PendingRegisterCheck?): PendingRegisterCheckAssert {
+        fun assertThat(actual: List<PendingRegisterCheck>?): PendingRegisterCheckAssert {
             return PendingRegisterCheckAssert(actual)
         }
     }
 
-    fun hasCorrectFieldsFromRegisterCheck(expected: RegisterCheck): PendingRegisterCheckAssert {
+    fun hasPendingRegisterChecksInOrder(expected: List<RegisterCheck>): PendingRegisterCheckAssert {
         isNotNull
-        val expectedResponse = buildPendingRegisterCheckFromEntity(expected)
+        val expectedPendingRegisterChecks = expected.map {
+            toPendingRegisterCheckFromEntity(it)
+        }
         Assertions.assertThat(actual)
             .usingRecursiveComparison()
             .ignoringFields(*IGNORED_FIELDS)
-            .ignoringCollectionOrder()
-            .isEqualTo(expectedResponse)
+            .isEqualTo(expectedPendingRegisterChecks)
 
         return this
     }
 
-    private fun buildPendingRegisterCheckFromEntity(registerCheckEntity: RegisterCheck): PendingRegisterCheck {
+    fun hasEmptyPendingRegisterChecks(): PendingRegisterCheckAssert {
+        isNotNull
+        Assertions.assertThat(actual)
+            .isNotNull
+            .isEmpty()
+
+        return this
+    }
+
+    private fun toPendingRegisterCheckFromEntity(registerCheckEntity: RegisterCheck): PendingRegisterCheck {
         return with(registerCheckEntity) {
             PendingRegisterCheck(
                 requestid = this.correlationId,

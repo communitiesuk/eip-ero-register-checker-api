@@ -6,6 +6,7 @@ import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.PENDING
 import uk.gov.dluhc.registercheckerapi.models.PendingRegisterChecksResponse
 import uk.gov.dluhc.registercheckerapi.testsupport.assertj.PendingRegisterCheckAssert
+import uk.gov.dluhc.registercheckerapi.testsupport.getRandomGssCode
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import java.util.UUID
 
@@ -29,10 +30,10 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
     }
 
     @Test
-    fun `should return ok with no pending register check records given valid header key is present`() {
+    fun `should return ok with empty pending register check records given valid header key is present`() {
         // Given
         val eroIdFromIerApi = "camden-city-council"
-        val gssCodeFromEroApi = "E12345678"
+        val gssCodeFromEroApi = getRandomGssCode()
 
         wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
         wireMockService.stubEroManagementGetEro(eroIdFromIerApi, gssCodeFromEroApi)
@@ -48,8 +49,8 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
         // Then
         val actual = response.responseBody.blockFirst()
         assertThat(actual).isNotNull
-        assertThat(actual!!.pageSize).isEqualTo(0)
-        assertThat(actual.registerCheckRequests).isEmpty()
+        assertThat(actual!!.pageSize).isZero
+        PendingRegisterCheckAssert.assertThat(actual.registerCheckRequests).hasEmptyPendingRegisterChecks()
         wireMockService.verifyGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
     }
@@ -91,10 +92,16 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
         val actual = response.responseBody.blockFirst()
         assertThat(actual).isNotNull
         assertThat(actual!!.pageSize).isEqualTo(expectedRecordCount)
-        assertThat(actual.registerCheckRequests).isNotNull
-        PendingRegisterCheckAssert.assertThat(actual.registerCheckRequests[0]).hasCorrectFieldsFromRegisterCheck(pendingRegisterCheckResult1ForGssCode1)
-        PendingRegisterCheckAssert.assertThat(actual.registerCheckRequests[1]).hasCorrectFieldsFromRegisterCheck(pendingRegisterCheckResult2ForGssCode2)
-        PendingRegisterCheckAssert.assertThat(actual.registerCheckRequests[2]).hasCorrectFieldsFromRegisterCheck(pendingRegisterCheckResult3ForGssCode1)
+        PendingRegisterCheckAssert
+            .assertThat(actual.registerCheckRequests)
+            .isNotNull
+            .hasPendingRegisterChecksInOrder(
+                listOf(
+                    pendingRegisterCheckResult1ForGssCode1,
+                    pendingRegisterCheckResult2ForGssCode2,
+                    pendingRegisterCheckResult3ForGssCode1
+                )
+            )
         wireMockService.verifyGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
     }

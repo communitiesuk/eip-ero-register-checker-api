@@ -9,13 +9,8 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import software.amazon.awssdk.services.sqs.SqsClient
-import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
 import uk.gov.dluhc.registercheckerapi.testsupport.WiremockService
-import java.util.UUID
-import javax.persistence.criteria.CriteriaBuilder
-import javax.persistence.criteria.CriteriaQuery
-import javax.persistence.criteria.Root
 
 /**
  * Base class used to bring up the entire Spring ApplicationContext
@@ -56,9 +51,4 @@ internal abstract class IntegrationTest {
     fun clearDatabase() {
         registerCheckRepository.deleteAll()
     }
-
-    protected fun getActualRegisterCheckJpaEntity(sourceCorrelationId: UUID): List<RegisterCheck> =
-        registerCheckRepository.findAll { root: Root<RegisterCheck>, _: CriteriaQuery<*>, cb: CriteriaBuilder ->
-            cb.equal(root.get<UUID>("sourceCorrelationId"), sourceCorrelationId)
-        }
 }

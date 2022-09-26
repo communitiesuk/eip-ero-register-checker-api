@@ -15,7 +15,9 @@ class PendingRegisterCheckAssert(actual: PendingRegisterCheck?) :
 
     companion object {
 
-        private var IGNORED_FIELDS = arrayOf<String>()
+        private val IGNORED_FIELDS = arrayOf(
+            "createdAt"
+        )
 
         fun assertThat(actual: PendingRegisterCheck?): PendingRegisterCheckAssert {
             return PendingRegisterCheckAssert(actual)
@@ -24,7 +26,7 @@ class PendingRegisterCheckAssert(actual: PendingRegisterCheck?) :
 
     fun hasCorrectFieldsFromRegisterCheck(expected: RegisterCheck): PendingRegisterCheckAssert {
         isNotNull
-        val expectedResponse = getResponseFromRegisterCheck(expected)
+        val expectedResponse = buildPendingRegisterCheckFromEntity(expected)
         Assertions.assertThat(actual)
             .usingRecursiveComparison()
             .ignoringFields(*IGNORED_FIELDS)
@@ -34,27 +36,27 @@ class PendingRegisterCheckAssert(actual: PendingRegisterCheck?) :
         return this
     }
 
-    private fun getResponseFromRegisterCheck(registerCheckEntity: RegisterCheck): PendingRegisterCheck {
+    private fun buildPendingRegisterCheckFromEntity(registerCheckEntity: RegisterCheck): PendingRegisterCheck {
         return with(registerCheckEntity) {
             PendingRegisterCheck(
-                requestid = correlationId,
+                requestid = this.correlationId,
                 source = SourceSystem.EROP,
-                gssCode = gssCode,
+                gssCode = this.gssCode,
                 actingStaffId = "EROP",
-                createdAt = dateCreated!!.atOffset(ZoneOffset.UTC),
-                fn = personalDetail.firstName,
-                mn = personalDetail.middleNames,
-                ln = personalDetail.surname,
-                dob = personalDetail.dateOfBirth,
-                phone = personalDetail.phoneNumber,
-                email = personalDetail.email,
-                regstreet = personalDetail.address.street,
-                regpostcode = personalDetail.address.postcode,
-                regproperty = personalDetail.address.property,
-                reglocality = personalDetail.address.locality,
-                regtown = personalDetail.address.town,
-                regarea = personalDetail.address.area,
-                reguprn = personalDetail.address.uprn
+                fn = this.personalDetail.firstName,
+                createdAt = this.dateCreated!!.atOffset(ZoneOffset.UTC),
+                mn = this.personalDetail.middleNames,
+                ln = this.personalDetail.surname,
+                dob = this.personalDetail.dateOfBirth,
+                phone = this.personalDetail.phoneNumber,
+                email = this.personalDetail.email,
+                regstreet = this.personalDetail.address.street,
+                regpostcode = this.personalDetail.address.postcode,
+                regproperty = this.personalDetail.address.property,
+                reglocality = this.personalDetail.address.locality,
+                regtown = this.personalDetail.address.town,
+                regarea = this.personalDetail.address.area,
+                reguprn = this.personalDetail.address.uprn
             )
         }
     }

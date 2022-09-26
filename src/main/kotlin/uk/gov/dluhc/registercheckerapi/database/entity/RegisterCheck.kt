@@ -96,7 +96,7 @@ class RegisterCheck(
 
     @Override
     override fun toString(): String {
-        return this::class.simpleName + "(id = $id , dateCreated = $dateCreated , createdBy = $createdBy)"
+        return this::class.simpleName + "(id = $id , correlationId = $correlationId, dateCreated = $dateCreated , createdBy = $createdBy)"
     }
 }
 

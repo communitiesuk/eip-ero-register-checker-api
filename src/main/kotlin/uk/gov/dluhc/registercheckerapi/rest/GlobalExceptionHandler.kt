@@ -12,7 +12,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import uk.gov.dluhc.registercheckerapi.client.ElectoralRegistrationOfficeManagementApiException
 import uk.gov.dluhc.registercheckerapi.client.IerApiException
 import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
-import uk.gov.dluhc.registercheckerapi.exception.GssCodeUnmatchedException
+import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
 
 @ControllerAdvice
 class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
@@ -47,9 +47,9 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         return handleExceptionInternal(e, "Error retrieving GSS codes", HttpHeaders(), INTERNAL_SERVER_ERROR, request)
     }
 
-    @ExceptionHandler(value = [GssCodeUnmatchedException::class])
-    protected fun handleGssCodeUnmatchedExceptionThrowsForbidden(
-        e: GssCodeUnmatchedException,
+    @ExceptionHandler(value = [GssCodeMismatchException::class])
+    protected fun handleGssCodeMismatchExceptionThrowsForbidden(
+        e: GssCodeMismatchException,
         request: WebRequest
     ): ResponseEntity<Any?>? {
         return handleExceptionInternal(e, e.message, HttpHeaders(), FORBIDDEN, request)

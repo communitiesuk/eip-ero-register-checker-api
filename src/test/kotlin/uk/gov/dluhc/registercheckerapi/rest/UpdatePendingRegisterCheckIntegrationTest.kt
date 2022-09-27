@@ -146,6 +146,6 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
     }
 
-    private fun buildUri(requestid: String = UUID.randomUUID().toString()) =
-        "/registerchecks/$requestid"
+    private fun buildUri(requestId: String = UUID.randomUUID().toString()) =
+        "/registerchecks/$requestId"
 }

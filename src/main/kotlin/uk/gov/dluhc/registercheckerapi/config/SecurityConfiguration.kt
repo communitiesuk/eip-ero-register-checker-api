@@ -29,6 +29,7 @@ class SecurityConfiguration(
                 .httpBasic { it.disable() }
                 .authorizeRequests {
                     it.antMatchers(OPTIONS).permitAll()
+                    it.antMatchers("/actuator/**").permitAll()
                     it.anyRequest().authenticated()
                 }
                 .addFilter(RegisterCheckerHeaderAuthenticationFilter(requestHeaderName))

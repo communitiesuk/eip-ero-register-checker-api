@@ -55,6 +55,7 @@ dependencies {
     kapt("org.mapstruct:mapstruct-processor:1.5.2.Final")
 
     // api
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springdoc:springdoc-openapi-ui:1.6.11")
     implementation("org.springframework.boot:spring-boot-starter-validation")

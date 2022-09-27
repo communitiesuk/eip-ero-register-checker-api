@@ -40,6 +40,7 @@ internal abstract class IntegrationTest {
 
     companion object {
         val mysqlContainerConfiguration: MySQLContainerConfiguration = MySQLContainerConfiguration.getInstance()
+        const val REQUEST_HEADER_NAME = "client-cert-serial"
     }
 
     @BeforeEach

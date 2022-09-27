@@ -25,6 +25,8 @@ class SecurityConfiguration(
                 .sessionManagement {
                     it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 }
+                .cors { }
+                .csrf().disable()
                 .formLogin { it.disable() }
                 .httpBasic { it.disable() }
                 .authorizeRequests {

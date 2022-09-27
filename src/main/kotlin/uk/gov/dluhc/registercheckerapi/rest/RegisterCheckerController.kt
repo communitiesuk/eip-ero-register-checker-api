@@ -4,6 +4,7 @@ import mu.KotlinLogging
 import org.springframework.http.HttpStatus.CREATED
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -19,6 +20,7 @@ import javax.validation.Valid
 private val logger = KotlinLogging.logger {}
 
 @RestController
+@CrossOrigin
 class RegisterCheckerController(
     private val registerCheckService: RegisterCheckService,
     private val pendingRegisterCheckMapper: PendingRegisterCheckMapper
@@ -37,7 +39,7 @@ class RegisterCheckerController(
             }
     }
 
-    @PostMapping("/registerchecks/{requestid}")
+    @PostMapping("/registerchecks/{requestId}")
     @PreAuthorize("isAuthenticated()")
     @ResponseStatus(CREATED)
     fun updatePendingRegisterCheck(

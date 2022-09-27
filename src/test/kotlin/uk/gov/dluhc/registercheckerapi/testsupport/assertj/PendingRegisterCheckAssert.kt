@@ -49,24 +49,24 @@ class PendingRegisterCheckAssert(actual: List<PendingRegisterCheck>?) :
     private fun toPendingRegisterCheckFromEntity(registerCheckEntity: RegisterCheck): PendingRegisterCheck {
         return with(registerCheckEntity) {
             PendingRegisterCheck(
-                requestid = this.correlationId,
+                requestid = correlationId,
                 source = SourceSystem.EROP,
-                gssCode = this.gssCode,
+                gssCode = gssCode,
                 actingStaffId = "EROP",
-                fn = this.personalDetail.firstName,
-                createdAt = this.dateCreated!!.atOffset(ZoneOffset.UTC),
-                mn = this.personalDetail.middleNames,
-                ln = this.personalDetail.surname,
-                dob = this.personalDetail.dateOfBirth,
-                phone = this.personalDetail.phoneNumber,
-                email = this.personalDetail.email,
-                regstreet = this.personalDetail.address.street,
-                regpostcode = this.personalDetail.address.postcode,
-                regproperty = this.personalDetail.address.property,
-                reglocality = this.personalDetail.address.locality,
-                regtown = this.personalDetail.address.town,
-                regarea = this.personalDetail.address.area,
-                reguprn = this.personalDetail.address.uprn
+                fn = personalDetail.firstName,
+                createdAt = dateCreated!!.atOffset(ZoneOffset.UTC),
+                mn = personalDetail.middleNames,
+                ln = personalDetail.surname,
+                dob = personalDetail.dateOfBirth,
+                phone = personalDetail.phoneNumber,
+                email = personalDetail.email,
+                regstreet = personalDetail.address.street,
+                regpostcode = personalDetail.address.postcode,
+                regproperty = personalDetail.address.property,
+                reglocality = personalDetail.address.locality,
+                regtown = personalDetail.address.town,
+                regarea = personalDetail.address.area,
+                reguprn = personalDetail.address.uprn
             )
         }
     }

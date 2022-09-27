@@ -85,6 +85,7 @@ internal class InitiateRegisterCheckMessageListenerIntegrationTest : Integration
             logger.info("completed assertions in $stopWatch")
         }
     }
+
     private fun getActualRegisterCheckJpaEntity(message: InitiateRegisterCheckMessage): List<RegisterCheck> =
         registerCheckRepository.findAll { root: Root<RegisterCheck>, _: CriteriaQuery<*>, cb: CriteriaBuilder ->
             cb.equal(root.get<UUID>("sourceCorrelationId"), message.sourceCorrelationId)

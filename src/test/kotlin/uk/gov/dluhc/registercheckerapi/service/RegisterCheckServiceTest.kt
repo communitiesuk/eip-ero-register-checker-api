@@ -87,6 +87,7 @@ internal class RegisterCheckServiceTest {
             val actualPendingRegisterChecks = registerCheckService.getPendingRegisterChecks(certificateSerial)
 
             // Then
+            assertThat(actualPendingRegisterChecks).isNotNull
             assertThat(actualPendingRegisterChecks).isEmpty()
             verify(ierApiClient).getEroIdentifier(certificateSerial)
             verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)

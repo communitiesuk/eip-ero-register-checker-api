@@ -3,7 +3,7 @@ security:
   - bearerAuth: []
 info:
   title: EROManagementAPIs
-  version: '1.0'
+  version: '1.1.0'
   description: API for viewing and managing ERO Users and ERO Details.
   contact:
     name: Krister Bone
@@ -245,6 +245,90 @@ paths:
         connectionType: VPC_LINK
         connectionId: ${vpc_connection_id}
         httpMethod: GET
+  '/eros/{eroId}/users/{userId}':
+    parameters:
+      - schema:
+          type: string
+        name: eroId
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: userId
+        in: path
+        required: true
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - Electoral Registration Office Users
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: { }
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+            responseTemplates:
+              application/json: |
+                {}
+    get:
+      summary: Return the specified user including their roles within the ERO
+      tags:
+        - Electoral Registration Office Users
+      responses:
+        '200':
+          $ref: '#/components/responses/Users'
+        '403':
+          description: Forbidden
+        '404':
+          description: The specified User was not found
+      operationId: get-ero-user
+      description: |-
+        Secured by ERO Cognito User Pool 
+        - users need to be in ero-admin-{eroId} group to call the endpoint.
+        
+        Returns the User from Cognito. If the user does not exist a 404 is returned. The User is returned complete
+        with their group membership for the specified ERO. If the User exists but has no group memberships in the 
+        specified ERO the User is returned with an empty `groups` array.
+      security:
+        - eroUserCognitoUserPoolAuthorizer: []
+      x-amazon-apigateway-integration:
+        type: HTTP_PROXY
+        uri: ${base_uri}/eros/{eroId}/users/{userId}
+        requestParameters:
+          integration.request.path.eroId: "method.request.path.eroId"
+          integration.request.path.userId: "method.request.path.userId"
+        responseParameters:
+          method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+          method.response.header.Access-Control-Allow-Methods: '''*'''
+          method.response.header.Access-Control-Allow-Origin: '''*'''
+        connectionType: VPC_LINK
+        connectionId: ${vpc_connection_id}
+        httpMethod: GET
+
   '/eros/{eroId}/users/{userId}/groups':
     parameters:
       - schema:
@@ -378,7 +462,7 @@ paths:
                 {}
     post:
       summary: Create user in ERO Cognito User Pool
-      operationId: post-user-username
+      operationId: create-user
       tags:
         - Users
       responses:
@@ -414,6 +498,7 @@ paths:
         in: path
         required: true
     options:
+      deprecated: true
       summary: CORS support
       description: |
         Enable CORS by returning correct headers
@@ -451,6 +536,7 @@ paths:
               application/json: |
                 {}
     get:
+      deprecated: true
       summary: Get user by ID (email address)
       tags:
         - Users
@@ -458,12 +544,14 @@ paths:
         '200':
           $ref: '#/components/responses/User'
         '404':
-          description: ERO district not found
-      operationId: get-ero-user
+          description: User not found
+      operationId: get-user
       description: |-
         Secured by ERO Cognito User Pool
         Gets a user by email address
         Secured by ero-admin-*
+        
+        This API has been deprecated. Please use `GET /eros/{eroId}/users/{userId}` instead.
       security:
         - eroUserCognitoUserPoolAuthorizer: []
       x-amazon-apigateway-integration:
@@ -564,7 +652,7 @@ components:
         email: alice.smith@gmail.com
         phoneNumber: '079701234566'
         groups: [
-            oe-viewer
+          oe-viewer
         ]
       properties:
         email:
@@ -591,7 +679,7 @@ components:
             email: alice.smith@gmail.com,
             phoneNumber: '+44079701234566',
             groups: [
-                oe-viewer
+              oe-viewer
             ]
           },
           {
@@ -600,7 +688,7 @@ components:
             email: john.smith@gmail.com,
             phoneNumber: '+44079701234566',
             groups: [
-                oe-viewer, vc-admin
+              oe-viewer, vc-admin
             ]
           }
         ]

@@ -1,4 +1,4 @@
-package uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions
+package uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.entity
 
 import mu.KotlinLogging
 import org.assertj.core.api.AbstractAssert

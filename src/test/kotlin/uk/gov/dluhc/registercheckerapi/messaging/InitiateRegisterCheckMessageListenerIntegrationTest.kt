@@ -13,7 +13,7 @@ import uk.gov.dluhc.registercheckerapi.database.entity.PersonalDetail
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType
 import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckMessage
-import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.RegisterCheckAssert
+import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.entity.RegisterCheckAssert
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildInitiateRegisterCheckMessage
 import java.time.Instant
 import java.util.UUID

@@ -1,17 +1,26 @@
 package uk.gov.dluhc.registercheckerapi.rest
 
 import mu.KotlinLogging
+import org.springframework.http.HttpStatus.CREATED
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.models.PendingRegisterChecksResponse
+import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 import uk.gov.dluhc.registercheckerapi.service.RegisterCheckService
+import javax.validation.Valid
 
 private val logger = KotlinLogging.logger {}
 
 @RestController
+@CrossOrigin
 class RegisterCheckerController(
     private val registerCheckService: RegisterCheckService,
     private val pendingRegisterCheckMapper: PendingRegisterCheckMapper
@@ -28,5 +37,17 @@ class RegisterCheckerController(
                     registerCheckRequests = pendingRegisterChecks.map(pendingRegisterCheckMapper::pendingRegisterCheckDtoToPendingRegisterCheckModel)
                 )
             }
+    }
+
+    @PostMapping("/registerchecks/{requestId}")
+    @PreAuthorize("isAuthenticated()")
+    @ResponseStatus(CREATED)
+    fun updatePendingRegisterCheck(
+        authentication: Authentication,
+        @PathVariable requestId: String,
+        @Valid @RequestBody request: RegisterCheckResultRequest
+    ) {
+        logger.info("Updating pending register checks for EMS ERO certificateSerial=[${authentication.credentials}] with requestId=[$requestId]")
+        registerCheckService.updatePendingRegisterCheck(authentication.credentials.toString(), request.gssCode)
     }
 }

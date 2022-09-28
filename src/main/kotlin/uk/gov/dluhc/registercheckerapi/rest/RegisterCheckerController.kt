@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
@@ -26,11 +27,19 @@ class RegisterCheckerController(
     private val pendingRegisterCheckMapper: PendingRegisterCheckMapper
 ) {
 
+    companion object {
+        private const val DEFAULT_PAGE_SIZE = 100
+        private const val QUERY_PARAM_PAGE_SIZE = "pageSize"
+    }
+
     @GetMapping("/registerchecks")
     @PreAuthorize("isAuthenticated()")
-    fun getPendingRegisterChecks(authentication: Authentication): PendingRegisterChecksResponse {
+    fun getPendingRegisterChecks(
+        authentication: Authentication,
+        @RequestParam(name = QUERY_PARAM_PAGE_SIZE, required = false) pageSize: Int?
+    ): PendingRegisterChecksResponse {
         logger.info("Getting pending register checks for EMS ERO certificateSerial=[${authentication.credentials}]")
-        return registerCheckService.getPendingRegisterChecks(authentication.credentials.toString())
+        return registerCheckService.getPendingRegisterChecks(authentication.credentials.toString(), pageSize ?: DEFAULT_PAGE_SIZE)
             .let { pendingRegisterChecks ->
                 PendingRegisterChecksResponse(
                     pageSize = pendingRegisterChecks.size,

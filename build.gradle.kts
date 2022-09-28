@@ -48,7 +48,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-    implementation("io.github.microutils:kotlin-logging-jvm:2.1.23")
+    implementation("io.github.microutils:kotlin-logging-jvm:3.0.0")
     implementation("org.apache.commons:commons-lang3:3.12.0")
     implementation("org.apache.httpcomponents:httpclient:4.5.13")
     implementation("org.mapstruct:mapstruct:1.5.2.Final")
@@ -90,7 +90,7 @@ dependencies {
     testImplementation("software.amazon.awssdk:sqs") // required to send messages to a queue, which we only need to do in test at the moment
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
-    testImplementation("com.github.tomakehurst:wiremock-jre8:2.33.2")
+    testImplementation("com.github.tomakehurst:wiremock-jre8:2.34.0")
     testImplementation("net.datafaker:datafaker:1.5.0")
 
     testImplementation("org.testcontainers:junit-jupiter:1.17.3")

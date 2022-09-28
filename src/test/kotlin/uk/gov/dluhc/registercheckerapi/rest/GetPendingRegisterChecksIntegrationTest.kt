@@ -2,6 +2,7 @@ package uk.gov.dluhc.registercheckerapi.rest
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.springframework.web.util.UriComponentsBuilder
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.PENDING
 import uk.gov.dluhc.registercheckerapi.models.PendingRegisterChecksResponse
@@ -14,6 +15,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
 
     companion object {
         private const val GET_PENDING_REGISTER_CHECKS_ENDPOINT = "/registerchecks"
+        private const val QUERY_PARAM_PAGE_SIZE = "pageSize"
         private const val REQUEST_HEADER_NAME = "client-cert-serial"
         private const val CERT_SERIAL_NUMBER_VALUE = "543219999"
     }
@@ -21,7 +23,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
     @Test
     fun `should return forbidden given valid header key is not present`() {
         webTestClient.get()
-            .uri(GET_PENDING_REGISTER_CHECKS_ENDPOINT)
+            .uri(buildUriStringWithQueryParam(10))
             .exchange()
             .expectStatus()
             .isForbidden
@@ -30,7 +32,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
     }
 
     @Test
-    fun `should return ok with empty pending register check records given valid header key is present`() {
+    fun `should return ok with empty pending register check records given valid header key is present and optional pageSize not present`() {
         // Given
         val eroIdFromIerApi = "camden-city-council"
         val gssCodeFromEroApi = getRandomGssCode()
@@ -40,7 +42,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
 
         // When
         val response = webTestClient.get()
-            .uri(GET_PENDING_REGISTER_CHECKS_ENDPOINT)
+            .uri(buildUriStringWithoutQueryParam())
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().isOk
@@ -82,7 +84,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
 
         // When
         val response = webTestClient.get()
-            .uri(GET_PENDING_REGISTER_CHECKS_ENDPOINT)
+            .uri(buildUriStringWithQueryParam(10))
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().isOk
@@ -113,7 +115,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
 
         // When
         val response = webTestClient.get()
-            .uri(GET_PENDING_REGISTER_CHECKS_ENDPOINT)
+            .uri(buildUriStringWithQueryParam(10))
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().is4xxClientError
@@ -134,7 +136,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
 
         // When
         val response = webTestClient.get()
-            .uri(GET_PENDING_REGISTER_CHECKS_ENDPOINT)
+            .uri(buildUriStringWithQueryParam(10))
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().is5xxServerError
@@ -156,7 +158,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
 
         // When
         val response = webTestClient.get()
-            .uri(GET_PENDING_REGISTER_CHECKS_ENDPOINT)
+            .uri(buildUriStringWithQueryParam(10))
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().is5xxServerError
@@ -169,4 +171,15 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
         wireMockService.verifyGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
     }
+
+    private fun buildUriStringWithQueryParam(pageSize: Int) =
+        UriComponentsBuilder
+            .fromUriString(GET_PENDING_REGISTER_CHECKS_ENDPOINT)
+            .queryParam(QUERY_PARAM_PAGE_SIZE, pageSize)
+            .build().toUriString()
+
+    private fun buildUriStringWithoutQueryParam() =
+        UriComponentsBuilder
+            .fromUriString(GET_PENDING_REGISTER_CHECKS_ENDPOINT)
+            .build().toUriString()
 }

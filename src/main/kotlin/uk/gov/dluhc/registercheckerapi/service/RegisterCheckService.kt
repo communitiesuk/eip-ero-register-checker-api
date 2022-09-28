@@ -19,9 +19,9 @@ class RegisterCheckService(
     private val pendingRegisterCheckMapper: PendingRegisterCheckMapper
 ) {
 
-    fun getPendingRegisterChecks(certificateSerial: String): List<PendingRegisterCheckDto> {
+    fun getPendingRegisterChecks(certificateSerial: String, pageSize: Int): List<PendingRegisterCheckDto> {
         val eroIdFromIer = ierApiClient.getEroIdentifier(certificateSerial).eroId!!
-        return findPendingRegisterChecksByGssCodes(eroIdFromIer)
+        return findPendingRegisterChecksByGssCodes(eroIdFromIer, pageSize)
     }
 
     @Transactional
@@ -36,9 +36,9 @@ class RegisterCheckService(
         // TODO update status and other logic in subsequent subtasks
     }
 
-    private fun findPendingRegisterChecksByGssCodes(eroId: String): List<PendingRegisterCheckDto> =
+    private fun findPendingRegisterChecksByGssCodes(eroId: String, pageSize: Int): List<PendingRegisterCheckDto> =
         eroService.lookupGssCodesForEro(eroId).let {
-            registerCheckRepository.findPendingEntriesByGssCodes(it)
+            registerCheckRepository.findPendingEntriesByGssCodes(it, pageSize)
                 .map(pendingRegisterCheckMapper::registerCheckEntityToPendingRegisterCheckDto)
         }
 

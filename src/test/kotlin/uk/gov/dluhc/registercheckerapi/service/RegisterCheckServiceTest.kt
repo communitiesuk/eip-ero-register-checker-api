@@ -84,7 +84,7 @@ internal class RegisterCheckServiceTest {
             given(registerCheckRepository.findPendingEntriesByGssCodes(any(), any())).willReturn(emptyList())
 
             // When
-            val actualPendingRegisterChecks = registerCheckService.getPendingRegisterChecks(certificateSerial)
+            val actualPendingRegisterChecks = registerCheckService.getPendingRegisterChecks(certificateSerial, DEFAULT_PAGE_SIZE)
 
             // Then
             assertThat(actualPendingRegisterChecks).isNotNull
@@ -115,7 +115,7 @@ internal class RegisterCheckServiceTest {
             val expectedPendingRegisterChecks = listOf(expectedRegisterCheckDto)
 
             // When
-            val actualPendingRegisterChecks = registerCheckService.getPendingRegisterChecks(certificateSerial)
+            val actualPendingRegisterChecks = registerCheckService.getPendingRegisterChecks(certificateSerial, DEFAULT_PAGE_SIZE)
 
             // Then
             assertThat(actualPendingRegisterChecks).hasSize(expectedRecordCount)
@@ -162,7 +162,7 @@ internal class RegisterCheckServiceTest {
             val expectedPendingRegisterChecks = listOf(firstRegisterCheckDto, secondRegisterCheckDto, thirdRegisterCheckDto)
 
             // When
-            val actualPendingRegisterChecks = registerCheckService.getPendingRegisterChecks(certificateSerial)
+            val actualPendingRegisterChecks = registerCheckService.getPendingRegisterChecks(certificateSerial, DEFAULT_PAGE_SIZE)
 
             // Then
             assertThat(actualPendingRegisterChecks).hasSize(expectedRecordCount)
@@ -189,7 +189,7 @@ internal class RegisterCheckServiceTest {
 
             // When
             val ex = catchThrowableOfType(
-                { registerCheckService.getPendingRegisterChecks(certificateSerial) },
+                { registerCheckService.getPendingRegisterChecks(certificateSerial, DEFAULT_PAGE_SIZE) },
                 IerEroNotFoundException::class.java
             )
 
@@ -209,7 +209,7 @@ internal class RegisterCheckServiceTest {
 
             // When
             val ex = catchThrowableOfType(
-                { registerCheckService.getPendingRegisterChecks(certificateSerial) },
+                { registerCheckService.getPendingRegisterChecks(certificateSerial, DEFAULT_PAGE_SIZE) },
                 IerGeneralException::class.java
             )
 
@@ -231,7 +231,7 @@ internal class RegisterCheckServiceTest {
 
             // When
             val ex = catchThrowableOfType(
-                { registerCheckService.getPendingRegisterChecks(certificateSerial) },
+                { registerCheckService.getPendingRegisterChecks(certificateSerial, DEFAULT_PAGE_SIZE) },
                 ElectoralRegistrationOfficeNotFoundException::class.java
             )
 
@@ -254,7 +254,7 @@ internal class RegisterCheckServiceTest {
 
             // When
             val ex = catchThrowableOfType(
-                { registerCheckService.getPendingRegisterChecks(certificateSerial) },
+                { registerCheckService.getPendingRegisterChecks(certificateSerial, DEFAULT_PAGE_SIZE) },
                 ElectoralRegistrationOfficeGeneralException::class.java
             )
 

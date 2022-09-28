@@ -19,8 +19,6 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         private const val CERT_SERIAL_NUMBER_VALUE = "543212222"
         @JvmStatic
         fun civicaSampleRequests(): List<Arguments> = listOf(
-            // changed `requestId` to `requestid`
-            // added `non nullable` createdAt
             Arguments.of(
                 "Multiple Match.json",
                 """
@@ -83,14 +81,21 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     @MethodSource("civicaSampleRequests")
     // TODO remove this test once integration with EMS vendor is validated and working
     fun `should process civica requests`(filename: String, requestBody: String) {
-        webTestClient.post()
-            .uri("/registerchecks/${UUID.randomUUID()}")
+        val response = webTestClient.post()
+            .uri(buildUri())
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .contentType(APPLICATION_JSON)
             .bodyValue(requestBody)
             .exchange()
             .expectStatus()
             .isBadRequest
+            .returnResult(String::class.java)
+
+        // Then
+        val actual = response.responseBody.blockFirst()
+        assertThat(actual).isNull()
+        wireMockService.verifyGetEroIdentifierCalled(0)
+        wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
     }
 
     @Test

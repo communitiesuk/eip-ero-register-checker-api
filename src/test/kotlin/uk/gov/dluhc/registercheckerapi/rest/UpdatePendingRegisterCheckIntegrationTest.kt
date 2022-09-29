@@ -1,11 +1,12 @@
 package uk.gov.dluhc.registercheckerapi.rest
 
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType.APPLICATION_JSON
 import reactor.core.publisher.Mono
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
+import uk.gov.dluhc.registercheckerapi.models.ErrorResponse
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
+import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.models.ErrorResponseAssert.Companion.assertThat
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckResultRequest
 import java.util.UUID
 
@@ -50,12 +51,14 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             )
             .exchange()
             .expectStatus().is4xxClientError
-            .returnResult(String::class.java)
+            .returnResult(ErrorResponse::class.java)
 
         // Then
         val actual = response.responseBody.blockFirst()
-        assertThat(actual).isNotNull
-        assertThat(actual).isEqualTo("EROCertificateMapping for certificateSerial=[543212222] not found")
+        assertThat(actual)
+            .hasStatus(404)
+            .hasError("Not Found")
+            .hasMessage("EROCertificateMapping for certificateSerial=[543212222] not found")
         wireMockService.verifyGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
     }
@@ -84,12 +87,14 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .exchange()
             .expectStatus()
             .isForbidden
-            .returnResult(String::class.java)
+            .returnResult(ErrorResponse::class.java)
 
         // Then
         val actual = response.responseBody.blockFirst()
-        assertThat(actual).isNotNull
-        assertThat(actual).isEqualTo("Request gssCode: [E10101010] does not match with gssCode for certificateSerial: [543212222]")
+        assertThat(actual)
+            .hasStatus(403)
+            .hasError("Forbidden")
+            .hasMessage("Request gssCode: [E10101010] does not match with gssCode for certificateSerial: [543212222]")
         wireMockService.verifyGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
     }
@@ -110,12 +115,14 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             )
             .exchange()
             .expectStatus().is5xxServerError
-            .returnResult(String::class.java)
+            .returnResult(ErrorResponse::class.java)
 
         // Then
         val actual = response.responseBody.blockFirst()
-        assertThat(actual).isNotNull
-        assertThat(actual).isEqualTo("Error getting eroId for certificate serial")
+        assertThat(actual)
+            .hasStatus(500)
+            .hasError("Internal Server Error")
+            .hasMessage("Error getting eroId for certificate serial")
         wireMockService.verifyGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
     }
@@ -137,14 +144,115 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             )
             .exchange()
             .expectStatus().is5xxServerError
-            .returnResult(String::class.java)
+            .returnResult(ErrorResponse::class.java)
 
         // Then
         val actual = response.responseBody.blockFirst()
-        assertThat(actual).isNotNull
-        assertThat(actual).isEqualTo("Error retrieving GSS codes")
+        assertThat(actual)
+            .hasStatus(500)
+            .hasError("Internal Server Error")
+            .hasMessage("Error retrieving GSS codes")
         wireMockService.verifyGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
+    }
+
+    @Test
+    fun `should return bad request given request with invalid field names that cannot deserialize into a RegisterCheckResultRequest`() {
+        // Given
+        val requestBody = """
+            {
+              "requestid": "5e881061-57fd-4dc1-935f-8401ebe5758f",
+              "gssCode": "T12345678",
+              "createdAt": null,
+              "registerCheckMatchCount": 1,
+              "registerCheckMatches": [
+                {
+                  "emsElectorId": "70869",
+                  "fn": "HAYWOOD",
+                  "ln": "BECKETT",
+                  "dob": "1980-07-31",
+                  "regstreet": "14 Churcher Close",
+                  "regtown": "Gosport",
+                  "regarea": "Hampshire",
+                  "regpostcode": "PO12 2SL",
+                  "reguprn": "37026036",
+                  "phone": "0777 1924066",
+                  "email": "1924066@test.com",
+                  "registeredStartDate": "2022-07-01",
+                  "attestationCount": 0,
+                  "franchiseCode": "G"
+                }
+              ]
+            }            
+        """.trimIndent() // request is invalid and cannot be deserialized (kotlin constructor) because createdAt is null
+
+        // When
+        val response = webTestClient.post()
+            .uri(buildUri())
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
+            .contentType(APPLICATION_JSON)
+            .bodyValue(requestBody)
+            .exchange()
+            .expectStatus().isBadRequest
+            .returnResult(ErrorResponse::class.java)
+
+        // Then
+        val actual = response.responseBody.blockFirst()
+        assertThat(actual)
+            .hasStatus(400)
+            .hasError("Bad Request")
+            .hasMessageContaining("Instantiation of [simple type, class uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest]")
+            .hasMessageContaining("failed for JSON property createdAt due to missing (therefore NULL) value")
+    }
+
+    @Test
+    fun `should return bad request given request with invalid field values that fail constraint validation`() {
+        // Given
+        val requestBody = """
+            {
+              "requestid": "5e881061-57fd-4dc1-935f-8401ebe5758f",
+              "gssCode": "1234",
+              "createdAt": "2022-09-20T13:00:23.123Z",
+              "registerCheckMatchCount": 1,
+              "registerCheckMatches": [
+                {
+                  "emsElectorId": "70869",
+                  "fn": "HAYWOOD",
+                  "ln": "BECKETT",
+                  "dob": "1980-07-31",
+                  "regstreet": "14 Churcher Close",
+                  "regtown": "Gosport",
+                  "regarea": "Hampshire",
+                  "regpostcode": "PO12 2SL",
+                  "reguprn": "37026036",
+                  "phone": "0777 1924066",
+                  "email": "not an email address",
+                  "registeredStartDate": "2022-07-01",
+                  "attestationCount": 0,
+                  "franchiseCode": "G"
+                }
+              ]
+            }            
+        """.trimIndent() // request has invalid gssCode and email field values
+
+        // When
+        val response = webTestClient.post()
+            .uri(buildUri())
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
+            .contentType(APPLICATION_JSON)
+            .bodyValue(requestBody)
+            .exchange()
+            .expectStatus().isBadRequest
+            .returnResult(ErrorResponse::class.java)
+
+        // Then
+        val actual = response.responseBody.blockFirst()
+        assertThat(actual)
+            .hasStatus(400)
+            .hasError("Bad Request")
+            .hasMessage("Validation failed for object='registerCheckResultRequest'. Error count: 2")
+            .hasValidationError("Error on field 'gssCode': rejected value [1234], must match \"^[a-zA-Z]\\d{8}\$\"")
+            .hasValidationError("Error on field 'registerCheckMatches[0].email': rejected value [not an email address], must be a well-formed email address")
     }
 
     private fun buildUri(requestId: String = UUID.randomUUID().toString()) =

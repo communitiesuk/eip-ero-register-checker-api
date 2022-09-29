@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Register Checker APIs
-  version: '1.0'
+  version: '1.1.0'
   description: Requests checks and accepts responses from EMS systems to validate elector details exists within the EMS.
   contact:
     name: Krister Bone
@@ -79,6 +79,40 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/PendingRegisterChecks'
+        '404':
+          description: Error response describing the resource not found.
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: '2022-09-28T18:01:42.105Z'
+                  status:
+                    type: integer
+                    example: 404
+                  error:
+                    type: string
+                    example: 'Not Found'
+                  message:
+                    type: string
+                    example: 'EROCertificateMapping for certificateSerial=[543212222] not found'
+                required:
+                  - timestamp
+                  - status
+                  - error
+                  - message
       security:
         - emsCertificateLambdaAuthorizer: [ ]
       x-amazon-apigateway-integration:
@@ -151,6 +185,46 @@ paths:
       responses:
         '201':
           description: Pending Register Check updated successfully.
+        '400':
+          description: Error response describing fields in the request payload that are in error
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: '2022-09-28T18:01:42.105Z'
+                  status:
+                    type: integer
+                    example: 400
+                  error:
+                    type: string
+                    example: 'Bad Request'
+                  message:
+                    type: string
+                    example: 'Validation failed for object=''registerCheckResultRequest''. Error count: 1'
+                  validationErrors:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - 'Error on field ''gssCode'': rejected value [1234], must match "^[a-zA-Z]\d{8}$"'
+                required:
+                  - timestamp
+                  - status
+                  - error
+                  - message
       security:
         - emsCertificateLambdaAuthorizer: [ ]
       x-amazon-apigateway-integration:
@@ -171,6 +245,35 @@ components:
   # Schema and Enum Definitions
   # --------------------------------------------------------------------------------
   schemas:
+    ErrorResponse:
+      title: ErrorResponse
+      description: Response describing errors in a web request
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: '2022-09-28T18:01:42.105Z'
+        status:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: 'Bad Request'
+        message:
+          type: string
+          example: 'Validation failed for object=''registerCheckResultRequest''. Error count: 1'
+        validationErrors:
+          type: array
+          items:
+            type: string
+          example:
+            - 'Error on field ''gssCode'': rejected value [1234], must match "^[a-zA-Z]\d{8}$"'
+      required:
+        - timestamp
+        - status
+        - error
+        - message
+
     PendingRegisterChecksResponse:
       title: PendingRegisterChecksResponse
       description: Response containing pending Register Checks for the calling ERO's EMS system.

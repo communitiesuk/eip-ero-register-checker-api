@@ -22,12 +22,6 @@ abstract class RegisterCheckResultMapper {
     @Mapping(target = "registerCheckMatchDto", source = "apiRequest.registerCheckMatches")
     abstract fun fromRegisterCheckResultRequestApiToDto(queryParamRequestId: String, apiRequest: RegisterCheckResultRequest): RegisterCheckResultDto
 
-    @Mapping(target = "emsElectorId", source = "emsElectorId")
-    @Mapping(target = "attestationCount", source = "attestationCount")
-    @Mapping(target = "registeredStartDate", source = "registeredStartDate")
-    @Mapping(target = "registeredEndDate", source = "registeredEndDate")
-    @Mapping(target = "applicationCreatedAt", source = "applicationCreatedAt")
-    @Mapping(target = "franchiseCode", source = "franchiseCode")
     @Mapping(target = "personalDetail", source = ".")
     protected abstract fun fromRegisterCheckMatchApiToDto(registerCheckMatchApi: RegisterCheckMatch): RegisterCheckMatchDto
 
@@ -35,8 +29,6 @@ abstract class RegisterCheckResultMapper {
     @Mapping(target = "middleNames", source = "mn")
     @Mapping(target = "surname", source = "ln")
     @Mapping(target = "dateOfBirth", source = "dob")
-    @Mapping(target = "phone", source = "phone")
-    @Mapping(target = "email", source = "email")
     @Mapping(target = "address", source = ".")
     protected abstract fun toPersonalDetailDto(registerCheckMatchApi: RegisterCheckMatch): PersonalDetailDto
 

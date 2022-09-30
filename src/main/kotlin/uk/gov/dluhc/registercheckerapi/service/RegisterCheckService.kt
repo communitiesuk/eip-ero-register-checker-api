@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.dluhc.registercheckerapi.client.IerApiClient
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
 import uk.gov.dluhc.registercheckerapi.dto.PendingRegisterCheckDto
+import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 
@@ -31,8 +32,8 @@ class RegisterCheckService(
         }
     }
 
-    fun updatePendingRegisterCheck(certificateSerial: String, requestGssCode: String) {
-        validateGssCodeMatch(certificateSerial, requestGssCode)
+    fun updatePendingRegisterCheck(certificateSerial: String, registerCheckResultDto: RegisterCheckResultDto) {
+        validateGssCodeMatch(certificateSerial, registerCheckResultDto.gssCode)
         // TODO update status and other logic in subsequent subtasks
     }
 

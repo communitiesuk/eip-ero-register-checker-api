@@ -11,6 +11,8 @@ import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.models.Err
 import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.models.PendingRegisterCheckAssert
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomGssCode
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
+import java.time.OffsetDateTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
@@ -115,6 +117,8 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
         // Given
         wireMockService.stubIerApiGetEroIdentifierThrowsNotFoundError(certificateSerial = CERT_SERIAL_NUMBER_VALUE)
 
+        val earliestExpectedTimeStamp = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
+
         // When
         val response = webTestClient.get()
             .uri(buildUriStringWithQueryParam(10))
@@ -126,6 +130,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
         // Then
         val actual = response.responseBody.blockFirst()
         assertThat(actual)
+            .hasTimestampNotBefore(earliestExpectedTimeStamp)
             .hasStatus(404)
             .hasError("Not Found")
             .hasMessage("EROCertificateMapping for certificateSerial=[543219999] not found")
@@ -138,6 +143,8 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
         // Given
         wireMockService.stubIerApiGetEroIdentifierThrowsInternalServerError(certificateSerial = CERT_SERIAL_NUMBER_VALUE)
 
+        val earliestExpectedTimeStamp = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
+
         // When
         val response = webTestClient.get()
             .uri(buildUriStringWithQueryParam(10))
@@ -149,6 +156,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
         // Then
         val actual = response.responseBody.blockFirst()
         assertThat(actual)
+            .hasTimestampNotBefore(earliestExpectedTimeStamp)
             .hasStatus(500)
             .hasError("Internal Server Error")
             .hasMessage("Error getting eroId for certificate serial")
@@ -162,6 +170,8 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
         wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, "camden-city-council")
         wireMockService.stubEroManagementGetEroThrowsNotFoundError()
 
+        val earliestExpectedTimeStamp = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
+
         // When
         val response = webTestClient.get()
             .uri(buildUriStringWithQueryParam(10))
@@ -173,6 +183,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
         // Then
         val actual = response.responseBody.blockFirst()
         assertThat(actual)
+            .hasTimestampNotBefore(earliestExpectedTimeStamp)
             .hasStatus(500)
             .hasError("Internal Server Error")
             .hasMessage("Error retrieving GSS codes")

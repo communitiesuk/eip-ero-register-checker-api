@@ -47,6 +47,6 @@ class RegisterCheckService(
         val eroIdFromIer = ierApiClient.getEroIdentifier(certificateSerial).eroId!!
         if (requestGssCode !in eroService.lookupGssCodesForEro(eroIdFromIer))
             throw GssCodeMismatchException(certificateSerial, requestGssCode)
-                .also { logger.warn { "Request gssCode: [$requestGssCode] does not match with gssCode for certificateSerial: [$certificateSerial]" } }
+                .also { logger.warn { it.message } }
     }
 }

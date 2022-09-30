@@ -17,7 +17,7 @@ import uk.gov.dluhc.registercheckerapi.models.SourceSystem
  * Maps incoming [InitiateRegisterCheckMessage] to [PendingRegisterCheckDto]. Maps the entity class [RegisterCheck]
  * to/from the corresponding [PendingRegisterCheckDto].
  */
-@Mapper
+@Mapper(uses = [InstantMapper::class])
 abstract class PendingRegisterCheckMapper {
 
     @Mapping(target = "correlationId", expression = "java(java.util.UUID.randomUUID())")
@@ -34,33 +34,32 @@ abstract class PendingRegisterCheckMapper {
     @Mapping(target = "source", source = "sourceType")
     @Mapping(target = "gssCode", source = "gssCode")
     @Mapping(target = "actingStaffId", source = "createdBy", qualifiedByName = ["createdByToActingStaffId"])
-    @Mapping(target = "fn", source = "pendingRegisterCheckDto.personalDetail.firstName")
-    @Mapping(target = "mn", source = "pendingRegisterCheckDto.personalDetail.middleNames")
-    @Mapping(target = "ln", source = "pendingRegisterCheckDto.personalDetail.surname")
-    @Mapping(target = "dob", source = "pendingRegisterCheckDto.personalDetail.dateOfBirth")
-    @Mapping(target = "phone", source = "pendingRegisterCheckDto.personalDetail.phone")
-    @Mapping(target = "email", source = "pendingRegisterCheckDto.personalDetail.email")
-    @Mapping(target = "regproperty", source = "pendingRegisterCheckDto.personalDetail.address.property")
-    @Mapping(target = "regstreet", source = "pendingRegisterCheckDto.personalDetail.address.street")
-    @Mapping(target = "regpostcode", source = "pendingRegisterCheckDto.personalDetail.address.postcode")
-    @Mapping(target = "reglocality", source = "pendingRegisterCheckDto.personalDetail.address.locality")
-    @Mapping(target = "regtown", source = "pendingRegisterCheckDto.personalDetail.address.town")
-    @Mapping(target = "regarea", source = "pendingRegisterCheckDto.personalDetail.address.area")
-    @Mapping(target = "reguprn", source = "pendingRegisterCheckDto.personalDetail.address.uprn")
-    @Mapping(target = "createdAt", expression = "java(pendingRegisterCheckDto.getCreatedAt().atOffset(java.time.ZoneOffset.UTC))")
+    @Mapping(target = "fn", source = "personalDetail.firstName")
+    @Mapping(target = "mn", source = "personalDetail.middleNames")
+    @Mapping(target = "ln", source = "personalDetail.surname")
+    @Mapping(target = "dob", source = "personalDetail.dateOfBirth")
+    @Mapping(target = "phone", source = "personalDetail.phone")
+    @Mapping(target = "email", source = "personalDetail.email")
+    @Mapping(target = "regproperty", source = "personalDetail.address.property")
+    @Mapping(target = "regstreet", source = "personalDetail.address.street")
+    @Mapping(target = "regpostcode", source = "personalDetail.address.postcode")
+    @Mapping(target = "reglocality", source = "personalDetail.address.locality")
+    @Mapping(target = "regtown", source = "personalDetail.address.town")
+    @Mapping(target = "regarea", source = "personalDetail.address.area")
+    @Mapping(target = "reguprn", source = "personalDetail.address.uprn")
     abstract fun pendingRegisterCheckDtoToPendingRegisterCheckModel(pendingRegisterCheckDto: PendingRegisterCheckDto): PendingRegisterCheck
 
     @Mapping(target = "phoneNumber", source = "phone")
-    abstract fun personalDetailDtoToPersonalDetailEntity(personalDetailDto: PersonalDetailDto): PersonalDetail
+    protected abstract fun personalDetailDtoToPersonalDetailEntity(personalDetailDto: PersonalDetailDto): PersonalDetail
 
     @Mapping(target = "phone", source = "phoneNumber")
-    abstract fun personalDetailEntityToPersonalDetailDto(personalDetail: PersonalDetail): PersonalDetailDto
+    protected abstract fun personalDetailEntityToPersonalDetailDto(personalDetail: PersonalDetail): PersonalDetailDto
 
     @ValueMapping(source = "VOTER_CARD", target = "EROP")
-    abstract fun sourceTypeToSourceSystem(sourceType: SourceType): SourceSystem
+    protected abstract fun sourceTypeToSourceSystem(sourceType: SourceType): SourceSystem
 
     @Named("createdByToActingStaffId")
-    fun createdByToActingStaffId(createdBy: String): String {
+    protected fun createdByToActingStaffId(createdBy: String): String {
         return when (createdBy) {
             "system" -> "EROP"
             else -> createdBy

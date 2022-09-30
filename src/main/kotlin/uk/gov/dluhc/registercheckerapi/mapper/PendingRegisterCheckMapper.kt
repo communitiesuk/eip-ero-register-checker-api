@@ -1,5 +1,6 @@
 package uk.gov.dluhc.registercheckerapi.mapper
 
+import org.mapstruct.InheritInverseConfiguration
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Named
@@ -52,7 +53,7 @@ abstract class PendingRegisterCheckMapper {
     @Mapping(target = "phoneNumber", source = "phone")
     protected abstract fun personalDetailDtoToPersonalDetailEntity(personalDetailDto: PersonalDetailDto): PersonalDetail
 
-    @Mapping(target = "phone", source = "phoneNumber")
+    @InheritInverseConfiguration
     protected abstract fun personalDetailEntityToPersonalDetailDto(personalDetail: PersonalDetail): PersonalDetailDto
 
     @ValueMapping(source = "VOTER_CARD", target = "EROP")

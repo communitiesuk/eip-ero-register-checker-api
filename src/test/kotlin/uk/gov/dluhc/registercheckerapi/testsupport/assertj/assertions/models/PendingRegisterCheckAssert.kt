@@ -1,4 +1,4 @@
-package uk.gov.dluhc.registercheckerapi.testsupport.assertj
+package uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.models
 
 import org.assertj.core.api.AbstractAssert
 import org.assertj.core.api.Assertions

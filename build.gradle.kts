@@ -147,6 +147,7 @@ tasks.create("api-generate RegisterCheckApi model", GenerateTask::class) {
     enabled = true
     inputSpec.set("$projectDir/src/main/resources/openapi/RegisterCheckerAPIs.yaml")
     packageName.set("uk.gov.dluhc.registercheckerapi")
+    configOptions.put("documentationProvider", "none")
 }
 
 tasks.create("api-generate IERApi model", GenerateTask::class) {

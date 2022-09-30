@@ -5,10 +5,14 @@ import org.junit.jupiter.api.Test
 import org.springframework.web.util.UriComponentsBuilder
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.PENDING
+import uk.gov.dluhc.registercheckerapi.models.ErrorResponse
 import uk.gov.dluhc.registercheckerapi.models.PendingRegisterChecksResponse
-import uk.gov.dluhc.registercheckerapi.testsupport.assertj.PendingRegisterCheckAssert
+import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.models.ErrorResponseAssert.Companion.assertThat
+import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.models.PendingRegisterCheckAssert
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomGssCode
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
+import java.time.OffsetDateTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
@@ -113,18 +117,23 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
         // Given
         wireMockService.stubIerApiGetEroIdentifierThrowsNotFoundError(certificateSerial = CERT_SERIAL_NUMBER_VALUE)
 
+        val earliestExpectedTimeStamp = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
+
         // When
         val response = webTestClient.get()
             .uri(buildUriStringWithQueryParam(10))
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().is4xxClientError
-            .returnResult(String::class.java)
+            .returnResult(ErrorResponse::class.java)
 
         // Then
         val actual = response.responseBody.blockFirst()
-        assertThat(actual).isNotNull
-        assertThat(actual).isEqualTo("EROCertificateMapping for certificateSerial=[543219999] not found")
+        assertThat(actual)
+            .hasTimestampNotBefore(earliestExpectedTimeStamp)
+            .hasStatus(404)
+            .hasError("Not Found")
+            .hasMessage("EROCertificateMapping for certificateSerial=[543219999] not found")
         wireMockService.verifyGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
     }
@@ -134,18 +143,23 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
         // Given
         wireMockService.stubIerApiGetEroIdentifierThrowsInternalServerError(certificateSerial = CERT_SERIAL_NUMBER_VALUE)
 
+        val earliestExpectedTimeStamp = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
+
         // When
         val response = webTestClient.get()
             .uri(buildUriStringWithQueryParam(10))
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().is5xxServerError
-            .returnResult(String::class.java)
+            .returnResult(ErrorResponse::class.java)
 
         // Then
         val actual = response.responseBody.blockFirst()
-        assertThat(actual).isNotNull
-        assertThat(actual).isEqualTo("Error getting eroId for certificate serial")
+        assertThat(actual)
+            .hasTimestampNotBefore(earliestExpectedTimeStamp)
+            .hasStatus(500)
+            .hasError("Internal Server Error")
+            .hasMessage("Error getting eroId for certificate serial")
         wireMockService.verifyGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
     }
@@ -156,18 +170,23 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
         wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, "camden-city-council")
         wireMockService.stubEroManagementGetEroThrowsNotFoundError()
 
+        val earliestExpectedTimeStamp = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
+
         // When
         val response = webTestClient.get()
             .uri(buildUriStringWithQueryParam(10))
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .exchange()
             .expectStatus().is5xxServerError
-            .returnResult(String::class.java)
+            .returnResult(ErrorResponse::class.java)
 
         // Then
         val actual = response.responseBody.blockFirst()
-        assertThat(actual).isNotNull
-        assertThat(actual).isEqualTo("Error retrieving GSS codes")
+        assertThat(actual)
+            .hasTimestampNotBefore(earliestExpectedTimeStamp)
+            .hasStatus(500)
+            .hasError("Internal Server Error")
+            .hasMessage("Error retrieving GSS codes")
         wireMockService.verifyGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
     }

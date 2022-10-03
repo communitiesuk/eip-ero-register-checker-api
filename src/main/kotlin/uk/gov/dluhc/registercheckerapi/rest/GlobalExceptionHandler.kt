@@ -18,7 +18,7 @@ import uk.gov.dluhc.registercheckerapi.client.IerApiException
 import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
 import uk.gov.dluhc.registercheckerapi.config.ApiRequestErrorAttributes
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
-import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckNotFoundException
+import uk.gov.dluhc.registercheckerapi.exception.PendingRegisterCheckNotFoundException
 import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
 import javax.servlet.RequestDispatcher.ERROR_MESSAGE
 import javax.servlet.RequestDispatcher.ERROR_STATUS_CODE
@@ -44,7 +44,7 @@ class GlobalExceptionHandler(
     @ExceptionHandler(
         value = [
             IerEroNotFoundException::class,
-            RegisterCheckNotFoundException::class
+            PendingRegisterCheckNotFoundException::class
         ]
     )
     protected fun handleResourceNotFound(

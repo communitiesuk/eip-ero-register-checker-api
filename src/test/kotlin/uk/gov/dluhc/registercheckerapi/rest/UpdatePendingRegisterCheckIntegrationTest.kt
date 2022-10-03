@@ -133,7 +133,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasTimestampNotBefore(earliestExpectedTimeStamp)
             .hasStatus(404)
             .hasError("Not Found")
-            .hasMessage("Register check for requestid:[$requestId] not found")
+            .hasMessage("Pending register check for requestid:[$requestId] not found")
         wireMockService.verifyGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
     }

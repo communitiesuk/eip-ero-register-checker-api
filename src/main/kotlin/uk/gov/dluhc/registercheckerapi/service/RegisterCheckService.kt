@@ -9,7 +9,7 @@ import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckReposito
 import uk.gov.dluhc.registercheckerapi.dto.PendingRegisterCheckDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
-import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckNotFoundException
+import uk.gov.dluhc.registercheckerapi.exception.PendingRegisterCheckNotFoundException
 import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 import java.util.UUID
@@ -66,6 +66,6 @@ class RegisterCheckService(
 
     private fun getPendingRegisterCheck(correlationId: UUID): RegisterCheck =
         registerCheckRepository.findByCorrelationId(correlationId)
-            ?: throw RegisterCheckNotFoundException(correlationId)
+            ?: throw PendingRegisterCheckNotFoundException(correlationId)
                 .also { logger.warn { it.message } }
 }

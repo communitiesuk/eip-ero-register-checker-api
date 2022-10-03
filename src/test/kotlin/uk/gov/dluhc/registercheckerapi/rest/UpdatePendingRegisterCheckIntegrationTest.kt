@@ -46,7 +46,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
         // When
         val response = webTestClient.post()
-            .uri(buildUri(requestIdInQueryParam.toString()))
+            .uri(buildUri(requestIdInQueryParam))
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .contentType(APPLICATION_JSON)
             .body(
@@ -79,7 +79,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
         // When
         val response = webTestClient.post()
-            .uri(buildUri(requestId.toString()))
+            .uri(buildUri(requestId))
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .contentType(APPLICATION_JSON)
             .body(
@@ -116,7 +116,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
         // When
         val response = webTestClient.post()
-            .uri(buildUri(requestId.toString()))
+            .uri(buildUri(requestId))
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .contentType(APPLICATION_JSON)
             .body(
@@ -154,7 +154,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
         // When
         val response = webTestClient.post()
-            .uri(buildUri(requestId.toString()))
+            .uri(buildUri(requestId))
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .contentType(APPLICATION_JSON)
             .body(
@@ -187,7 +187,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
         // When
         val response = webTestClient.post()
-            .uri(buildUri(requestId.toString()))
+            .uri(buildUri(requestId))
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .contentType(APPLICATION_JSON)
             .body(
@@ -220,7 +220,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
         // When
         val response = webTestClient.post()
-            .uri(buildUri(requestId.toString()))
+            .uri(buildUri(requestId))
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .contentType(APPLICATION_JSON)
             .body(
@@ -347,6 +347,6 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasValidationError("Error on field 'registerCheckMatches[0].email': rejected value [not an email address], must be a well-formed email address")
     }
 
-    private fun buildUri(requestId: String = UUID.randomUUID().toString()) =
+    private fun buildUri(requestId: UUID = UUID.randomUUID()) =
         "/registerchecks/$requestId"
 }

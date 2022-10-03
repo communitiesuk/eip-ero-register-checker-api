@@ -4,12 +4,15 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.dluhc.registercheckerapi.client.IerApiClient
+import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
 import uk.gov.dluhc.registercheckerapi.dto.PendingRegisterCheckDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
+import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckNotFoundException
 import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
+import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -33,10 +36,12 @@ class RegisterCheckService(
         }
     }
 
+    @Transactional
     fun updatePendingRegisterCheck(certificateSerial: String, registerCheckResultDto: RegisterCheckResultDto) {
         validateRequestIdMatch(registerCheckResultDto)
         validateGssCodeMatch(certificateSerial, registerCheckResultDto.gssCode)
-        // TODO update status and other logic in subsequent subtasks
+        getPendingRegisterCheck(registerCheckResultDto.correlationId)
+        // TODO update status and persist RegisterCheckMatchDto payload in subsequent subtasks
     }
 
     private fun findPendingRegisterChecksByGssCodes(eroId: String, pageSize: Int): List<PendingRegisterCheckDto> =
@@ -58,4 +63,9 @@ class RegisterCheckService(
             throw GssCodeMismatchException(certificateSerial, requestGssCode)
                 .also { logger.warn { it.message } }
     }
+
+    private fun getPendingRegisterCheck(correlationId: UUID): RegisterCheck =
+        registerCheckRepository.findByCorrelationId(correlationId)
+            ?: throw RegisterCheckNotFoundException(correlationId)
+                .also { logger.warn { it.message } }
 }

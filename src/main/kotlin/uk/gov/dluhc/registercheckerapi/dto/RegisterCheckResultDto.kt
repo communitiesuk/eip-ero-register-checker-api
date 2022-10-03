@@ -10,6 +10,7 @@ data class RegisterCheckResultDto(
     val gssCode: String,
     val matchResultSentAt: Instant,
     val matchCount: Int,
+    val registerCheckStatus: RegisterCheckStatus,
     val registerCheckMatchDto: List<RegisterCheckMatchDto>?
 )
 
@@ -22,3 +23,10 @@ data class RegisterCheckMatchDto(
     val applicationCreatedAt: Instant?,
     val franchiseCode: String?
 )
+
+enum class RegisterCheckStatus {
+    NO_MATCH,
+    EXACT_MATCH,
+    MULTIPLE_MATCH,
+    TOO_MANY_MATCHES,
+}

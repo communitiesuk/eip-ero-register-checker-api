@@ -18,6 +18,7 @@ import uk.gov.dluhc.registercheckerapi.client.IerApiException
 import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
 import uk.gov.dluhc.registercheckerapi.config.ApiRequestErrorAttributes
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
+import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
 import javax.servlet.RequestDispatcher.ERROR_MESSAGE
 import javax.servlet.RequestDispatcher.ERROR_STATUS_CODE
 
@@ -70,6 +71,18 @@ class GlobalExceptionHandler(
         request: WebRequest
     ): ResponseEntity<Any?>? {
         val status = FORBIDDEN
+        request.setAttribute(ERROR_STATUS_CODE, status.value(), SCOPE_REQUEST)
+        val body = errorAttributes.getErrorResponse(request)
+
+        return handleExceptionInternal(e, body, HttpHeaders(), status, request)
+    }
+
+    @ExceptionHandler(value = [RequestIdMismatchException::class])
+    protected fun handleRequestIdMismatchException(
+        e: RequestIdMismatchException,
+        request: WebRequest
+    ): ResponseEntity<Any?>? {
+        val status = HttpStatus.BAD_REQUEST
         request.setAttribute(ERROR_STATUS_CODE, status.value(), SCOPE_REQUEST)
         val body = errorAttributes.getErrorResponse(request)
 

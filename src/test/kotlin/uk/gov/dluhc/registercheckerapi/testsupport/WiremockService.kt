@@ -30,6 +30,10 @@ class WiremockService(private val wireMockServer: WireMockServer) {
         wireMockServer.verify(count, getRequestedFor(urlPathMatching(IER_ERO_GET_URL)))
     }
 
+    fun verifyGetEroIdentifierNeverCalled() {
+        verifyGetEroIdentifierCalled(0)
+    }
+
     fun verifyEroManagementGetEroIdentifierCalledOnce() {
         verifyEroManagementGetEroIdentifierCalled(1)
     }

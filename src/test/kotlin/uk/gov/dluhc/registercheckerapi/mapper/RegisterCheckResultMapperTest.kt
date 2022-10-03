@@ -60,7 +60,7 @@ internal class RegisterCheckResultMapperTest {
             expectedRegisterCheckStatus: RegisterCheckStatus
         ) {
             // Given
-            val queryParamRequestId = UUID.randomUUID().toString()
+            val queryParamRequestId = UUID.randomUUID()
             val createdAt = OffsetDateTime.now()
             val applicationCreatedAt = OffsetDateTime.now().minusDays(5)
             val apiRequest = buildRegisterCheckResultRequest(
@@ -75,7 +75,7 @@ internal class RegisterCheckResultMapperTest {
             given(instantMapper.toInstant(eq(applicationCreatedAt))).willReturn(expectedApplicationCreatedAt)
 
             val expected = RegisterCheckResultDto(
-                requestId = UUID.fromString(queryParamRequestId),
+                requestId = queryParamRequestId,
                 correlationId = apiRequest.requestid,
                 gssCode = apiRequest.gssCode,
                 matchResultSentAt = expectedMatchSentAt,
@@ -99,7 +99,7 @@ internal class RegisterCheckResultMapperTest {
         @Test
         fun `should map api to dto when optional fields are null`() {
             // Given
-            val queryParamRequestId = UUID.randomUUID().toString()
+            val queryParamRequestId = UUID.randomUUID()
             val createdAt = OffsetDateTime.now()
             val apiRequest = buildRegisterCheckResultRequest(
                 createdAt = createdAt,
@@ -112,7 +112,7 @@ internal class RegisterCheckResultMapperTest {
             given(instantMapper.toInstant(eq(createdAt))).willReturn(createdAt.toInstant())
 
             val expected = RegisterCheckResultDto(
-                requestId = UUID.fromString(queryParamRequestId),
+                requestId = queryParamRequestId,
                 correlationId = apiRequest.requestid,
                 gssCode = apiRequest.gssCode,
                 matchResultSentAt = expectedMatchSentAt,

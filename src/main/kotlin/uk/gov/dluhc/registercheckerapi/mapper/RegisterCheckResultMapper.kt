@@ -10,6 +10,7 @@ import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
+import java.util.UUID
 
 /**
  * Maps [RegisterCheckResultRequest] to [RegisterCheckResultDto].
@@ -17,13 +18,13 @@ import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 @Mapper(uses = [InstantMapper::class])
 abstract class RegisterCheckResultMapper {
 
-    @Mapping(target = "requestId", expression = "java(UUID.fromString(queryParamRequestId))")
+    @Mapping(target = "requestId", source = "queryParamRequestId")
     @Mapping(target = "correlationId", source = "apiRequest.requestid")
     @Mapping(target = "matchResultSentAt", source = "apiRequest.createdAt")
     @Mapping(target = "matchCount", source = "apiRequest.registerCheckMatchCount")
     @Mapping(target = "registerCheckStatus", source = "apiRequest.registerCheckMatchCount", qualifiedByName = ["evaluateRegisterCheckStatus"])
     @Mapping(target = "registerCheckMatchDto", source = "apiRequest.registerCheckMatches")
-    abstract fun fromRegisterCheckResultRequestApiToDto(queryParamRequestId: String, apiRequest: RegisterCheckResultRequest): RegisterCheckResultDto
+    abstract fun fromRegisterCheckResultRequestApiToDto(queryParamRequestId: UUID, apiRequest: RegisterCheckResultRequest): RegisterCheckResultDto
 
     @Mapping(target = "personalDetail", source = ".")
     protected abstract fun fromRegisterCheckMatchApiToDto(registerCheckMatchApi: RegisterCheckMatch): RegisterCheckMatchDto

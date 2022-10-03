@@ -17,6 +17,7 @@ import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMapper
 import uk.gov.dluhc.registercheckerapi.models.PendingRegisterChecksResponse
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 import uk.gov.dluhc.registercheckerapi.service.RegisterCheckService
+import java.util.UUID
 import javax.validation.Valid
 
 private val logger = KotlinLogging.logger {}
@@ -58,7 +59,7 @@ class RegisterCheckerController(
     @ResponseStatus(CREATED)
     fun updatePendingRegisterCheck(
         authentication: Authentication,
-        @PathVariable requestId: String,
+        @PathVariable requestId: UUID,
         @Valid @RequestBody request: RegisterCheckResultRequest
     ) {
         logger.info("Updating pending register checks for EMS ERO certificateSerial=[${authentication.credentials}] with requestId=[$requestId]")

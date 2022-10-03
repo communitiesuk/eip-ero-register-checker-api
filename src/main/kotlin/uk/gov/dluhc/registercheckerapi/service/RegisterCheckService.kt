@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.dluhc.registercheckerapi.client.IerApiClient
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
 import uk.gov.dluhc.registercheckerapi.dto.PendingRegisterCheckDto
+import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 
@@ -31,8 +32,8 @@ class RegisterCheckService(
         }
     }
 
-    fun updatePendingRegisterCheck(certificateSerial: String, requestGssCode: String) {
-        validateGssCodeMatch(certificateSerial, requestGssCode)
+    fun updatePendingRegisterCheck(certificateSerial: String, registerCheckResultDto: RegisterCheckResultDto) {
+        validateGssCodeMatch(certificateSerial, registerCheckResultDto.gssCode)
         // TODO update status and other logic in subsequent subtasks
     }
 
@@ -46,6 +47,6 @@ class RegisterCheckService(
         val eroIdFromIer = ierApiClient.getEroIdentifier(certificateSerial).eroId!!
         if (requestGssCode !in eroService.lookupGssCodesForEro(eroIdFromIer))
             throw GssCodeMismatchException(certificateSerial, requestGssCode)
-                .also { logger.warn { "Request gssCode: [$requestGssCode] does not match with gssCode for certificateSerial: [$certificateSerial]" } }
+                .also { logger.warn { it.message } }
     }
 }

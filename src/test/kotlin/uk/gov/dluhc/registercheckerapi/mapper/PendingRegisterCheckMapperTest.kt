@@ -2,6 +2,13 @@ package uk.gov.dluhc.registercheckerapi.mapper
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.InjectMocks
+import org.mockito.Mock
+import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.any
+import org.mockito.kotlin.given
+import org.mockito.kotlin.verify
 import uk.gov.dluhc.registercheckerapi.database.entity.Address
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.PersonalDetail
@@ -20,8 +27,13 @@ import java.util.UUID
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType as EntitySourceType
 import uk.gov.dluhc.registercheckerapi.dto.SourceType as DtoSourceType
 
+@ExtendWith(MockitoExtension::class)
 internal class PendingRegisterCheckMapperTest {
 
+    @Mock
+    private lateinit var instantMapper: InstantMapper
+
+    @InjectMocks
     private val mapper = PendingRegisterCheckMapperImpl()
 
     @Test
@@ -152,7 +164,10 @@ internal class PendingRegisterCheckMapperTest {
     @Test
     fun `should map dto to model`() {
         // Given
-        val pendingRegisterCheckDto = buildPendingRegisterCheckDto(createdAt = Instant.now())
+        val createdAt = Instant.now()
+        val pendingRegisterCheckDto = buildPendingRegisterCheckDto(createdAt = createdAt)
+        given(instantMapper.toOffsetDateTime(any())).willReturn(createdAt.atOffset(ZoneOffset.UTC))
+
         val expected = PendingRegisterCheck(
             requestid = pendingRegisterCheckDto.correlationId,
             source = SourceSystem.EROP,
@@ -178,18 +193,20 @@ internal class PendingRegisterCheckMapperTest {
         val actual = mapper.pendingRegisterCheckDtoToPendingRegisterCheckModel(pendingRegisterCheckDto)
 
         // Then
-        assertThat(actual)
-            .usingRecursiveComparison()
-            .isEqualTo(expected)
+        assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
+        verify(instantMapper).toOffsetDateTime(createdAt)
     }
 
     @Test
     fun `should map manual register check dto to model`() {
         // Given
+        val createdAt = Instant.now()
         val pendingRegisterCheckDto = buildPendingRegisterCheckDto(
-            createdAt = Instant.now(),
+            createdAt = createdAt,
             createdBy = "joe.bloggs@gmail.com"
         )
+        given(instantMapper.toOffsetDateTime(any())).willReturn(createdAt.atOffset(ZoneOffset.UTC))
+
         val expected = PendingRegisterCheck(
             requestid = pendingRegisterCheckDto.correlationId,
             source = SourceSystem.EROP,
@@ -215,8 +232,7 @@ internal class PendingRegisterCheckMapperTest {
         val actual = mapper.pendingRegisterCheckDtoToPendingRegisterCheckModel(pendingRegisterCheckDto)
 
         // Then
-        assertThat(actual)
-            .usingRecursiveComparison()
-            .isEqualTo(expected)
+        assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
+        verify(instantMapper).toOffsetDateTime(createdAt)
     }
 }

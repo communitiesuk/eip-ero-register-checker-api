@@ -2,6 +2,7 @@ package uk.gov.dluhc.registercheckerapi.mapper
 
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
+import org.mapstruct.Named
 import uk.gov.dluhc.registercheckerapi.dto.AddressDto
 import uk.gov.dluhc.registercheckerapi.dto.PersonalDetailDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckMatchDto
@@ -20,7 +21,7 @@ abstract class RegisterCheckResultMapper {
     @Mapping(target = "correlationId", source = "apiRequest.requestid")
     @Mapping(target = "matchResultSentAt", source = "apiRequest.createdAt")
     @Mapping(target = "matchCount", source = "apiRequest.registerCheckMatchCount")
-    @Mapping(target = "registerCheckStatus", expression = "java(evaluateRegisterCheckStatus(apiRequest))")
+    @Mapping(target = "registerCheckStatus", source = "apiRequest.registerCheckMatchCount", qualifiedByName = ["evaluateRegisterCheckStatus"])
     @Mapping(target = "registerCheckMatchDto", source = "apiRequest.registerCheckMatches")
     abstract fun fromRegisterCheckResultRequestApiToDto(queryParamRequestId: String, apiRequest: RegisterCheckResultRequest): RegisterCheckResultDto
 
@@ -43,8 +44,9 @@ abstract class RegisterCheckResultMapper {
     @Mapping(target = "uprn", source = "reguprn")
     protected abstract fun toAddressDto(registerCheckMatchApi: RegisterCheckMatch): AddressDto
 
-    protected fun evaluateRegisterCheckStatus(apiRequest: RegisterCheckResultRequest): RegisterCheckStatus =
-        when (apiRequest.registerCheckMatchCount) {
+    @Named("evaluateRegisterCheckStatus")
+    protected fun evaluateRegisterCheckStatus(registerCheckMatchCount: Int): RegisterCheckStatus =
+        when (registerCheckMatchCount) {
             0 -> RegisterCheckStatus.NO_MATCH
             1 -> RegisterCheckStatus.EXACT_MATCH
             in 2..10 -> RegisterCheckStatus.MULTIPLE_MATCH

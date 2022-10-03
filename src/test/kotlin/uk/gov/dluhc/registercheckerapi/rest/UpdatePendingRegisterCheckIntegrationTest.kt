@@ -102,6 +102,43 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     }
 
     @Test
+    fun `should return not found given non-existing register check for a given requestId`() {
+        // Given
+        val requestId = UUID.fromString("322ff65f-a0a1-497d-a224-04800711a1fb")
+        val eroIdFromIerApi = "camden-city-council"
+        val firstGssCodeFromEroApi = "E12345678"
+        val secondGssCodeFromEroApi = "E98764532"
+
+        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
+        wireMockService.stubEroManagementGetEro(eroIdFromIerApi, firstGssCodeFromEroApi, secondGssCodeFromEroApi)
+
+        val earliestExpectedTimeStamp = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
+
+        // When
+        val response = webTestClient.post()
+            .uri(buildUri(requestId.toString()))
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
+            .contentType(APPLICATION_JSON)
+            .body(
+                Mono.just(buildRegisterCheckResultRequest(requestId = requestId)),
+                RegisterCheckResultRequest::class.java
+            )
+            .exchange()
+            .expectStatus().isNotFound
+            .returnResult(ErrorResponse::class.java)
+
+        // Then
+        val actual = response.responseBody.blockFirst()
+        assertThat(actual)
+            .hasTimestampNotBefore(earliestExpectedTimeStamp)
+            .hasStatus(404)
+            .hasError("Not Found")
+            .hasMessage("Pending register check for requestid:[$requestId] not found")
+        wireMockService.verifyGetEroIdentifierCalledOnce()
+        wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
+    }
+
+    @Test
     fun `should return forbidden given gssCode in requestBody does not matches gssCode from ERO`() {
         // Given
         val eroIdFromIerApi = "camden-city-council"

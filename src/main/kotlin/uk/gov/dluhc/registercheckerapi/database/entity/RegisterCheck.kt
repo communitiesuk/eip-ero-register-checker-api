@@ -105,5 +105,9 @@ enum class SourceType {
 }
 
 enum class CheckStatus {
-    PENDING
+    PENDING,
+    NO_MATCH,
+    EXACT_MATCH,
+    MULTIPLE_MATCH,
+    TOO_MANY_MATCHES
 }

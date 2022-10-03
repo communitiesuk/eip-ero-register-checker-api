@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
@@ -13,6 +15,7 @@ import org.mockito.kotlin.given
 import org.mockito.kotlin.verify
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckMatchDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
+import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildAddressDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPersonalDetailDto
@@ -34,14 +37,37 @@ internal class RegisterCheckResultMapperTest {
     @Nested
     inner class FromRegisterCheckResultRequestApiToDto {
 
-        @Test
-        fun `should map api to dto`() {
+        @ParameterizedTest
+        @CsvSource(
+            value = [
+                "0,   NO_MATCH",
+                "1,   EXACT_MATCH",
+                "2,   MULTIPLE_MATCH",
+                "3,   MULTIPLE_MATCH",
+                "4,   MULTIPLE_MATCH",
+                "5,   MULTIPLE_MATCH",
+                "6,   MULTIPLE_MATCH",
+                "7,   MULTIPLE_MATCH",
+                "8,   MULTIPLE_MATCH",
+                "9,   MULTIPLE_MATCH",
+                "10,  MULTIPLE_MATCH",
+                "11,  TOO_MANY_MATCHES",
+                "100, TOO_MANY_MATCHES",
+            ]
+        )
+        fun `should map api to dto for a given registerCheckMatchCount`(
+            givenRegisterCheckMatchCount: Int,
+            expectedRegisterCheckStatus: RegisterCheckStatus
+        ) {
             // Given
             val queryParamRequestId = UUID.randomUUID().toString()
             val createdAt = OffsetDateTime.now()
             val applicationCreatedAt = OffsetDateTime.now().minusDays(5)
-            val apiRequest = buildRegisterCheckResultRequest(createdAt = createdAt, applicationCreatedAt = applicationCreatedAt)
-
+            val apiRequest = buildRegisterCheckResultRequest(
+                createdAt = createdAt,
+                applicationCreatedAt = applicationCreatedAt,
+                registerCheckMatchCount = givenRegisterCheckMatchCount
+            )
             val expectedMatchSentAt = createdAt.toInstant()
             val expectedApplicationCreatedAt = applicationCreatedAt.toInstant()
 
@@ -54,6 +80,7 @@ internal class RegisterCheckResultMapperTest {
                 gssCode = apiRequest.gssCode,
                 matchResultSentAt = expectedMatchSentAt,
                 matchCount = apiRequest.registerCheckMatchCount,
+                registerCheckStatus = expectedRegisterCheckStatus,
                 registerCheckMatchDto = apiRequest.registerCheckMatches?.map {
                     toRegisterCheckMapDtoFromApi(it, expectedApplicationCreatedAt)
                 }
@@ -64,6 +91,7 @@ internal class RegisterCheckResultMapperTest {
 
             // Then
             assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
+            assertThat(actual.registerCheckStatus).isEqualTo(expectedRegisterCheckStatus)
             verify(instantMapper).toInstant(createdAt)
             verify(instantMapper).toInstant(applicationCreatedAt)
         }
@@ -75,6 +103,7 @@ internal class RegisterCheckResultMapperTest {
             val createdAt = OffsetDateTime.now()
             val apiRequest = buildRegisterCheckResultRequest(
                 createdAt = createdAt,
+                registerCheckMatchCount = 0,
                 applicationCreatedAt = null,
                 registerCheckMatches = null
             )
@@ -88,6 +117,7 @@ internal class RegisterCheckResultMapperTest {
                 gssCode = apiRequest.gssCode,
                 matchResultSentAt = expectedMatchSentAt,
                 matchCount = apiRequest.registerCheckMatchCount,
+                registerCheckStatus = RegisterCheckStatus.NO_MATCH,
                 registerCheckMatchDto = null
             )
 
@@ -96,6 +126,7 @@ internal class RegisterCheckResultMapperTest {
 
             // Then
             assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
+            assertThat(actual.registerCheckStatus).isEqualTo(RegisterCheckStatus.NO_MATCH)
             verify(instantMapper).toInstant(createdAt)
         }
     }

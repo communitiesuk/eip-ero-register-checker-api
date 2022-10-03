@@ -18,6 +18,7 @@ import uk.gov.dluhc.registercheckerapi.client.IerApiException
 import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
 import uk.gov.dluhc.registercheckerapi.config.ApiRequestErrorAttributes
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
+import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckNotFoundException
 import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
 import javax.servlet.RequestDispatcher.ERROR_MESSAGE
 import javax.servlet.RequestDispatcher.ERROR_STATUS_CODE
@@ -40,9 +41,14 @@ class GlobalExceptionHandler(
         return handleExceptionInternal(e, body, HttpHeaders(), status, request)
     }
 
-    @ExceptionHandler(value = [IerEroNotFoundException::class])
-    protected fun handleIerNotFoundApiException(
-        e: IerApiException,
+    @ExceptionHandler(
+        value = [
+            IerEroNotFoundException::class,
+            RegisterCheckNotFoundException::class
+        ]
+    )
+    protected fun handleResourceNotFound(
+        e: RuntimeException,
         request: WebRequest
     ): ResponseEntity<Any?>? {
         val status = NOT_FOUND

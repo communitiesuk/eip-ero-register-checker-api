@@ -47,7 +47,7 @@ abstract class RegisterCheckResultMapper {
         when (apiRequest.registerCheckMatchCount) {
             0 -> RegisterCheckStatus.NO_MATCH
             1 -> RegisterCheckStatus.EXACT_MATCH
-            2, 3, 4, 5, 6, 7, 8, 9, 10 -> RegisterCheckStatus.MULTIPLE_MATCH
+            in 2..10 -> RegisterCheckStatus.MULTIPLE_MATCH
             else -> RegisterCheckStatus.TOO_MANY_MATCHES
         }
 }

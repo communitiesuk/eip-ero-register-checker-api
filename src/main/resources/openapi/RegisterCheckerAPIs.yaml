@@ -503,7 +503,7 @@ components:
         - regstreet
         - regpostcode
         - attestationCount
-        - frachiseCode
+        - franchiseCode
 
     PostalVote:
       type: object

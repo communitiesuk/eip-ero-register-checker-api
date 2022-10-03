@@ -42,7 +42,7 @@ fun buildRegisterCheckMatch(
     registeredStartDate: LocalDate? = LocalDate.now(),
     registeredEndDate: LocalDate? = LocalDate.now(),
     applicationCreatedAt: OffsetDateTime? = OffsetDateTime.now(),
-    franchiseCode: String? = "Franchise123"
+    franchiseCode: String = "Franchise123"
 ) = RegisterCheckMatch(
     emsElectorId = emsElectorId,
     fn = fn,

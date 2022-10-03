@@ -136,8 +136,7 @@ internal class RegisterCheckResultMapperTest {
                 email = null,
                 registeredStartDate = null,
                 registeredEndDate = null,
-                applicationCreatedAt = null,
-                franchiseCode = null,
+                applicationCreatedAt = null
             )
 
             val expected = toRegisterCheckMapDtoFromApi(apiRequest, null)

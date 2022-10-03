@@ -31,7 +31,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
             .exchange()
             .expectStatus()
             .isForbidden
-        wireMockService.verifyGetEroIdentifierCalled(0)
+        wireMockService.verifyGetEroIdentifierNeverCalled()
         wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
     }
 

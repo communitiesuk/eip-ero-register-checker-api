@@ -8,6 +8,7 @@ import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckReposito
 import uk.gov.dluhc.registercheckerapi.dto.PendingRegisterCheckDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
+import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 
 private val logger = KotlinLogging.logger {}
@@ -33,6 +34,7 @@ class RegisterCheckService(
     }
 
     fun updatePendingRegisterCheck(certificateSerial: String, registerCheckResultDto: RegisterCheckResultDto) {
+        validateRequestIdMatch(registerCheckResultDto)
         validateGssCodeMatch(certificateSerial, registerCheckResultDto.gssCode)
         // TODO update status and other logic in subsequent subtasks
     }
@@ -42,6 +44,13 @@ class RegisterCheckService(
             registerCheckRepository.findPendingEntriesByGssCodes(it, pageSize)
                 .map(pendingRegisterCheckMapper::registerCheckEntityToPendingRegisterCheckDto)
         }
+
+    private fun validateRequestIdMatch(registerCheckResultDto: RegisterCheckResultDto) {
+        if (registerCheckResultDto.requestId != registerCheckResultDto.correlationId) {
+            throw RequestIdMismatchException(registerCheckResultDto.requestId, registerCheckResultDto.correlationId)
+                .also { logger.warn { it.message } }
+        }
+    }
 
     private fun validateGssCodeMatch(certificateSerial: String, requestGssCode: String) {
         val eroIdFromIer = ierApiClient.getEroIdentifier(certificateSerial).eroId!!

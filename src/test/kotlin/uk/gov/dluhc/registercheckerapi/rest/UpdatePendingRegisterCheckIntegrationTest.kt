@@ -33,24 +33,57 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .isForbidden
 
         // Then
-        wireMockService.verifyGetEroIdentifierCalled(0)
+        wireMockService.verifyGetEroIdentifierNeverCalled()
+        wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
+    }
+
+    @Test
+    fun `should return bad request given requestId in query param does not match with requestId in payload`() {
+        // Given
+        val requestIdInQueryParam = UUID.fromString("322ff65f-a0a1-497d-a224-04800711a1fb")
+        val requestIdInRequestBody = UUID.fromString("533ff65f-a0a1-497d-a224-04800711a1fc")
+        val earliestExpectedTimeStamp = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
+
+        // When
+        val response = webTestClient.post()
+            .uri(buildUri(requestIdInQueryParam.toString()))
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
+            .contentType(APPLICATION_JSON)
+            .body(
+                Mono.just(buildRegisterCheckResultRequest(requestId = requestIdInRequestBody)),
+                RegisterCheckResultRequest::class.java
+            )
+            .exchange()
+            .expectStatus().isBadRequest
+            .returnResult(ErrorResponse::class.java)
+
+        // Then
+        val actual = response.responseBody.blockFirst()
+        assertThat(actual)
+            .hasTimestampNotBefore(earliestExpectedTimeStamp)
+            .hasStatus(400)
+            .hasError("Bad Request")
+            .hasMessage("Request requestId:[322ff65f-a0a1-497d-a224-04800711a1fb] does not match with requestid:[533ff65f-a0a1-497d-a224-04800711a1fc] in body payload")
+            .hasNoValidationErrors()
+        wireMockService.verifyGetEroIdentifierNeverCalled()
         wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
     }
 
     @Test
     fun `should return not found error given IER service throws 404`() {
         // Given
+        val requestId = UUID.fromString("322ff65f-a0a1-497d-a224-04800711a1fb")
         wireMockService.stubIerApiGetEroIdentifierThrowsNotFoundError(certificateSerial = CERT_SERIAL_NUMBER_VALUE)
 
         val earliestExpectedTimeStamp = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
 
         // When
         val response = webTestClient.post()
-            .uri(buildUri())
+            .uri(buildUri(requestId.toString()))
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .contentType(APPLICATION_JSON)
             .body(
-                Mono.just(buildRegisterCheckResultRequest()),
+                Mono.just(buildRegisterCheckResultRequest(requestId = requestId)),
                 RegisterCheckResultRequest::class.java
             )
             .exchange()
@@ -102,7 +135,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasTimestampNotBefore(earliestExpectedTimeStamp)
             .hasStatus(403)
             .hasError("Forbidden")
-            .hasMessage("Request gssCode: [E10101010] does not match with gssCode for certificateSerial: [543212222]")
+            .hasMessage("Request gssCode:[E10101010] does not match with gssCode for certificateSerial:[543212222]")
         wireMockService.verifyGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
     }
@@ -110,17 +143,18 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     @Test
     fun `should return internal server error given IER service throws 500`() {
         // Given
+        val requestId = UUID.fromString("322ff65f-a0a1-497d-a224-04800711a1fb")
         wireMockService.stubIerApiGetEroIdentifierThrowsInternalServerError(certificateSerial = CERT_SERIAL_NUMBER_VALUE)
 
         val earliestExpectedTimeStamp = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
 
         // When
         val response = webTestClient.post()
-            .uri(buildUri())
+            .uri(buildUri(requestId.toString()))
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .contentType(APPLICATION_JSON)
             .body(
-                Mono.just(buildRegisterCheckResultRequest()),
+                Mono.just(buildRegisterCheckResultRequest(requestId = requestId)),
                 RegisterCheckResultRequest::class.java
             )
             .exchange()
@@ -141,6 +175,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     @Test
     fun `should return internal server error given ERO service throws 404`() {
         // Given
+        val requestId = UUID.fromString("322ff65f-a0a1-497d-a224-04800711a1fb")
         wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, "camden-city-council")
         wireMockService.stubEroManagementGetEroThrowsNotFoundError()
 
@@ -148,11 +183,11 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
         // When
         val response = webTestClient.post()
-            .uri(buildUri())
+            .uri(buildUri(requestId.toString()))
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .contentType(APPLICATION_JSON)
             .body(
-                Mono.just(buildRegisterCheckResultRequest()),
+                Mono.just(buildRegisterCheckResultRequest(requestId = requestId)),
                 RegisterCheckResultRequest::class.java
             )
             .exchange()

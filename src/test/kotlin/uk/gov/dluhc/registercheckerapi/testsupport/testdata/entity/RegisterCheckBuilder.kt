@@ -16,6 +16,7 @@ fun buildRegisterCheck(
     sourceType: SourceType = VOTER_CARD,
     gssCode: String = "E09000021",
     status: CheckStatus = PENDING,
+    matchCount: Int = 0,
     personalDetail: PersonalDetail = buildPersonalDetail(),
     createdBy: String = "system"
 ) = RegisterCheck(
@@ -26,6 +27,7 @@ fun buildRegisterCheck(
     sourceType = sourceType,
     gssCode = gssCode,
     status = status,
+    matchCount = matchCount,
     personalDetail = personalDetail,
     createdBy = createdBy
 )

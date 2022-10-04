@@ -4,12 +4,14 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.dluhc.registercheckerapi.client.IerApiClient
+import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
 import uk.gov.dluhc.registercheckerapi.dto.PendingRegisterCheckDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
 import uk.gov.dluhc.registercheckerapi.exception.PendingRegisterCheckNotFoundException
+import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckUnexpectedStatusException
 import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 import java.util.UUID
@@ -40,8 +42,15 @@ class RegisterCheckService(
     fun updatePendingRegisterCheck(certificateSerial: String, registerCheckResultDto: RegisterCheckResultDto) {
         validateRequestIdMatch(registerCheckResultDto)
         validateGssCodeMatch(certificateSerial, registerCheckResultDto.gssCode)
-        getPendingRegisterCheck(registerCheckResultDto.correlationId)
-        // TODO update status and persist RegisterCheckMatchDto payload in subsequent subtasks
+        getPendingRegisterCheck(registerCheckResultDto.correlationId).apply {
+            when (status) {
+                CheckStatus.PENDING -> {
+                    // TODO update status and persist RegisterCheckMatchDto payload in subsequent subtasks
+                }
+                else -> throw RegisterCheckUnexpectedStatusException(correlationId, status)
+                    .also { logger.warn { "Register check with correlationId:[$correlationId] is in status [$status] and cannot be set to [${registerCheckResultDto.registerCheckStatus}]" } }
+            }
+        }
     }
 
     private fun findPendingRegisterChecksByGssCodes(eroId: String, pageSize: Int): List<PendingRegisterCheckDto> =

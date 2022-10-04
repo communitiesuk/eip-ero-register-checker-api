@@ -97,21 +97,17 @@ class RegisterCheck(
     var version: Long? = null,
 ) {
 
-    fun recordNoMatch(matchResultSentAt: Instant) {
+    fun recordNoMatch(matchResultSentAt: Instant) =
         recordMatchResult(NO_MATCH, 0, matchResultSentAt, emptyList())
-    }
 
-    fun recordExactMatch(matchResultSentAt: Instant, registerCheckMatch: RegisterCheckMatch) {
+    fun recordExactMatch(matchResultSentAt: Instant, registerCheckMatch: RegisterCheckMatch) =
         recordMatchResult(EXACT_MATCH, 1, matchResultSentAt, listOf(registerCheckMatch))
-    }
 
-    fun recordMultipleMatches(matchResultSentAt: Instant, matchCount: Int, registerCheckMatches: List<RegisterCheckMatch>) {
+    fun recordMultipleMatches(matchResultSentAt: Instant, matchCount: Int, registerCheckMatches: List<RegisterCheckMatch>) =
         recordMatchResult(MULTIPLE_MATCH, matchCount, matchResultSentAt, registerCheckMatches)
-    }
 
-    fun recordTooManyMatches(matchResultSentAt: Instant, matchCount: Int, registerCheckMatches: List<RegisterCheckMatch>) {
+    fun recordTooManyMatches(matchResultSentAt: Instant, matchCount: Int, registerCheckMatches: List<RegisterCheckMatch>) =
         recordMatchResult(TOO_MANY_MATCHES, matchCount, matchResultSentAt, registerCheckMatches)
-    }
 
     fun recordMatchResult(
         status: CheckStatus,

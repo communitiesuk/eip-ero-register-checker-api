@@ -12,7 +12,6 @@ import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.MULTIPLE_MATC
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.NO_MATCH
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.TOO_MANY_MATCHES
 import java.time.Instant
-import java.util.Collections.singletonList
 import java.util.UUID
 import javax.persistence.CascadeType
 import javax.persistence.Entity
@@ -98,37 +97,32 @@ class RegisterCheck(
     var version: Long? = null,
 ) {
 
-    fun recordNoMatch(matchResultSentAt: Instant): RegisterCheck {
-        this.status = NO_MATCH
-        this.matchCount = 0
-        this.matchResultSentAt = matchResultSentAt
-        return this
+    fun recordNoMatch(matchResultSentAt: Instant) {
+        recordMatchResult(NO_MATCH, 0, matchResultSentAt, emptyList())
     }
 
-    fun recordExactMatch(matchResultSentAt: Instant, registerCheckMatch: RegisterCheckMatch): RegisterCheck {
-        this.status = EXACT_MATCH
-        this.matchCount = 1
-        this.matchResultSentAt = matchResultSentAt
-        return addRegisterCheckMatches(singletonList(registerCheckMatch))
+    fun recordExactMatch(matchResultSentAt: Instant, registerCheckMatch: RegisterCheckMatch) {
+        recordMatchResult(EXACT_MATCH, 1, matchResultSentAt, listOf(registerCheckMatch))
     }
 
-    fun recordMultipleMatches(matchResultSentAt: Instant, registerCheckMatches: List<RegisterCheckMatch>): RegisterCheck {
-        this.status = MULTIPLE_MATCH
-        this.matchCount = registerCheckMatches.size
-        this.matchResultSentAt = matchResultSentAt
-        return addRegisterCheckMatches(registerCheckMatches)
+    fun recordMultipleMatches(matchResultSentAt: Instant, matchCount: Int, registerCheckMatches: List<RegisterCheckMatch>) {
+        recordMatchResult(MULTIPLE_MATCH, matchCount, matchResultSentAt, registerCheckMatches)
     }
 
-    fun recordTooManyMatches(matchResultSentAt: Instant, registerCheckMatches: List<RegisterCheckMatch>): RegisterCheck {
-        this.status = TOO_MANY_MATCHES
-        this.matchCount = registerCheckMatches.size
-        this.matchResultSentAt = matchResultSentAt
-        return addRegisterCheckMatches(registerCheckMatches)
+    fun recordTooManyMatches(matchResultSentAt: Instant, matchCount: Int, registerCheckMatches: List<RegisterCheckMatch>) {
+        recordMatchResult(TOO_MANY_MATCHES, matchCount, matchResultSentAt, registerCheckMatches)
     }
 
-    private fun addRegisterCheckMatches(registerCheckMatches: List<RegisterCheckMatch>): RegisterCheck {
+    fun recordMatchResult(
+        status: CheckStatus,
+        matchCount: Int,
+        matchResultSentAt: Instant,
+        registerCheckMatches: List<RegisterCheckMatch>
+    ) {
+        this.status = status
+        this.matchCount = matchCount
+        this.matchResultSentAt = matchResultSentAt
         this.registerCheckMatches += registerCheckMatches
-        return this
     }
 
     override fun equals(other: Any?): Boolean {

@@ -148,7 +148,7 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             // Given
             val registerCheck = buildRegisterCheck()
             registerCheckRepository.save(registerCheck)
-            registerCheck.recordMultipleMatches(Instant.now(), listOf(buildRegisterCheckMatch(), buildRegisterCheckMatch()))
+            registerCheck.recordMultipleMatches(Instant.now(), 2, listOf(buildRegisterCheckMatch(), buildRegisterCheckMatch()))
             registerCheckRepository.save(registerCheck)
 
             // When
@@ -168,7 +168,7 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             val registerCheck = buildRegisterCheck()
             registerCheckRepository.save(registerCheck)
             val matches = mutableListOf<RegisterCheckMatch>().apply { repeat(10) { add(buildRegisterCheckMatch()) } }
-            registerCheck.recordTooManyMatches(Instant.now(), matches)
+            registerCheck.recordTooManyMatches(Instant.now(), 10, matches)
             registerCheckRepository.save(registerCheck)
 
             // When

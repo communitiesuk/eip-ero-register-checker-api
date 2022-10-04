@@ -19,6 +19,7 @@ import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
 import uk.gov.dluhc.registercheckerapi.config.ApiRequestErrorAttributes
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
 import uk.gov.dluhc.registercheckerapi.exception.PendingRegisterCheckNotFoundException
+import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckUnexpectedStatusException
 import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
 import javax.servlet.RequestDispatcher.ERROR_MESSAGE
 import javax.servlet.RequestDispatcher.ERROR_STATUS_CODE
@@ -33,12 +34,9 @@ class GlobalExceptionHandler(
         e: IerApiException,
         request: WebRequest
     ): ResponseEntity<Any?>? {
-        val status = INTERNAL_SERVER_ERROR
         request.setAttribute(ERROR_MESSAGE, "Error getting eroId for certificate serial", SCOPE_REQUEST)
-        request.setAttribute(ERROR_STATUS_CODE, status.value(), SCOPE_REQUEST)
-        val body = errorAttributes.getErrorResponse(request)
 
-        return handleExceptionInternal(e, body, HttpHeaders(), status, request)
+        return populateRequestAndHandleExceptionInternal(e, INTERNAL_SERVER_ERROR, request)
     }
 
     @ExceptionHandler(
@@ -51,11 +49,7 @@ class GlobalExceptionHandler(
         e: RuntimeException,
         request: WebRequest
     ): ResponseEntity<Any?>? {
-        val status = NOT_FOUND
-        request.setAttribute(ERROR_STATUS_CODE, status.value(), SCOPE_REQUEST)
-        val body = errorAttributes.getErrorResponse(request)
-
-        return handleExceptionInternal(e, body, HttpHeaders(), status, request)
+        return populateRequestAndHandleExceptionInternal(e, NOT_FOUND, request)
     }
 
     @ExceptionHandler(value = [ElectoralRegistrationOfficeManagementApiException::class])
@@ -63,12 +57,9 @@ class GlobalExceptionHandler(
         e: ElectoralRegistrationOfficeManagementApiException,
         request: WebRequest
     ): ResponseEntity<Any?>? {
-        val status = INTERNAL_SERVER_ERROR
         request.setAttribute(ERROR_MESSAGE, "Error retrieving GSS codes", SCOPE_REQUEST)
-        request.setAttribute(ERROR_STATUS_CODE, status.value(), SCOPE_REQUEST)
-        val body = errorAttributes.getErrorResponse(request)
 
-        return handleExceptionInternal(e, body, HttpHeaders(), status, request)
+        return populateRequestAndHandleExceptionInternal(e, INTERNAL_SERVER_ERROR, request)
     }
 
     @ExceptionHandler(value = [GssCodeMismatchException::class])
@@ -76,11 +67,7 @@ class GlobalExceptionHandler(
         e: GssCodeMismatchException,
         request: WebRequest
     ): ResponseEntity<Any?>? {
-        val status = FORBIDDEN
-        request.setAttribute(ERROR_STATUS_CODE, status.value(), SCOPE_REQUEST)
-        val body = errorAttributes.getErrorResponse(request)
-
-        return handleExceptionInternal(e, body, HttpHeaders(), status, request)
+        return populateRequestAndHandleExceptionInternal(e, FORBIDDEN, request)
     }
 
     @ExceptionHandler(value = [RequestIdMismatchException::class])
@@ -88,11 +75,15 @@ class GlobalExceptionHandler(
         e: RequestIdMismatchException,
         request: WebRequest
     ): ResponseEntity<Any?>? {
-        val status = HttpStatus.BAD_REQUEST
-        request.setAttribute(ERROR_STATUS_CODE, status.value(), SCOPE_REQUEST)
-        val body = errorAttributes.getErrorResponse(request)
+        return populateRequestAndHandleExceptionInternal(e, HttpStatus.BAD_REQUEST, request)
+    }
 
-        return handleExceptionInternal(e, body, HttpHeaders(), status, request)
+    @ExceptionHandler(value = [RegisterCheckUnexpectedStatusException::class])
+    fun handleRegisterCheckUnexpectedStatusException(
+        e: RuntimeException,
+        request: WebRequest
+    ): ResponseEntity<Any?>? {
+        return populateRequestAndHandleExceptionInternal(e, HttpStatus.CONFLICT, request)
     }
 
     override fun handleHttpMessageNotReadable(
@@ -117,5 +108,15 @@ class GlobalExceptionHandler(
         val body = errorAttributes.getErrorResponse(request)
 
         return handleExceptionInternal(e, body, headers, status, request)
+    }
+
+    private fun populateRequestAndHandleExceptionInternal(
+        exception: Exception,
+        status: HttpStatus,
+        request: WebRequest
+    ): ResponseEntity<Any?> {
+        request.setAttribute(ERROR_STATUS_CODE, status.value(), SCOPE_REQUEST)
+        val body = errorAttributes.getErrorResponse(request)
+        return handleExceptionInternal(exception, body, HttpHeaders(), status, request)
     }
 }

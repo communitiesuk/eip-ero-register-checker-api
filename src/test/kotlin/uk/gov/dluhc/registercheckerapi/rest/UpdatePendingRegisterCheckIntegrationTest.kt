@@ -4,9 +4,11 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType.APPLICATION_JSON
 import reactor.core.publisher.Mono
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
+import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.models.ErrorResponse
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.models.ErrorResponseAssert.Companion.assertThat
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckResultRequest
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
@@ -134,6 +136,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasStatus(404)
             .hasError("Not Found")
             .hasMessage("Pending register check for requestid:[$requestId] not found")
+            .hasNoValidationErrors()
         wireMockService.verifyGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
     }
@@ -345,6 +348,53 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasMessage("Validation failed for object='registerCheckResultRequest'. Error count: 2")
             .hasValidationError("Error on field 'gssCode': rejected value [1234], must match \"^[a-zA-Z]\\d{8}\$\"")
             .hasValidationError("Error on field 'registerCheckMatches[0].email': rejected value [not an email address], must be a well-formed email address")
+    }
+
+    @Test
+    fun `should return conflict given pending register check existing status is other than PENDING`() {
+        // Given
+        val requestId = UUID.fromString("14f66386-a86e-4dbc-af52-3327834f33d1")
+        val eroIdFromIerApi = "camden-city-council"
+        val firstGssCodeFromEroApi = "E12345678"
+        val secondGssCodeFromEroApi = "E98764532"
+        val registerCheckMatchCountInRequest = 1 // Exact match
+
+        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
+        wireMockService.stubEroManagementGetEro(eroIdFromIerApi, firstGssCodeFromEroApi, secondGssCodeFromEroApi)
+        registerCheckRepository.save(
+            buildRegisterCheck(
+                correlationId = requestId,
+                gssCode = firstGssCodeFromEroApi,
+                status = CheckStatus.NO_MATCH, // Existing record with NO_MATCH check status
+                matchCount = 0
+            )
+        )
+
+        val earliestExpectedTimeStamp = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
+
+        // When
+        val response = webTestClient.post()
+            .uri(buildUri(requestId))
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
+            .contentType(APPLICATION_JSON)
+            .body(
+                Mono.just(buildRegisterCheckResultRequest(requestId = requestId, registerCheckMatchCount = registerCheckMatchCountInRequest)),
+                RegisterCheckResultRequest::class.java
+            )
+            .exchange()
+            .expectStatus().is4xxClientError
+            .returnResult(ErrorResponse::class.java)
+
+        // Then
+        val actual = response.responseBody.blockFirst()
+        assertThat(actual)
+            .hasTimestampNotBefore(earliestExpectedTimeStamp)
+            .hasStatus(409)
+            .hasError("Conflict")
+            .hasMessage("Register check with requestid:[14f66386-a86e-4dbc-af52-3327834f33d1] has an unexpected status:[NO_MATCH]")
+            .hasNoValidationErrors()
+        wireMockService.verifyGetEroIdentifierCalledOnce()
+        wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
     }
 
     private fun buildUri(requestId: UUID = UUID.randomUUID()) =

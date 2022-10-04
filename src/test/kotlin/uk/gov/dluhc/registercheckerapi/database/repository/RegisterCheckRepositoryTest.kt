@@ -127,8 +127,10 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             assertThat(actual).isEqualTo(registerCheck1)
             assertThat(actual?.status).isEqualTo(CheckStatus.EXACT_MATCH)
             assertThat(actual?.matchCount).isEqualTo(1)
-            assertThat(actual?.matchResultSentAt).isNotNull
             assertThat(actual?.registerCheckMatches).hasSize(1)
+            assertThat(actual?.registerCheckMatches?.get(0)?.personalDetail).isNotNull
+            assertThat(actual?.registerCheckMatches?.get(0)?.personalDetail?.address).isNotNull
+            assertThat(actual?.matchResultSentAt).isNotNull
         }
 
         @Test
@@ -165,7 +167,10 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             assertThat(actual?.status).isEqualTo(CheckStatus.MULTIPLE_MATCH)
             assertThat(actual?.matchCount).isEqualTo(2)
             assertThat(actual?.registerCheckMatches).hasSize(2)
+            assertThat(actual?.registerCheckMatches?.get(0)?.personalDetail).isNotNull
+            assertThat(actual?.registerCheckMatches?.get(0)?.personalDetail?.address).isNotNull
             assertThat(actual?.matchResultSentAt).isNotNull
+
         }
 
         @Test
@@ -186,6 +191,8 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             assertThat(actual?.status).isEqualTo(CheckStatus.TOO_MANY_MATCHES)
             assertThat(actual?.matchCount).isEqualTo(10)
             assertThat(actual?.registerCheckMatches).hasSize(10)
+            assertThat(actual?.registerCheckMatches?.get(0)?.personalDetail).isNotNull
+            assertThat(actual?.registerCheckMatches?.get(0)?.personalDetail?.address).isNotNull
             assertThat(actual?.matchResultSentAt).isNotNull
         }
     }

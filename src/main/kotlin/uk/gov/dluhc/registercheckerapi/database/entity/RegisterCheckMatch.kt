@@ -6,13 +6,11 @@ import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.NotFound
 import org.hibernate.annotations.NotFoundAction
 import org.hibernate.annotations.Type
-import org.hibernate.annotations.UpdateTimestamp
 import java.time.Instant
+import java.time.LocalDate
 import java.util.UUID
 import javax.persistence.CascadeType
 import javax.persistence.Entity
-import javax.persistence.EnumType
-import javax.persistence.Enumerated
 import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
@@ -20,13 +18,11 @@ import javax.persistence.Id
 import javax.persistence.JoinColumn
 import javax.persistence.OneToOne
 import javax.persistence.Table
-import javax.persistence.Version
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Size
 
 @Table
 @Entity
-class RegisterCheck(
+class RegisterCheckMatch(
     @Id
     @Type(type = UUIDCharType)
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "UUID")
@@ -38,26 +34,10 @@ class RegisterCheck(
     var correlationId: UUID,
 
     @NotNull
-    @Size(max = 36)
-    var sourceReference: String,
+    var emsElectorId: String,
 
     @NotNull
-    @Type(type = UUIDCharType)
-    var sourceCorrelationId: UUID,
-
-    @NotNull
-    @Size(max = 100)
-    @Enumerated(EnumType.STRING)
-    var sourceType: SourceType,
-
-    @NotNull
-    @Size(max = 80)
-    var gssCode: String,
-
-    @NotNull
-    @Size(max = 100)
-    @Enumerated(EnumType.STRING)
-    var status: CheckStatus,
+    var attestationCount: Int,
 
     @OneToOne(
         cascade = [CascadeType.ALL],
@@ -68,24 +48,17 @@ class RegisterCheck(
     @NotFound(action = NotFoundAction.EXCEPTION)
     var personalDetail: PersonalDetail,
 
-    var matchCount: Int? = null,
+    var registeredStartDate: LocalDate?,
 
-    var matchResultSentAt: Instant? = null,
+    var registeredEndDate: LocalDate?,
 
-    @NotNull
-    @Size(max = 255)
-    var createdBy: String,
+    var applicationCreatedAt: Instant?,
+
+    var franchiseCode: String?,
 
     @NotNull
     @CreationTimestamp
     var dateCreated: Instant? = null,
-
-    @NotNull
-    @UpdateTimestamp
-    var updatedAt: Instant? = null,
-
-    @Version
-    var version: Long? = null,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -99,18 +72,6 @@ class RegisterCheck(
 
     @Override
     override fun toString(): String {
-        return this::class.simpleName + "(id = $id , correlationId = $correlationId, dateCreated = $dateCreated , createdBy = $createdBy)"
+        return this::class.simpleName + "(id = $id , correlationId = $correlationId, dateCreated = $dateCreated)"
     }
-}
-
-enum class SourceType {
-    VOTER_CARD
-}
-
-enum class CheckStatus {
-    PENDING,
-    NO_MATCH,
-    EXACT_MATCH,
-    MULTIPLE_MATCH,
-    TOO_MANY_MATCHES
 }

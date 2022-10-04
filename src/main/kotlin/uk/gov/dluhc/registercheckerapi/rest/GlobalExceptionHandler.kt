@@ -36,7 +36,7 @@ class GlobalExceptionHandler(
     ): ResponseEntity<Any?>? {
         request.setAttribute(ERROR_MESSAGE, "Error getting eroId for certificate serial", SCOPE_REQUEST)
 
-        return populateRequestAndHandleExceptionInternal(e, INTERNAL_SERVER_ERROR, request)
+        return populateErrorResponseAndHandleExceptionInternal(e, INTERNAL_SERVER_ERROR, request)
     }
 
     @ExceptionHandler(
@@ -49,7 +49,7 @@ class GlobalExceptionHandler(
         e: RuntimeException,
         request: WebRequest
     ): ResponseEntity<Any?>? {
-        return populateRequestAndHandleExceptionInternal(e, NOT_FOUND, request)
+        return populateErrorResponseAndHandleExceptionInternal(e, NOT_FOUND, request)
     }
 
     @ExceptionHandler(value = [ElectoralRegistrationOfficeManagementApiException::class])
@@ -59,7 +59,7 @@ class GlobalExceptionHandler(
     ): ResponseEntity<Any?>? {
         request.setAttribute(ERROR_MESSAGE, "Error retrieving GSS codes", SCOPE_REQUEST)
 
-        return populateRequestAndHandleExceptionInternal(e, INTERNAL_SERVER_ERROR, request)
+        return populateErrorResponseAndHandleExceptionInternal(e, INTERNAL_SERVER_ERROR, request)
     }
 
     @ExceptionHandler(value = [GssCodeMismatchException::class])
@@ -67,7 +67,7 @@ class GlobalExceptionHandler(
         e: GssCodeMismatchException,
         request: WebRequest
     ): ResponseEntity<Any?>? {
-        return populateRequestAndHandleExceptionInternal(e, FORBIDDEN, request)
+        return populateErrorResponseAndHandleExceptionInternal(e, FORBIDDEN, request)
     }
 
     @ExceptionHandler(value = [RequestIdMismatchException::class])
@@ -75,7 +75,7 @@ class GlobalExceptionHandler(
         e: RequestIdMismatchException,
         request: WebRequest
     ): ResponseEntity<Any?>? {
-        return populateRequestAndHandleExceptionInternal(e, HttpStatus.BAD_REQUEST, request)
+        return populateErrorResponseAndHandleExceptionInternal(e, HttpStatus.BAD_REQUEST, request)
     }
 
     @ExceptionHandler(value = [RegisterCheckUnexpectedStatusException::class])
@@ -83,7 +83,7 @@ class GlobalExceptionHandler(
         e: RuntimeException,
         request: WebRequest
     ): ResponseEntity<Any?>? {
-        return populateRequestAndHandleExceptionInternal(e, HttpStatus.CONFLICT, request)
+        return populateErrorResponseAndHandleExceptionInternal(e, HttpStatus.CONFLICT, request)
     }
 
     override fun handleHttpMessageNotReadable(
@@ -110,7 +110,7 @@ class GlobalExceptionHandler(
         return handleExceptionInternal(e, body, headers, status, request)
     }
 
-    private fun populateRequestAndHandleExceptionInternal(
+    private fun populateErrorResponseAndHandleExceptionInternal(
         exception: Exception,
         status: HttpStatus,
         request: WebRequest

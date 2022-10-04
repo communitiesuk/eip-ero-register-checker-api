@@ -30,10 +30,6 @@ class RegisterCheckMatch(
     var id: UUID? = null,
 
     @NotNull
-    @Type(type = UUIDCharType)
-    var correlationId: UUID,
-
-    @NotNull
     var emsElectorId: String,
 
     @NotNull
@@ -72,6 +68,6 @@ class RegisterCheckMatch(
 
     @Override
     override fun toString(): String {
-        return this::class.simpleName + "(id = $id , correlationId = $correlationId, dateCreated = $dateCreated)"
+        return this::class.simpleName + "(id = $id, dateCreated = $dateCreated)"
     }
 }

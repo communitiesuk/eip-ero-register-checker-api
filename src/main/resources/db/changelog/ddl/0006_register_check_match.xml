@@ -16,10 +16,7 @@
                 />
             </column>
             <column name="correlation_id" type="uuid">
-                <constraints nullable="false"
-                             referencedTableName="register_check"
-                             referencedColumnNames="correlation_id"
-                             foreignKeyName="fk_register_check_match_correlation_id"/>
+                <constraints nullable="false"/>
             </column>
             <column name="ems_elector_id" type="varchar(255)">
                 <constraints nullable="false"/>
@@ -46,5 +43,9 @@
                      indexName="register_check_match_correlation_id_idx">
             <column name="correlation_id"/>
         </createIndex>
+
+        <rollback>
+            <dropTable tableName="register_check_match"/>
+        </rollback>
     </changeSet>
 </databaseChangeLog>

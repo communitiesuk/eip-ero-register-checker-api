@@ -4,7 +4,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
+import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
+import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatch
+import java.time.Instant
 import java.util.UUID
 
 internal class RegisterCheckRepositoryTest : IntegrationTest() {
@@ -30,6 +34,7 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
                 assertThat(it.dateCreated).isNotNull
                 assertThat(it.updatedAt).isNotNull
                 assertThat(it.version).isNotNull
+                assertThat(it.registerCheckMatches).isEmpty()
             }
         }
 
@@ -73,7 +78,7 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
     @Nested
     inner class FindByCorrelationId {
         @Test
-        fun `should get register check by correlation id`() {
+        fun `should get pending register check by correlation id`() {
             // Given
             val registerCheck1 = buildRegisterCheck(gssCode = "E09000020")
             val registerCheck2 = buildRegisterCheck(gssCode = "E09000021")
@@ -99,6 +104,82 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
 
             // Then
             assertThat(actual).isNull()
+        }
+    }
+
+    @Nested
+    inner class RecordMatchResult {
+        @Test
+        fun `should record exact match`() {
+            // Given
+            val registerCheck = buildRegisterCheck()
+            registerCheckRepository.save(registerCheck)
+            registerCheck.recordExactMatch(Instant.now(), buildRegisterCheckMatch())
+            registerCheckRepository.save(registerCheck)
+
+            // When
+            val actual = registerCheckRepository.findByCorrelationId(registerCheck.correlationId)
+
+            // Then
+            assertThat(actual).isNotNull
+            assertThat(actual).isEqualTo(registerCheck)
+            assertThat(actual?.status).isEqualTo(CheckStatus.EXACT_MATCH)
+        }
+
+        @Test
+        fun `should record no match`() {
+            // Given
+            val registerCheck = buildRegisterCheck()
+            registerCheckRepository.save(registerCheck)
+            registerCheck.recordNoMatch(Instant.now())
+            registerCheckRepository.save(registerCheck)
+
+            // When
+            val actual = registerCheckRepository.findByCorrelationId(registerCheck.correlationId)
+
+            // Then
+            assertThat(actual).isNotNull
+            assertThat(actual).isEqualTo(registerCheck)
+            assertThat(actual?.status).isEqualTo(CheckStatus.NO_MATCH)
+        }
+
+        @Test
+        fun `should record multiple matches`() {
+            // Given
+            val registerCheck = buildRegisterCheck()
+            registerCheckRepository.save(registerCheck)
+            registerCheck.recordMultipleMatches(Instant.now(), listOf(buildRegisterCheckMatch(), buildRegisterCheckMatch()))
+            registerCheckRepository.save(registerCheck)
+
+            // When
+            val actual = registerCheckRepository.findByCorrelationId(registerCheck.correlationId)
+
+            // Then
+            assertThat(actual).isNotNull
+            assertThat(actual).isEqualTo(registerCheck)
+            assertThat(actual?.status).isEqualTo(CheckStatus.MULTIPLE_MATCH)
+            assertThat(actual?.matchCount).isEqualTo(2)
+            assertThat(actual?.registerCheckMatches?.size).isEqualTo(2)
+        }
+
+        @Test
+        fun `should record too many matches`() {
+            // Given
+            val registerCheck = buildRegisterCheck()
+            registerCheckRepository.save(registerCheck)
+            val matches = mutableListOf<RegisterCheckMatch>().apply { repeat(10) { add(buildRegisterCheckMatch()) } }
+            registerCheck.recordTooManyMatches(Instant.now(), matches)
+            registerCheckRepository.save(registerCheck)
+
+            // When
+            val actual = registerCheckRepository.findByCorrelationId(registerCheck.correlationId)
+
+            // Then
+            assertThat(actual).isNotNull
+            assertThat(actual).isEqualTo(registerCheck)
+            assertThat(actual?.status).isEqualTo(CheckStatus.TOO_MANY_MATCHES)
+            assertThat(actual?.matchCount).isEqualTo(10)
+            assertThat(actual?.registerCheckMatches?.size).isEqualTo(10)
         }
     }
 }

@@ -170,7 +170,6 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             assertThat(actual?.registerCheckMatches?.get(0)?.personalDetail).isNotNull
             assertThat(actual?.registerCheckMatches?.get(0)?.personalDetail?.address).isNotNull
             assertThat(actual?.matchResultSentAt).isNotNull
-
         }
 
         @Test

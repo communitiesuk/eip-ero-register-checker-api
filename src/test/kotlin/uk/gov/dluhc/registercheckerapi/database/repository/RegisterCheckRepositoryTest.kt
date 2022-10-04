@@ -112,18 +112,23 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         @Test
         fun `should record exact match`() {
             // Given
-            val registerCheck = buildRegisterCheck()
-            registerCheckRepository.save(registerCheck)
-            registerCheck.recordExactMatch(Instant.now(), buildRegisterCheckMatch())
-            registerCheckRepository.save(registerCheck)
+            val registerCheck1 = buildRegisterCheck()
+            val registerCheck2 = buildRegisterCheck()
+            registerCheckRepository.saveAll(listOf(registerCheck1, registerCheck2))
+            registerCheck1.recordExactMatch(Instant.now(), buildRegisterCheckMatch())
+            registerCheck2.recordNoMatch(Instant.now())
+            registerCheckRepository.saveAll(listOf(registerCheck1, registerCheck2))
 
             // When
-            val actual = registerCheckRepository.findByCorrelationId(registerCheck.correlationId)
+            val actual = registerCheckRepository.findByCorrelationId(registerCheck1.correlationId)
 
             // Then
             assertThat(actual).isNotNull
-            assertThat(actual).isEqualTo(registerCheck)
+            assertThat(actual).isEqualTo(registerCheck1)
             assertThat(actual?.status).isEqualTo(CheckStatus.EXACT_MATCH)
+            assertThat(actual?.matchCount).isEqualTo(1)
+            assertThat(actual?.matchResultSentAt).isNotNull
+            assertThat(actual?.registerCheckMatches).hasSize(1)
         }
 
         @Test
@@ -159,7 +164,8 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             assertThat(actual).isEqualTo(registerCheck)
             assertThat(actual?.status).isEqualTo(CheckStatus.MULTIPLE_MATCH)
             assertThat(actual?.matchCount).isEqualTo(2)
-            assertThat(actual?.registerCheckMatches?.size).isEqualTo(2)
+            assertThat(actual?.registerCheckMatches).hasSize(2)
+            assertThat(actual?.matchResultSentAt).isNotNull
         }
 
         @Test
@@ -179,7 +185,8 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             assertThat(actual).isEqualTo(registerCheck)
             assertThat(actual?.status).isEqualTo(CheckStatus.TOO_MANY_MATCHES)
             assertThat(actual?.matchCount).isEqualTo(10)
-            assertThat(actual?.registerCheckMatches?.size).isEqualTo(10)
+            assertThat(actual?.registerCheckMatches).hasSize(10)
+            assertThat(actual?.matchResultSentAt).isNotNull
         }
     }
 }

@@ -42,11 +42,11 @@ class RegisterCheckerController(
         @RequestParam(name = QUERY_PARAM_PAGE_SIZE, required = false) pageSize: Int?
     ): PendingRegisterChecksResponse {
         logger.info("Getting pending register checks for EMS ERO certificateSerial=[${authentication.credentials}]")
-        return registerCheckService.getPendingRegisterChecks(
-            authentication.credentials.toString(),
-            pageSize ?: DEFAULT_PAGE_SIZE
-        )
-            .let { pendingRegisterChecks ->
+        return registerCheckService
+            .getPendingRegisterChecks(
+                certificateSerial = authentication.credentials.toString(),
+                pageSize = pageSize ?: DEFAULT_PAGE_SIZE
+            ).let { pendingRegisterChecks ->
                 PendingRegisterChecksResponse(
                     pageSize = pendingRegisterChecks.size,
                     registerCheckRequests = pendingRegisterChecks.map(pendingRegisterCheckMapper::pendingRegisterCheckDtoToPendingRegisterCheckModel)
@@ -63,9 +63,10 @@ class RegisterCheckerController(
         @Valid @RequestBody request: RegisterCheckResultRequest
     ) {
         logger.info("Updating pending register checks for EMS ERO certificateSerial=[${authentication.credentials}] with requestId=[$requestId]")
-        registerCheckService.updatePendingRegisterCheck(
-            certificateSerial = authentication.credentials.toString(),
-            registerCheckResultDto = registerCheckResultMapper.fromRegisterCheckResultRequestApiToDto(requestId, request)
-        )
+        registerCheckService
+            .updatePendingRegisterCheck(
+                certificateSerial = authentication.credentials.toString(),
+                registerCheckResultDto = registerCheckResultMapper.fromRegisterCheckResultRequestApiToDto(requestId, request)
+            )
     }
 }

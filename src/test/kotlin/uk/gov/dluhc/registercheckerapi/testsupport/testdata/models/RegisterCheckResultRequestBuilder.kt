@@ -14,7 +14,7 @@ fun buildRegisterCheckResultRequest(
     createdAt: OffsetDateTime = OffsetDateTime.now(),
     registerCheckMatchCount: Int = 0,
     applicationCreatedAt: OffsetDateTime? = OffsetDateTime.now(),
-    registerCheckMatches: List<RegisterCheckMatch>? = listOf(buildRegisterCheckMatch(applicationCreatedAt = applicationCreatedAt))
+    registerCheckMatches: List<RegisterCheckMatch>? = listOf(buildRegisterCheckMatchRequest(applicationCreatedAt = applicationCreatedAt))
 ) = RegisterCheckResultRequest(
     requestid = requestId,
     gssCode = gssCode,
@@ -23,7 +23,7 @@ fun buildRegisterCheckResultRequest(
     registerCheckMatches = registerCheckMatches
 )
 
-fun buildRegisterCheckMatch(
+fun buildRegisterCheckMatchRequest(
     emsElectorId: String = "1234567899",
     attestationCount: Int = 1,
     fn: String = faker.name().firstName(),

@@ -97,28 +97,17 @@ class RegisterCheck(
     var version: Long? = null,
 ) {
 
-    fun recordNoMatch(matchResultSentAt: Instant) =
-        recordMatchResult(NO_MATCH, 0, matchResultSentAt, emptyList())
-
-    fun recordExactMatch(matchResultSentAt: Instant, registerCheckMatch: RegisterCheckMatch) =
-        recordMatchResult(EXACT_MATCH, 1, matchResultSentAt, listOf(registerCheckMatch))
-
-    fun recordMultipleMatches(matchResultSentAt: Instant, matchCount: Int, registerCheckMatches: List<RegisterCheckMatch>) =
-        recordMatchResult(MULTIPLE_MATCH, matchCount, matchResultSentAt, registerCheckMatches)
-
-    fun recordTooManyMatches(matchResultSentAt: Instant, matchCount: Int, registerCheckMatches: List<RegisterCheckMatch>) =
-        recordMatchResult(TOO_MANY_MATCHES, matchCount, matchResultSentAt, registerCheckMatches)
-
     fun recordMatchResult(
-        status: CheckStatus,
         matchCount: Int,
         matchResultSentAt: Instant,
         registerCheckMatches: List<RegisterCheckMatch>
     ) {
-        this.status = status
-        this.matchCount = matchCount
-        this.matchResultSentAt = matchResultSentAt
-        this.registerCheckMatches += registerCheckMatches
+        when (matchCount) {
+            0 -> recordNoMatch(matchResultSentAt)
+            1 -> recordExactMatch(matchResultSentAt, registerCheckMatches.first())
+            in 2..10 -> recordMultipleMatches(matchResultSentAt, matchCount, registerCheckMatches)
+            else -> recordTooManyMatches(matchResultSentAt, matchCount, registerCheckMatches)
+        }
     }
 
     override fun equals(other: Any?): Boolean {
@@ -134,6 +123,30 @@ class RegisterCheck(
     @Override
     override fun toString(): String {
         return this::class.simpleName + "(id = $id , correlationId = $correlationId, dateCreated = $dateCreated , createdBy = $createdBy)"
+    }
+
+    private fun recordNoMatch(matchResultSentAt: Instant) =
+        recordMatchResult(NO_MATCH, 0, matchResultSentAt, emptyList())
+
+    private fun recordExactMatch(matchResultSentAt: Instant, registerCheckMatch: RegisterCheckMatch) =
+        recordMatchResult(EXACT_MATCH, 1, matchResultSentAt, listOf(registerCheckMatch))
+
+    private fun recordMultipleMatches(matchResultSentAt: Instant, matchCount: Int, registerCheckMatches: List<RegisterCheckMatch>) =
+        recordMatchResult(MULTIPLE_MATCH, matchCount, matchResultSentAt, registerCheckMatches)
+
+    private fun recordTooManyMatches(matchResultSentAt: Instant, matchCount: Int, registerCheckMatches: List<RegisterCheckMatch>) =
+        recordMatchResult(TOO_MANY_MATCHES, matchCount, matchResultSentAt, registerCheckMatches)
+
+    private fun recordMatchResult(
+        status: CheckStatus,
+        matchCount: Int,
+        matchResultSentAt: Instant,
+        registerCheckMatches: List<RegisterCheckMatch>
+    ) {
+        this.status = status
+        this.matchCount = matchCount
+        this.matchResultSentAt = matchResultSentAt
+        this.registerCheckMatches += registerCheckMatches
     }
 }
 

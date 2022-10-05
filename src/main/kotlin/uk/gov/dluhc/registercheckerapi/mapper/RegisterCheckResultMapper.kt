@@ -11,11 +11,17 @@ import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 import java.util.UUID
+import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch as RegisterCheckMatchEntity
 
 /**
  * Maps [RegisterCheckResultRequest] to [RegisterCheckResultDto].
  */
-@Mapper(uses = [InstantMapper::class])
+@Mapper(
+    uses = [
+        InstantMapper::class,
+        PersonalDetailMapper::class
+    ]
+)
 abstract class RegisterCheckResultMapper {
 
     @Mapping(target = "requestId", source = "queryParamRequestId")
@@ -25,6 +31,8 @@ abstract class RegisterCheckResultMapper {
     @Mapping(target = "registerCheckStatus", source = "apiRequest.registerCheckMatchCount", qualifiedByName = ["evaluateRegisterCheckStatus"])
     @Mapping(target = "registerCheckMatchDto", source = "apiRequest.registerCheckMatches")
     abstract fun fromRegisterCheckResultRequestApiToDto(queryParamRequestId: UUID, apiRequest: RegisterCheckResultRequest): RegisterCheckResultDto
+
+    abstract fun fromDtoToRegisterCheckMatchEntity(registerCheckMatchDto: RegisterCheckMatchDto): RegisterCheckMatchEntity
 
     @Mapping(target = "personalDetail", source = ".")
     protected abstract fun fromRegisterCheckMatchApiToDto(registerCheckMatchApi: RegisterCheckMatch): RegisterCheckMatchDto

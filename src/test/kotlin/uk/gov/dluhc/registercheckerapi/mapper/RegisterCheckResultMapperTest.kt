@@ -13,13 +13,18 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.given
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.verifyNoMoreInteractions
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckMatchDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildAddressDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPersonalDetailDto
-import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatch
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildRegisterCheckMatchDto
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildPersonalDetail
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatch
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchRequest
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckResultRequest
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -31,8 +36,18 @@ internal class RegisterCheckResultMapperTest {
     @Mock
     private lateinit var instantMapper: InstantMapper
 
+    @Mock
+    private lateinit var personalDetailMapper: PersonalDetailMapper
+
     @InjectMocks
     private val mapper = RegisterCheckResultMapperImpl()
+
+    companion object {
+        val JPA_MANAGED_FIELDS = arrayOf(
+            "id",
+            "dateCreated",
+        )
+    }
 
     @Nested
     inner class FromRegisterCheckResultRequestApiToDto {
@@ -138,7 +153,7 @@ internal class RegisterCheckResultMapperTest {
         fun `should map api to dto`() {
             // Given
             val applicationCreatedAt = OffsetDateTime.now().minusDays(5)
-            val apiRequest = buildRegisterCheckMatch(applicationCreatedAt = applicationCreatedAt)
+            val apiRequest = buildRegisterCheckMatchRequest(applicationCreatedAt = applicationCreatedAt)
 
             val expectedApplicationCreatedAt = applicationCreatedAt.toInstant()
             given(instantMapper.toInstant(any())).willReturn(expectedApplicationCreatedAt)
@@ -150,12 +165,13 @@ internal class RegisterCheckResultMapperTest {
             // Then
             assertThat(actual).isEqualTo(expected)
             verify(instantMapper).toInstant(applicationCreatedAt)
+            verifyNoInteractions(personalDetailMapper)
         }
 
         @Test
         fun `should map api to dto when optional fields are null`() {
             // Given
-            val apiRequest = buildRegisterCheckMatch(
+            val apiRequest = buildRegisterCheckMatchRequest(
                 mn = null,
                 dob = null,
                 regproperty = null,
@@ -177,6 +193,40 @@ internal class RegisterCheckResultMapperTest {
 
             // Then
             assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
+            verifyNoInteractions(personalDetailMapper)
+        }
+    }
+
+    @Nested
+    inner class FromDtoToRegisterCheckMatchEntity {
+
+        @Test
+        fun `should map dto to entity`() {
+            // Given
+            val registerCheckMatchDto = buildRegisterCheckMatchDto()
+            val expectedPersonalDetailEntity = buildPersonalDetail()
+
+            given(personalDetailMapper.personalDetailDtoToPersonalDetailEntity(any())).willReturn(expectedPersonalDetailEntity)
+            val expected = buildRegisterCheckMatch(
+                emsElectorId = registerCheckMatchDto.emsElectorId,
+                attestationCount = registerCheckMatchDto.attestationCount,
+                personalDetail = expectedPersonalDetailEntity,
+                registeredStartDate = registerCheckMatchDto.registeredStartDate,
+                registeredEndDate = registerCheckMatchDto.registeredEndDate,
+                applicationCreatedAt = registerCheckMatchDto.applicationCreatedAt!!,
+                franchiseCode = registerCheckMatchDto.franchiseCode
+            )
+
+            // When
+            val actual = mapper.fromDtoToRegisterCheckMatchEntity(registerCheckMatchDto)
+
+            // Then
+            assertThat(actual)
+                .usingRecursiveComparison()
+                .ignoringFields(*JPA_MANAGED_FIELDS)
+                .isEqualTo(expected)
+            verify(personalDetailMapper).personalDetailDtoToPersonalDetailEntity(registerCheckMatchDto.personalDetail)
+            verifyNoMoreInteractions(personalDetailMapper)
         }
     }
 

@@ -27,7 +27,7 @@ fun buildRegisterCheckMatch(
     franchiseCode = franchiseCode
 )
 
-fun buildRegisterCheckMatchFromApi(
+fun buildRegisterCheckMatchEntityFromRegisterCheckMatchApi(
     registerCheckMatchApi: RegisterCheckMatchApi,
 ) = RegisterCheckMatch(
     emsElectorId = registerCheckMatchApi.emsElectorId,

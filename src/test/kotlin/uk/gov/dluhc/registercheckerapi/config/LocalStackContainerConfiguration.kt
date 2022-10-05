@@ -44,7 +44,7 @@ class LocalStackContainerConfiguration {
         @Value("\${localstack.api.key}") localStackApiKey: String
     ): GenericContainer<*> {
         return GenericContainer(
-            DockerImageName.parse("localstack/localstack:latest")
+            DockerImageName.parse("localstack/localstack:1.1.0")
         ).withEnv(
             mapOf(
                 "SERVICES" to "sqs,sts",

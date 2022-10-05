@@ -5,13 +5,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
+import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.mockito.kotlin.verify
-import uk.gov.dluhc.registercheckerapi.database.entity.Address
+import org.mockito.kotlin.verifyNoMoreInteractions
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
-import uk.gov.dluhc.registercheckerapi.database.entity.PersonalDetail
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.dto.AddressDto
 import uk.gov.dluhc.registercheckerapi.dto.PendingRegisterCheckDto
@@ -19,6 +19,8 @@ import uk.gov.dluhc.registercheckerapi.dto.PersonalDetailDto
 import uk.gov.dluhc.registercheckerapi.models.PendingRegisterCheck
 import uk.gov.dluhc.registercheckerapi.models.SourceSystem
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPendingRegisterCheckDto
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPersonalDetailDto
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildPersonalDetail
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildInitiateRegisterCheckMessage
 import java.time.Instant
@@ -32,6 +34,9 @@ internal class PendingRegisterCheckMapperTest {
 
     @Mock
     private lateinit var instantMapper: InstantMapper
+
+    @Mock
+    private lateinit var personalDetailMapper: PersonalDetailMapper
 
     @InjectMocks
     private val mapper = PendingRegisterCheckMapperImpl()
@@ -76,12 +81,16 @@ internal class PendingRegisterCheckMapperTest {
             .isEqualTo(expected)
         assertThat(actual.correlationId).isNotNull
         assertThat(actual.createdAt).isNull()
+        verifyNoInteractions(instantMapper, personalDetailMapper)
     }
 
     @Test
     fun `should map dto to entity`() {
         // Given
         val pendingRegisterCheckDto = buildPendingRegisterCheckDto()
+        val expectedPersonalDetailEntity = buildPersonalDetail()
+        given(personalDetailMapper.personalDetailDtoToPersonalDetailEntity(any())).willReturn(expectedPersonalDetailEntity)
+
         val expected = RegisterCheck(
             correlationId = pendingRegisterCheckDto.correlationId,
             sourceType = EntitySourceType.VOTER_CARD,
@@ -90,23 +99,7 @@ internal class PendingRegisterCheckMapperTest {
             createdBy = pendingRegisterCheckDto.createdBy,
             gssCode = pendingRegisterCheckDto.gssCode,
             status = CheckStatus.PENDING,
-            personalDetail = PersonalDetail(
-                firstName = pendingRegisterCheckDto.personalDetail.firstName,
-                middleNames = pendingRegisterCheckDto.personalDetail.middleNames,
-                surname = pendingRegisterCheckDto.personalDetail.surname,
-                dateOfBirth = pendingRegisterCheckDto.personalDetail.dateOfBirth,
-                phoneNumber = pendingRegisterCheckDto.personalDetail.phone,
-                email = pendingRegisterCheckDto.personalDetail.email,
-                address = Address(
-                    property = pendingRegisterCheckDto.personalDetail.address.property,
-                    street = pendingRegisterCheckDto.personalDetail.address.street,
-                    locality = pendingRegisterCheckDto.personalDetail.address.locality,
-                    town = pendingRegisterCheckDto.personalDetail.address.town,
-                    area = pendingRegisterCheckDto.personalDetail.address.area,
-                    postcode = pendingRegisterCheckDto.personalDetail.address.postcode,
-                    uprn = pendingRegisterCheckDto.personalDetail.address.uprn,
-                )
-            )
+            personalDetail = expectedPersonalDetailEntity
         )
 
         // When
@@ -119,12 +112,18 @@ internal class PendingRegisterCheckMapperTest {
             .isEqualTo(expected)
         assertThat(actual.status).isEqualTo(CheckStatus.PENDING)
         assertThat(actual.dateCreated).isNull()
+        verify(personalDetailMapper).personalDetailDtoToPersonalDetailEntity(pendingRegisterCheckDto.personalDetail)
+        verifyNoMoreInteractions(personalDetailMapper)
+        verifyNoInteractions(instantMapper)
     }
 
     @Test
     fun `should map entity to dto`() {
         // Given
         val registerCheckEntity = buildRegisterCheck()
+        val expectedPersonalDetailDto = buildPersonalDetailDto()
+        given(personalDetailMapper.personalDetailEntityToPersonalDetailDto(any())).willReturn(expectedPersonalDetailDto)
+
         val expected = PendingRegisterCheckDto(
             correlationId = registerCheckEntity.correlationId,
             sourceType = DtoSourceType.VOTER_CARD,
@@ -133,32 +132,17 @@ internal class PendingRegisterCheckMapperTest {
             createdBy = registerCheckEntity.createdBy,
             gssCode = registerCheckEntity.gssCode,
             createdAt = registerCheckEntity.dateCreated,
-            personalDetail = PersonalDetailDto(
-                firstName = registerCheckEntity.personalDetail.firstName,
-                middleNames = registerCheckEntity.personalDetail.middleNames,
-                surname = registerCheckEntity.personalDetail.surname,
-                dateOfBirth = registerCheckEntity.personalDetail.dateOfBirth,
-                phone = registerCheckEntity.personalDetail.phoneNumber,
-                email = registerCheckEntity.personalDetail.email,
-                address = AddressDto(
-                    property = registerCheckEntity.personalDetail.address.property,
-                    street = registerCheckEntity.personalDetail.address.street,
-                    locality = registerCheckEntity.personalDetail.address.locality,
-                    town = registerCheckEntity.personalDetail.address.town,
-                    area = registerCheckEntity.personalDetail.address.area,
-                    postcode = registerCheckEntity.personalDetail.address.postcode,
-                    uprn = registerCheckEntity.personalDetail.address.uprn,
-                )
-            )
+            personalDetail = expectedPersonalDetailDto
         )
 
         // When
         val actual = mapper.registerCheckEntityToPendingRegisterCheckDto(registerCheckEntity)
 
         // Then
-        assertThat(actual)
-            .usingRecursiveComparison()
-            .isEqualTo(expected)
+        assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
+        verify(personalDetailMapper).personalDetailEntityToPersonalDetailDto(registerCheckEntity.personalDetail)
+        verifyNoMoreInteractions(personalDetailMapper)
+        verifyNoInteractions(instantMapper)
     }
 
     @Test
@@ -195,6 +179,7 @@ internal class PendingRegisterCheckMapperTest {
         // Then
         assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
         verify(instantMapper).toOffsetDateTime(createdAt)
+        verifyNoInteractions(personalDetailMapper)
     }
 
     @Test
@@ -234,5 +219,6 @@ internal class PendingRegisterCheckMapperTest {
         // Then
         assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
         verify(instantMapper).toOffsetDateTime(createdAt)
+        verifyNoInteractions(personalDetailMapper)
     }
 }

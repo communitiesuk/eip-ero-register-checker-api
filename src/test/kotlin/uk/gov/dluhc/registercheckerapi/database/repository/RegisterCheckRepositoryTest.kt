@@ -3,6 +3,8 @@ package uk.gov.dluhc.registercheckerapi.database.repository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch
@@ -109,28 +111,31 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
 
     @Nested
     inner class RecordMatchResult {
+
         @Test
         fun `should record exact match`() {
             // Given
-            val registerCheck1 = buildRegisterCheck()
-            val registerCheck2 = buildRegisterCheck()
-            registerCheckRepository.saveAll(listOf(registerCheck1, registerCheck2))
-            registerCheck1.recordExactMatch(Instant.now(), buildRegisterCheckMatch())
-            registerCheck2.recordNoMatch(Instant.now())
-            registerCheckRepository.saveAll(listOf(registerCheck1, registerCheck2))
+            val registerCheckToSearch = buildRegisterCheck()
+            val registerCheckAnother = buildRegisterCheck()
+            registerCheckRepository.saveAll(listOf(registerCheckToSearch, registerCheckAnother))
+            registerCheckToSearch.recordMatchResult(1, Instant.now(), listOf(buildRegisterCheckMatch()))
+            registerCheckAnother.recordMatchResult(0, Instant.now(), emptyList())
+            registerCheckRepository.saveAll(listOf(registerCheckToSearch, registerCheckAnother))
 
             // When
-            val actual = registerCheckRepository.findByCorrelationId(registerCheck1.correlationId)
+            val actual = registerCheckRepository.findByCorrelationId(registerCheckToSearch.correlationId)
 
             // Then
             assertThat(actual).isNotNull
-            assertThat(actual).isEqualTo(registerCheck1)
+            assertThat(actual).isEqualTo(registerCheckToSearch)
             assertThat(actual?.status).isEqualTo(CheckStatus.EXACT_MATCH)
-            assertThat(actual?.matchCount).isEqualTo(1)
+            assertThat(actual?.matchCount).isOne
             assertThat(actual?.registerCheckMatches).hasSize(1)
-            assertThat(actual?.registerCheckMatches?.get(0)?.personalDetail).isNotNull
-            assertThat(actual?.registerCheckMatches?.get(0)?.personalDetail?.address).isNotNull
-            assertThat(actual?.matchResultSentAt).isNotNull
+            for (registerCheckMatch in actual?.registerCheckMatches!!) {
+                assertThat(registerCheckMatch.personalDetail).isNotNull
+                assertThat(registerCheckMatch.personalDetail.address).isNotNull
+            }
+            assertThat(actual.matchResultSentAt).isNotNull
         }
 
         @Test
@@ -138,7 +143,7 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             // Given
             val registerCheck = buildRegisterCheck()
             registerCheckRepository.save(registerCheck)
-            registerCheck.recordNoMatch(Instant.now())
+            registerCheck.recordMatchResult(0, Instant.now(), emptyList())
             registerCheckRepository.save(registerCheck)
 
             // When
@@ -148,14 +153,19 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             assertThat(actual).isNotNull
             assertThat(actual).isEqualTo(registerCheck)
             assertThat(actual?.status).isEqualTo(CheckStatus.NO_MATCH)
+            assertThat(actual?.matchCount).isZero
+            assertThat(actual?.registerCheckMatches).isEmpty()
+            assertThat(actual?.matchResultSentAt).isNotNull
         }
 
-        @Test
-        fun `should record multiple matches`() {
+        @ParameterizedTest
+        @ValueSource(ints = [2, 3, 4, 5, 6, 7, 8, 9, 10])
+        fun `should record multiple matches`(matchCount: Int) {
             // Given
             val registerCheck = buildRegisterCheck()
             registerCheckRepository.save(registerCheck)
-            registerCheck.recordMultipleMatches(Instant.now(), 2, listOf(buildRegisterCheckMatch(), buildRegisterCheckMatch()))
+            val matches = mutableListOf<RegisterCheckMatch>().apply { repeat(matchCount) { add(buildRegisterCheckMatch()) } }
+            registerCheck.recordMatchResult(matchCount, Instant.now(), matches)
             registerCheckRepository.save(registerCheck)
 
             // When
@@ -165,20 +175,23 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             assertThat(actual).isNotNull
             assertThat(actual).isEqualTo(registerCheck)
             assertThat(actual?.status).isEqualTo(CheckStatus.MULTIPLE_MATCH)
-            assertThat(actual?.matchCount).isEqualTo(2)
-            assertThat(actual?.registerCheckMatches).hasSize(2)
-            assertThat(actual?.registerCheckMatches?.get(0)?.personalDetail).isNotNull
-            assertThat(actual?.registerCheckMatches?.get(0)?.personalDetail?.address).isNotNull
-            assertThat(actual?.matchResultSentAt).isNotNull
+            assertThat(actual?.matchCount).isEqualTo(matchCount)
+            assertThat(actual?.registerCheckMatches).hasSize(matches.size)
+            for (registerCheckMatch in actual?.registerCheckMatches!!) {
+                assertThat(registerCheckMatch.personalDetail).isNotNull
+                assertThat(registerCheckMatch.personalDetail.address).isNotNull
+            }
+            assertThat(actual.matchResultSentAt).isNotNull
         }
 
-        @Test
-        fun `should record too many matches`() {
+        @ParameterizedTest
+        @ValueSource(ints = [11, 100, 102])
+        fun `should record too many matches`(matchCount: Int) {
             // Given
             val registerCheck = buildRegisterCheck()
             registerCheckRepository.save(registerCheck)
-            val matches = mutableListOf<RegisterCheckMatch>().apply { repeat(10) { add(buildRegisterCheckMatch()) } }
-            registerCheck.recordTooManyMatches(Instant.now(), 10, matches)
+            val matches = mutableListOf<RegisterCheckMatch>().apply { repeat(matchCount) { add(buildRegisterCheckMatch()) } }
+            registerCheck.recordMatchResult(matchCount, Instant.now(), matches)
             registerCheckRepository.save(registerCheck)
 
             // When
@@ -188,11 +201,13 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             assertThat(actual).isNotNull
             assertThat(actual).isEqualTo(registerCheck)
             assertThat(actual?.status).isEqualTo(CheckStatus.TOO_MANY_MATCHES)
-            assertThat(actual?.matchCount).isEqualTo(10)
-            assertThat(actual?.registerCheckMatches).hasSize(10)
-            assertThat(actual?.registerCheckMatches?.get(0)?.personalDetail).isNotNull
-            assertThat(actual?.registerCheckMatches?.get(0)?.personalDetail?.address).isNotNull
-            assertThat(actual?.matchResultSentAt).isNotNull
+            assertThat(actual?.matchCount).isEqualTo(matchCount)
+            assertThat(actual?.registerCheckMatches).hasSize(matches.size)
+            for (registerCheckMatch in actual?.registerCheckMatches!!) {
+                assertThat(registerCheckMatch.personalDetail).isNotNull
+                assertThat(registerCheckMatch.personalDetail.address).isNotNull
+            }
+            assertThat(actual.matchResultSentAt).isNotNull
         }
     }
 }

@@ -6,12 +6,12 @@ import uk.gov.dluhc.registercheckerapi.testsupport.testdata.DataFaker.Companion.
 
 fun buildAddress(
     street: String = faker.address().streetName(),
-    property: String = faker.address().buildingNumber(),
-    locality: String = faker.address().streetName(),
-    town: String = faker.address().city(),
-    area: String = faker.address().state(),
+    property: String? = faker.address().buildingNumber(),
+    locality: String? = faker.address().streetName(),
+    town: String? = faker.address().city(),
+    area: String? = faker.address().state(),
     postcode: String = faker.address().postcode(),
-    uprn: String = RandomStringUtils.randomNumeric(12),
+    uprn: String? = RandomStringUtils.randomNumeric(12),
 ) = Address(
     street = street,
     property = property,

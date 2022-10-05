@@ -5,7 +5,7 @@ import org.owasp.dependencycheck.reporting.ReportGenerator.Format.HTML
 
 plugins {
     id("org.springframework.boot") version "2.7.3"
-    id("io.spring.dependency-management") version "1.0.14.RELEASE"
+    id("io.spring.dependency-management") version "1.0.13.RELEASE"
     kotlin("jvm") version "1.7.0"
     kotlin("kapt") version "1.7.10"
     kotlin("plugin.spring") version "1.7.0"
@@ -39,7 +39,7 @@ apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 apply(plugin = "org.jetbrains.kotlin.plugin.jpa")
 apply(plugin = "org.jetbrains.kotlin.plugin.allopen")
 
-extra["awsSdkVersion"] = "2.17.285"
+extra["awsSdkVersion"] = "2.17.272"
 extra["springCloudVersion"] = "2.4.2"
 
 // TODO to test build
@@ -93,11 +93,11 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
     testImplementation("com.github.tomakehurst:wiremock-jre8:2.34.0")
-    testImplementation("net.datafaker:datafaker:1.6.0")
+    testImplementation("net.datafaker:datafaker:1.5.0")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.17.4")
-    testImplementation("org.testcontainers:testcontainers:1.17.4")
-    testImplementation("org.testcontainers:mysql:1.17.4")
+    testImplementation("org.testcontainers:junit-jupiter:1.17.3")
+    testImplementation("org.testcontainers:testcontainers:1.17.3")
+    testImplementation("org.testcontainers:mysql:1.17.3")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 }
 

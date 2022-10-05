@@ -42,6 +42,7 @@ apply(plugin = "org.jetbrains.kotlin.plugin.allopen")
 extra["awsSdkVersion"] = "2.17.285"
 extra["springCloudVersion"] = "2.4.2"
 
+// TODO to test build
 
 dependencies {
     // framework

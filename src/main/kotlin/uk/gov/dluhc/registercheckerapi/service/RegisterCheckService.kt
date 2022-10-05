@@ -14,6 +14,7 @@ import uk.gov.dluhc.registercheckerapi.exception.PendingRegisterCheckNotFoundExc
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckUnexpectedStatusException
 import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
+import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMapper
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -23,7 +24,8 @@ class RegisterCheckService(
     private val ierApiClient: IerApiClient,
     private val eroService: EroService,
     private val registerCheckRepository: RegisterCheckRepository,
-    private val pendingRegisterCheckMapper: PendingRegisterCheckMapper
+    private val pendingRegisterCheckMapper: PendingRegisterCheckMapper,
+    private val registerCheckResultMapper: RegisterCheckResultMapper
 ) {
 
     fun getPendingRegisterChecks(certificateSerial: String, pageSize: Int): List<PendingRegisterCheckDto> {
@@ -44,9 +46,12 @@ class RegisterCheckService(
         validateGssCodeMatch(certificateSerial, registerCheckResultDto.gssCode)
         getPendingRegisterCheck(registerCheckResultDto.correlationId).apply {
             when (status) {
-                CheckStatus.PENDING -> {
-                    // TODO update status and persist RegisterCheckMatchDto payload in subsequent subtasks
-                }
+                CheckStatus.PENDING -> recordMatchResult(
+                    matchCount = registerCheckResultDto.matchCount,
+                    matchResultSentAt = registerCheckResultDto.matchResultSentAt,
+                    registerCheckMatches = registerCheckResultDto.registerCheckMatchDto?.map(registerCheckResultMapper::fromDtoToRegisterCheckMatchEntity) ?: emptyList()
+                )
+
                 else -> throw RegisterCheckUnexpectedStatusException(correlationId, status)
                     .also { logger.warn { "Register check with correlationId:[$correlationId] is in status [$status] and cannot be set to [${registerCheckResultDto.registerCheckStatus}]" } }
             }

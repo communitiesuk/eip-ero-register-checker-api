@@ -5,6 +5,9 @@ import org.assertj.core.api.Assertions.catchThrowableOfType
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
@@ -20,13 +23,25 @@ import uk.gov.dluhc.registercheckerapi.client.ElectoralRegistrationOfficeNotFoun
 import uk.gov.dluhc.registercheckerapi.client.IerApiClient
 import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
 import uk.gov.dluhc.registercheckerapi.client.IerGeneralException
+import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.PENDING
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
+import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckMatchDto
+import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
+import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
+import uk.gov.dluhc.registercheckerapi.exception.PendingRegisterCheckNotFoundException
+import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckUnexpectedStatusException
+import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
+import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMapper
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomEroId
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomGssCode
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPendingRegisterCheckDto
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildRegisterCheckMatchDto
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildRegisterCheckResultDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatch
+import java.time.Instant
 import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
@@ -43,6 +58,9 @@ internal class RegisterCheckServiceTest {
 
     @Mock
     private lateinit var pendingRegisterCheckMapper: PendingRegisterCheckMapper
+
+    @Mock
+    private lateinit var registerCheckResultMapper: RegisterCheckResultMapper
 
     @InjectMocks
     private lateinit var registerCheckService: RegisterCheckService
@@ -262,6 +280,263 @@ internal class RegisterCheckServiceTest {
             assertThat(ex).isEqualTo(expected)
             verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
             verifyNoInteractions(registerCheckRepository, pendingRegisterCheckMapper)
+        }
+    }
+
+    @Nested
+    inner class UpdatePendingRegisterCheck {
+
+        @Test
+        fun `should throw RequestMismatchException when requestId in query param mismatches requestId in payload`() {
+            // Given
+            val certificateSerial = "123456789"
+            val requestId = UUID.fromString("322ff65f-a0a1-497d-a224-04800711a1fb")
+            val correlationId = UUID.fromString("74f66386-a86e-4dbc-af52-3327834f33dc")
+            val registerCheckResultDto = buildRegisterCheckResultDto(requestId = requestId, correlationId = correlationId)
+            val expected = RequestIdMismatchException(requestId, correlationId)
+
+            // When
+            val ex = catchThrowableOfType(
+                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
+                RequestIdMismatchException::class.java
+            )
+
+            // Then
+            assertThat(ex.message).isEqualTo(expected.message)
+            assertThat(ex.message).isEqualTo("Request requestId:[322ff65f-a0a1-497d-a224-04800711a1fb] does not match with requestid:[74f66386-a86e-4dbc-af52-3327834f33dc] in body payload")
+            verifyNoInteractions(ierApiClient, eroService, registerCheckRepository, registerCheckResultMapper)
+        }
+
+        @Test
+        fun `should throw GssCodeMismatchException when gssCode from IER mismatches gssCode in payload`() {
+            // Given
+            val certificateSerial = "123456789"
+            val requestId = UUID.fromString("322ff65f-a0a1-497d-a224-04800711a1fb")
+            val requestGssCode = "E12345678"
+            val eroIdFromIerApi = getRandomEroId()
+            val differentGssCodeFromEroApi = getRandomGssCode()
+            val registerCheckResultDto = buildRegisterCheckResultDto(requestId = requestId, correlationId = requestId, gssCode = requestGssCode)
+            val expected = GssCodeMismatchException(certificateSerial, requestGssCode)
+
+            given(ierApiClient.getEroIdentifier(any())).willReturn(EROCertificateMapping(eroId = eroIdFromIerApi, certificateSerial = certificateSerial))
+            given(eroService.lookupGssCodesForEro(any())).willReturn(listOf(differentGssCodeFromEroApi))
+
+            // When
+            val ex = catchThrowableOfType(
+                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
+                GssCodeMismatchException::class.java
+            )
+
+            // Then
+            assertThat(ex.message).isEqualTo(expected.message)
+            assertThat(ex.message).isEqualTo("Request gssCode:[E12345678] does not match with gssCode for certificateSerial:[123456789]")
+            verify(ierApiClient).getEroIdentifier(certificateSerial)
+            verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
+            verifyNoInteractions(registerCheckRepository, registerCheckResultMapper)
+        }
+
+        @Test
+        fun `should throw PendingRegisterCheckNotFoundException for a non-existing pending register check`() {
+            // Given
+            val certificateSerial = "123456789"
+            val requestId = UUID.fromString("322ff65f-a0a1-497d-a224-04800711a1fb")
+            val requestGssCode = "E12345678"
+            val eroIdFromIerApi = getRandomEroId()
+            val registerCheckResultDto = buildRegisterCheckResultDto(requestId = requestId, correlationId = requestId, gssCode = requestGssCode)
+            val expected = PendingRegisterCheckNotFoundException(requestId)
+
+            given(ierApiClient.getEroIdentifier(any())).willReturn(EROCertificateMapping(eroId = eroIdFromIerApi, certificateSerial = certificateSerial))
+            given(eroService.lookupGssCodesForEro(any())).willReturn(listOf(requestGssCode))
+            given(registerCheckRepository.findByCorrelationId(any())).willReturn(null)
+
+            // When
+            val ex = catchThrowableOfType(
+                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
+                PendingRegisterCheckNotFoundException::class.java
+            )
+
+            // Then
+            assertThat(ex.message).isEqualTo(expected.message)
+            assertThat(ex.message).isEqualTo("Pending register check for requestid:[322ff65f-a0a1-497d-a224-04800711a1fb] not found")
+            verify(ierApiClient).getEroIdentifier(certificateSerial)
+            verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
+            verify(registerCheckRepository).findByCorrelationId(requestId)
+            verifyNoInteractions(registerCheckResultMapper)
+        }
+
+        @ParameterizedTest
+        @EnumSource(
+            value = CheckStatus::class,
+            names = ["NO_MATCH", "EXACT_MATCH", "MULTIPLE_MATCH", "TOO_MANY_MATCHES"]
+        )
+        fun `should throw RegisterCheckUnexpectedStatusException when existing register check status is not PENDING`(
+            existingCheckStatusInDb: CheckStatus,
+        ) {
+            // Given
+            val certificateSerial = "123456789"
+            val requestId = UUID.fromString("322ff65f-a0a1-497d-a224-04800711a1fb")
+            val requestGssCode = "E12345678"
+            val eroIdFromIerApi = getRandomEroId()
+            val registerCheckResultDto = buildRegisterCheckResultDto(
+                requestId = requestId,
+                correlationId = requestId,
+                gssCode = requestGssCode,
+                registerCheckStatus = RegisterCheckStatus.EXACT_MATCH,
+            )
+            val expected = RegisterCheckUnexpectedStatusException(requestId, existingCheckStatusInDb)
+
+            given(ierApiClient.getEroIdentifier(any())).willReturn(EROCertificateMapping(eroId = eroIdFromIerApi, certificateSerial = certificateSerial))
+            given(eroService.lookupGssCodesForEro(any())).willReturn(listOf(requestGssCode))
+            given(registerCheckRepository.findByCorrelationId(any())).willReturn(buildRegisterCheck(correlationId = requestId, gssCode = requestGssCode, status = existingCheckStatusInDb))
+
+            // When
+            val ex = catchThrowableOfType(
+                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
+                RegisterCheckUnexpectedStatusException::class.java
+            )
+
+            // Then
+            assertThat(ex.message).isEqualTo(expected.message)
+            assertThat(ex.message).isEqualTo("Register check with requestid:[322ff65f-a0a1-497d-a224-04800711a1fb] has an unexpected status:[$existingCheckStatusInDb]")
+            verify(ierApiClient).getEroIdentifier(certificateSerial)
+            verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
+            verify(registerCheckRepository).findByCorrelationId(requestId)
+            verifyNoInteractions(registerCheckResultMapper)
+        }
+
+        @ParameterizedTest
+        @CsvSource(
+            value = [
+                "0, NO_MATCH",
+                "1, EXACT_MATCH",
+                "10, MULTIPLE_MATCH",
+                "11, TOO_MANY_MATCHES"
+            ]
+        )
+        fun `should update pending register check successfully`(
+            matchCount: Int,
+            registerCheckStatus: RegisterCheckStatus
+        ) {
+            // Given
+            val certificateSerial = "123456789"
+            val requestId = UUID.fromString("322ff65f-a0a1-497d-a224-04800711a1fb")
+            val requestGssCode = "E12345678"
+            val eroIdFromIerApi = getRandomEroId()
+            val registerCheckMatchDtoList = mutableListOf<RegisterCheckMatchDto>().apply { repeat(matchCount) { add(buildRegisterCheckMatchDto()) } }
+            val registerCheckResultDto = buildRegisterCheckResultDto(
+                requestId = requestId,
+                correlationId = requestId,
+                gssCode = requestGssCode,
+                matchResultSentAt = Instant.now(),
+                matchCount = matchCount,
+                registerCheckStatus = registerCheckStatus,
+                registerCheckMatchDto = registerCheckMatchDtoList
+            )
+
+            given(ierApiClient.getEroIdentifier(any())).willReturn(EROCertificateMapping(eroId = eroIdFromIerApi, certificateSerial = certificateSerial))
+            given(eroService.lookupGssCodesForEro(any())).willReturn(listOf(requestGssCode))
+            given(registerCheckRepository.findByCorrelationId(any())).willReturn(buildRegisterCheck(correlationId = requestId, gssCode = requestGssCode, status = PENDING))
+            registerCheckMatchDtoList.forEach {
+                given(registerCheckResultMapper.fromDtoToRegisterCheckMatchEntity(it)).willReturn(buildRegisterCheckMatch())
+            }
+
+            // When
+            registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto)
+
+            // Then
+            verify(ierApiClient).getEroIdentifier(certificateSerial)
+            verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
+            verify(registerCheckRepository).findByCorrelationId(requestId)
+            registerCheckMatchDtoList.forEach { verify(registerCheckResultMapper).fromDtoToRegisterCheckMatchEntity(it) }
+        }
+
+        @Test
+        fun `should throw IER not found exception given IER API client throws IER not found exception`() {
+            // Given
+            val certificateSerial = "123456789"
+            val registerCheckResultDto = buildRegisterCheckResultDto()
+
+            val expected = IerEroNotFoundException(certificateSerial)
+            given(ierApiClient.getEroIdentifier(any())).willThrow(expected)
+
+            // When
+            val ex = catchThrowableOfType(
+                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
+                IerEroNotFoundException::class.java
+            )
+
+            // Then
+            assertThat(ex).isEqualTo(expected)
+            verify(ierApiClient).getEroIdentifier(certificateSerial)
+            verifyNoInteractions(eroService, registerCheckRepository, registerCheckResultMapper)
+        }
+
+        @Test
+        fun `should throw general IER exception given IER API client throws general exception`() {
+            // Given
+            val certificateSerial = "123456789"
+            val registerCheckResultDto = buildRegisterCheckResultDto()
+            val expected = IerGeneralException("Error getting eroId for certificate serial 123456789")
+
+            given(ierApiClient.getEroIdentifier(any())).willThrow(expected)
+
+            // When
+            val ex = catchThrowableOfType(
+                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
+                IerGeneralException::class.java
+            )
+
+            // Then
+            assertThat(ex).isEqualTo(expected)
+            verify(ierApiClient).getEroIdentifier(certificateSerial)
+            verifyNoInteractions(eroService, registerCheckRepository, registerCheckResultMapper)
+        }
+
+        @Test
+        fun `should throw ERO not found exception given ERO API client throws not found exception`() {
+            // Given
+            val certificateSerial = "123456789"
+            val eroIdFromIerApi = getRandomEroId()
+            val registerCheckResultDto = buildRegisterCheckResultDto()
+            val expected = ElectoralRegistrationOfficeNotFoundException(certificateSerial)
+
+            given(ierApiClient.getEroIdentifier(any())).willReturn(EROCertificateMapping(eroId = eroIdFromIerApi, certificateSerial = certificateSerial))
+            given(eroService.lookupGssCodesForEro(any())).willThrow(expected)
+
+            // When
+            val ex = catchThrowableOfType(
+                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
+                ElectoralRegistrationOfficeNotFoundException::class.java
+            )
+
+            // Then
+            assertThat(ex).isEqualTo(expected)
+            verify(ierApiClient).getEroIdentifier(certificateSerial)
+            verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
+            verifyNoInteractions(registerCheckRepository, registerCheckResultMapper)
+        }
+
+        @Test
+        fun `should throw general ERO exception given ERO API client throws general exception`() {
+            // Given
+            val certificateSerial = "123456789"
+            val eroIdFromIerApi = "camden-city-council"
+            val registerCheckResultDto = buildRegisterCheckResultDto()
+            val expected = ElectoralRegistrationOfficeGeneralException("Some error getting ERO camden-city-council")
+
+            given(ierApiClient.getEroIdentifier(any())).willReturn(EROCertificateMapping(eroId = eroIdFromIerApi, certificateSerial = certificateSerial))
+            given(eroService.lookupGssCodesForEro(any())).willThrow(expected)
+
+            // When
+            val ex = catchThrowableOfType(
+                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
+                ElectoralRegistrationOfficeGeneralException::class.java
+            )
+
+            // Then
+            assertThat(ex).isEqualTo(expected)
+            verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
+            verifyNoInteractions(registerCheckRepository, registerCheckResultMapper)
         }
     }
 }

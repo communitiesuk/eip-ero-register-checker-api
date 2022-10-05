@@ -7,19 +7,21 @@ import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.models.ErrorResponse
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
+import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.entity.RegisterCheckAssert
 import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.models.ErrorResponseAssert.Companion.assertThat
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatchFromApi
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchRequest
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckResultRequest
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 
-internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
+private const val REQUEST_HEADER_NAME = "client-cert-serial"
+private const val CERT_SERIAL_NUMBER_VALUE = "543212222"
 
-    companion object {
-        private const val REQUEST_HEADER_NAME = "client-cert-serial"
-        private const val CERT_SERIAL_NUMBER_VALUE = "543212222"
-    }
+internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
     @Test
     fun `should return forbidden given valid header key is not present`() {
@@ -395,6 +397,60 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasNoValidationErrors()
         wireMockService.verifyGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
+    }
+
+    @Test
+    fun `should return success given pending register check with multiple match found for a given requestId`() {
+        // Given
+        val requestId = UUID.fromString("322ff65f-a0a1-497d-a224-04800711a1fb")
+        val eroIdFromIerApi = "camden-city-council"
+        val firstGssCodeFromEroApi = "E12345678"
+        val secondGssCodeFromEroApi = "E98764532"
+
+        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
+        wireMockService.stubEroManagementGetEro(eroIdFromIerApi, firstGssCodeFromEroApi, secondGssCodeFromEroApi)
+
+        registerCheckRepository.save(buildRegisterCheck(correlationId = requestId, gssCode = firstGssCodeFromEroApi, status = CheckStatus.PENDING))
+        registerCheckRepository.save(buildRegisterCheck(correlationId = UUID.randomUUID()))
+
+        val matchResultSentAt = OffsetDateTime.now(ZoneOffset.UTC)
+        val matchCount = 2
+        val matches = listOf(buildRegisterCheckMatchRequest(), buildRegisterCheckMatchRequest())
+        val expectedRegisterCheckMatchEntityList = listOf(buildRegisterCheckMatchFromApi(matches[0]), buildRegisterCheckMatchFromApi(matches[1]))
+        val requestBody = buildRegisterCheckResultRequest(
+            requestId = requestId,
+            gssCode = firstGssCodeFromEroApi,
+            createdAt = matchResultSentAt,
+            registerCheckMatchCount = matchCount,
+            registerCheckMatches = matches
+        )
+
+        // When
+        webTestClient.post()
+            .uri(buildUri(requestId))
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
+            .contentType(APPLICATION_JSON)
+            .body(
+                Mono.just(requestBody),
+                RegisterCheckResultRequest::class.java
+            )
+            .exchange()
+            .expectStatus()
+            .isCreated
+
+        // Then
+        val actualRegisterCheckJpaEntity = registerCheckRepository.findByCorrelationId(requestId)
+        RegisterCheckAssert
+            .assertThat(actualRegisterCheckJpaEntity)
+            .ignoringIdFields()
+            .ignoringDateFields()
+            .hasStatus(CheckStatus.MULTIPLE_MATCH)
+            .hasMatchResultSentAt(matchResultSentAt.toInstant())
+            .hasMatchCount(matchCount)
+            .hasRegisterCheckMatches(expectedRegisterCheckMatchEntityList)
+        wireMockService.verifyGetEroIdentifierCalledOnce()
+        wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
+        // TODO verify that SQS message is published to VCA as part of subsequent subtasks
     }
 
     private fun buildUri(requestId: UUID = UUID.randomUUID()) =

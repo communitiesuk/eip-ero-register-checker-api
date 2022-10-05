@@ -97,19 +97,6 @@ class RegisterCheck(
     var version: Long? = null,
 ) {
 
-    fun recordMatchResult(
-        matchCount: Int,
-        matchResultSentAt: Instant,
-        registerCheckMatches: List<RegisterCheckMatch>
-    ) {
-        when (matchCount) {
-            0 -> recordNoMatch(matchResultSentAt)
-            1 -> recordExactMatch(matchResultSentAt, registerCheckMatches.first())
-            in 2..10 -> recordMultipleMatches(matchResultSentAt, matchCount, registerCheckMatches)
-            else -> recordTooManyMatches(matchResultSentAt, matchCount, registerCheckMatches)
-        }
-    }
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || Hibernate.getClass(this) != Hibernate.getClass(other)) return false
@@ -125,16 +112,16 @@ class RegisterCheck(
         return this::class.simpleName + "(id = $id , correlationId = $correlationId, dateCreated = $dateCreated , createdBy = $createdBy)"
     }
 
-    private fun recordNoMatch(matchResultSentAt: Instant) =
+    fun recordNoMatch(matchResultSentAt: Instant) =
         recordMatchResult(NO_MATCH, 0, matchResultSentAt, emptyList())
 
-    private fun recordExactMatch(matchResultSentAt: Instant, registerCheckMatch: RegisterCheckMatch) =
+    fun recordExactMatch(matchResultSentAt: Instant, registerCheckMatch: RegisterCheckMatch) =
         recordMatchResult(EXACT_MATCH, 1, matchResultSentAt, listOf(registerCheckMatch))
 
-    private fun recordMultipleMatches(matchResultSentAt: Instant, matchCount: Int, registerCheckMatches: List<RegisterCheckMatch>) =
+    fun recordMultipleMatches(matchResultSentAt: Instant, matchCount: Int, registerCheckMatches: List<RegisterCheckMatch>) =
         recordMatchResult(MULTIPLE_MATCH, matchCount, matchResultSentAt, registerCheckMatches)
 
-    private fun recordTooManyMatches(matchResultSentAt: Instant, matchCount: Int, registerCheckMatches: List<RegisterCheckMatch>) =
+    fun recordTooManyMatches(matchResultSentAt: Instant, matchCount: Int, registerCheckMatches: List<RegisterCheckMatch>) =
         recordMatchResult(TOO_MANY_MATCHES, matchCount, matchResultSentAt, registerCheckMatches)
 
     private fun recordMatchResult(

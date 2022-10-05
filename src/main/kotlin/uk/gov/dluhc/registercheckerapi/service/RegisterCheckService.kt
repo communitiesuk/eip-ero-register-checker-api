@@ -46,11 +46,17 @@ class RegisterCheckService(
         validateGssCodeMatch(certificateSerial, registerCheckResultDto.gssCode)
         getPendingRegisterCheck(registerCheckResultDto.correlationId).apply {
             when (status) {
-                CheckStatus.PENDING -> recordMatchResult(
-                    matchCount = registerCheckResultDto.matchCount,
-                    matchResultSentAt = registerCheckResultDto.matchResultSentAt,
-                    registerCheckMatches = registerCheckResultDto.registerCheckMatchDto?.map(registerCheckResultMapper::fromDtoToRegisterCheckMatchEntity) ?: emptyList()
-                )
+                CheckStatus.PENDING -> {
+                    with(registerCheckResultDto) {
+                        val matches = this.registerCheckMatchDto?.map(registerCheckResultMapper::fromDtoToRegisterCheckMatchEntity) ?: emptyList()
+                        when (this.matchCount) {
+                            0 -> recordNoMatch(this.matchResultSentAt)
+                            1 -> recordExactMatch(this.matchResultSentAt, matches.first())
+                            in 2..10 -> recordMultipleMatches(this.matchResultSentAt, this.matchCount, matches)
+                            else -> recordTooManyMatches(this.matchResultSentAt, this.matchCount, matches)
+                        }
+                    }
+                } // Subsequent tasks will send SQS message to VCA
 
                 else -> throw RegisterCheckUnexpectedStatusException(correlationId, status)
                     .also { logger.warn { "Register check with correlationId:[$correlationId] is in status [$status] and cannot be set to [${registerCheckResultDto.registerCheckStatus}]" } }

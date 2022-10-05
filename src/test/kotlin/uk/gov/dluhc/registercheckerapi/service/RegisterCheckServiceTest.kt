@@ -40,6 +40,7 @@ import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPendingRegi
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildRegisterCheckMatchDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildRegisterCheckResultDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatch
 import java.time.Instant
 import java.util.UUID
 
@@ -435,6 +436,9 @@ internal class RegisterCheckServiceTest {
             given(ierApiClient.getEroIdentifier(any())).willReturn(EROCertificateMapping(eroId = eroIdFromIerApi, certificateSerial = certificateSerial))
             given(eroService.lookupGssCodesForEro(any())).willReturn(listOf(requestGssCode))
             given(registerCheckRepository.findByCorrelationId(any())).willReturn(buildRegisterCheck(correlationId = requestId, gssCode = requestGssCode, status = PENDING))
+            registerCheckMatchDtoList.forEach {
+                given(registerCheckResultMapper.fromDtoToRegisterCheckMatchEntity(it)).willReturn(buildRegisterCheckMatch())
+            }
 
             // When
             registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto)

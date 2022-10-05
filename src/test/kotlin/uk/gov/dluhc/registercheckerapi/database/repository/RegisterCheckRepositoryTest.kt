@@ -118,8 +118,8 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             val registerCheckToSearch = buildRegisterCheck()
             val registerCheckAnother = buildRegisterCheck()
             registerCheckRepository.saveAll(listOf(registerCheckToSearch, registerCheckAnother))
-            registerCheckToSearch.recordMatchResult(1, Instant.now(), listOf(buildRegisterCheckMatch()))
-            registerCheckAnother.recordMatchResult(0, Instant.now(), emptyList())
+            registerCheckToSearch.recordExactMatch(Instant.now(), buildRegisterCheckMatch())
+            registerCheckAnother.recordNoMatch(Instant.now())
             registerCheckRepository.saveAll(listOf(registerCheckToSearch, registerCheckAnother))
 
             // When
@@ -143,7 +143,7 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             // Given
             val registerCheck = buildRegisterCheck()
             registerCheckRepository.save(registerCheck)
-            registerCheck.recordMatchResult(0, Instant.now(), emptyList())
+            registerCheck.recordNoMatch(Instant.now())
             registerCheckRepository.save(registerCheck)
 
             // When
@@ -165,7 +165,7 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             val registerCheck = buildRegisterCheck()
             registerCheckRepository.save(registerCheck)
             val matches = mutableListOf<RegisterCheckMatch>().apply { repeat(matchCount) { add(buildRegisterCheckMatch()) } }
-            registerCheck.recordMatchResult(matchCount, Instant.now(), matches)
+            registerCheck.recordMultipleMatches(Instant.now(), matchCount, matches)
             registerCheckRepository.save(registerCheck)
 
             // When
@@ -191,7 +191,7 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             val registerCheck = buildRegisterCheck()
             registerCheckRepository.save(registerCheck)
             val matches = mutableListOf<RegisterCheckMatch>().apply { repeat(matchCount) { add(buildRegisterCheckMatch()) } }
-            registerCheck.recordMatchResult(matchCount, Instant.now(), matches)
+            registerCheck.recordTooManyMatches(Instant.now(), matchCount, matches)
             registerCheckRepository.save(registerCheck)
 
             // When

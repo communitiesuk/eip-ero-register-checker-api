@@ -26,6 +26,7 @@ abstract class PendingRegisterCheckMapper {
     abstract fun initiateRegisterCheckMessageToPendingRegisterCheckDto(initiateRegisterCheckMessage: InitiateRegisterCheckMessage): PendingRegisterCheckDto
 
     @Mapping(target = "status", constant = "PENDING")
+    @Mapping(target = "registerCheckMatches", expression = "java(new java.util.ArrayList())")
     abstract fun pendingRegisterCheckDtoToRegisterCheckEntity(pendingRegisterCheckDto: PendingRegisterCheckDto): RegisterCheck
 
     @Mapping(target = "createdAt", source = "dateCreated")

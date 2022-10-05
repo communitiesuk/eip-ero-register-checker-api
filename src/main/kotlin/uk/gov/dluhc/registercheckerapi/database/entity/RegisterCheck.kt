@@ -3,8 +3,14 @@ package uk.gov.dluhc.registercheckerapi.database.entity
 import org.hibernate.Hibernate
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.GenericGenerator
+import org.hibernate.annotations.NotFound
+import org.hibernate.annotations.NotFoundAction
 import org.hibernate.annotations.Type
 import org.hibernate.annotations.UpdateTimestamp
+import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.EXACT_MATCH
+import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.MULTIPLE_MATCH
+import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.NO_MATCH
+import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.TOO_MANY_MATCHES
 import java.time.Instant
 import java.util.UUID
 import javax.persistence.CascadeType
@@ -16,6 +22,7 @@ import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
 import javax.persistence.JoinColumn
+import javax.persistence.OneToMany
 import javax.persistence.OneToOne
 import javax.persistence.Table
 import javax.persistence.Version
@@ -63,11 +70,16 @@ class RegisterCheck(
         fetch = FetchType.EAGER
     )
     @JoinColumn(name = "personal_detail_id")
+    @NotFound(action = NotFoundAction.EXCEPTION)
     var personalDetail: PersonalDetail,
 
     var matchCount: Int? = null,
 
     var matchResultSentAt: Instant? = null,
+
+    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "correlation_id", nullable = false)
+    var registerCheckMatches: MutableList<RegisterCheckMatch> = mutableListOf(),
 
     @NotNull
     @Size(max = 255)
@@ -84,6 +96,31 @@ class RegisterCheck(
     @Version
     var version: Long? = null,
 ) {
+
+    fun recordNoMatch(matchResultSentAt: Instant) =
+        recordMatchResult(NO_MATCH, 0, matchResultSentAt, emptyList())
+
+    fun recordExactMatch(matchResultSentAt: Instant, registerCheckMatch: RegisterCheckMatch) =
+        recordMatchResult(EXACT_MATCH, 1, matchResultSentAt, listOf(registerCheckMatch))
+
+    fun recordMultipleMatches(matchResultSentAt: Instant, matchCount: Int, registerCheckMatches: List<RegisterCheckMatch>) =
+        recordMatchResult(MULTIPLE_MATCH, matchCount, matchResultSentAt, registerCheckMatches)
+
+    fun recordTooManyMatches(matchResultSentAt: Instant, matchCount: Int, registerCheckMatches: List<RegisterCheckMatch>) =
+        recordMatchResult(TOO_MANY_MATCHES, matchCount, matchResultSentAt, registerCheckMatches)
+
+    fun recordMatchResult(
+        status: CheckStatus,
+        matchCount: Int,
+        matchResultSentAt: Instant,
+        registerCheckMatches: List<RegisterCheckMatch>
+    ) {
+        this.status = status
+        this.matchCount = matchCount
+        this.matchResultSentAt = matchResultSentAt
+        this.registerCheckMatches += registerCheckMatches
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || Hibernate.getClass(this) != Hibernate.getClass(other)) return false

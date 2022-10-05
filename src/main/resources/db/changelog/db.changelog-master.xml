@@ -11,5 +11,6 @@
     <include relativeToChangelogFile="true" file="ddl/0003_address.yaml"/>
     <include relativeToChangelogFile="true" file="ddl/0004_alter_personal_detail.xml"/>
     <include relativeToChangelogFile="true" file="ddl/0005_alter_address.xml"/>
+    <include relativeToChangelogFile="true" file="ddl/0006_register_check_match.xml"/>
 
 </databaseChangeLog>

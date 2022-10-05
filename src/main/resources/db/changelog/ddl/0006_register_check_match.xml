@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet author="matt.wills@valtech.com" id="0006_register_check_match" context="ddl">
+
+        <createTable tableName="register_check_match">
+            <column name="id" type="uuid">
+                <constraints
+                    nullable="false"
+                    primaryKey="true"
+                    primaryKeyName="register_check_match_pkey"
+                />
+            </column>
+            <column name="correlation_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ems_elector_id" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="attestation_count" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="personal_detail_id" type="uuid">
+                <constraints nullable="false"
+                             referencedTableName="personal_detail"
+                             referencedColumnNames="id"
+                             foreignKeyName="fk_register_check_match_personal_detail_id"/>
+            </column>
+            <column name="registered_start_date" type="date"/>
+            <column name="registered_end_date" type="date"/>
+            <column name="application_created_at" type="timestamp"/>
+            <column name="franchise_code" type="varchar(255)"/>
+            <column name="date_created" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="register_check_match"
+                     indexName="register_check_match_correlation_id_idx">
+            <column name="correlation_id"/>
+        </createIndex>
+
+        <rollback>
+            <dropTable tableName="register_check_match"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

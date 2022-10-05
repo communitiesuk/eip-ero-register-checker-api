@@ -3,18 +3,13 @@ package uk.gov.dluhc.registercheckerapi.mapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.InjectMocks
-import org.mockito.junit.jupiter.MockitoExtension
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildAddressDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPersonalDetailDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildAddress
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildPersonalDetail
 
-@ExtendWith(MockitoExtension::class)
 internal class PersonalDetailMapperTest {
 
-    @InjectMocks
     private val mapper = PersonalDetailMapperImpl()
 
     companion object {

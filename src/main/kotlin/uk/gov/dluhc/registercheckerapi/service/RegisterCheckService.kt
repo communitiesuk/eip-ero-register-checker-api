@@ -46,20 +46,23 @@ class RegisterCheckService(
         validateGssCodeMatch(certificateSerial, registerCheckResultDto.gssCode)
         getPendingRegisterCheck(registerCheckResultDto.correlationId).apply {
             when (status) {
-                CheckStatus.PENDING -> {
-                    with(registerCheckResultDto) {
-                        val matches = this.registerCheckMatchDto?.map(registerCheckResultMapper::fromDtoToRegisterCheckMatchEntity) ?: emptyList()
-                        when (this.matchCount) {
-                            0 -> recordNoMatch(this.matchResultSentAt)
-                            1 -> recordExactMatch(this.matchResultSentAt, matches.first())
-                            in 2..10 -> recordMultipleMatches(this.matchResultSentAt, this.matchCount, matches)
-                            else -> recordTooManyMatches(this.matchResultSentAt, this.matchCount, matches)
-                        }
-                    }
-                } // Subsequent tasks will send SQS message to VCA
-
+                CheckStatus.PENDING -> recordCheckResult(registerCheckResultDto, this)
+                // Subsequent tasks will send SQS message to VCA
                 else -> throw RegisterCheckUnexpectedStatusException(correlationId, status)
                     .also { logger.warn { "Register check with correlationId:[$correlationId] is in status [$status] and cannot be set to [${registerCheckResultDto.registerCheckStatus}]" } }
+            }
+        }
+    }
+
+    private fun recordCheckResult(registerCheckResultDto: RegisterCheckResultDto, registerCheck: RegisterCheck) {
+        with(registerCheckResultDto) {
+            val registerCheckMatches =
+                registerCheckMatchDto?.map(registerCheckResultMapper::fromDtoToRegisterCheckMatchEntity) ?: emptyList()
+            when (this.matchCount) {
+                0 -> registerCheck.recordNoMatch(matchResultSentAt)
+                1 -> registerCheck.recordExactMatch(matchResultSentAt, registerCheckMatches.first())
+                in 2..10 -> registerCheck.recordMultipleMatches(matchResultSentAt, matchCount, registerCheckMatches)
+                else -> registerCheck.recordTooManyMatches(matchResultSentAt, matchCount, registerCheckMatches)
             }
         }
     }

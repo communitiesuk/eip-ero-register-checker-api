@@ -1,5 +1,6 @@
 package uk.gov.dluhc.registercheckerapi.rest
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus.CREATED
 import org.springframework.security.access.prepost.PreAuthorize
@@ -27,7 +28,8 @@ private val logger = KotlinLogging.logger {}
 class RegisterCheckerController(
     private val registerCheckService: RegisterCheckService,
     private val pendingRegisterCheckMapper: PendingRegisterCheckMapper,
-    private val registerCheckResultMapper: RegisterCheckResultMapper
+    private val registerCheckResultMapper: RegisterCheckResultMapper,
+    private val objectMapper: ObjectMapper
 ) {
 
     companion object {
@@ -66,7 +68,8 @@ class RegisterCheckerController(
         registerCheckService
             .updatePendingRegisterCheck(
                 certificateSerial = authentication.credentials.toString(),
-                registerCheckResultDto = registerCheckResultMapper.fromRegisterCheckResultRequestApiToDto(requestId, request)
+                registerCheckResultDto = registerCheckResultMapper.fromRegisterCheckResultRequestApiToDto(requestId, request),
+                objectMapper.writeValueAsString(request)
             )
     }
 }

@@ -6,7 +6,7 @@ import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
 import java.util.UUID
 
 @Repository
-interface RegisterCheckRequestDataRepository : JpaRepository<RegisterCheckResultData, UUID> {
+interface RegisterCheckResultDataRepository : JpaRepository<RegisterCheckResultData, UUID> {
 
     fun findByCorrelationId(correlationId: UUID): RegisterCheckResultData?
 }

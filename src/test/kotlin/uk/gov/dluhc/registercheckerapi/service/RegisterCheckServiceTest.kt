@@ -8,6 +8,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
+import org.mockito.ArgumentCaptor
+import org.mockito.Captor
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
@@ -25,8 +27,9 @@ import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
 import uk.gov.dluhc.registercheckerapi.client.IerGeneralException
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.PENDING
+import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
-import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRequestDataRepository
+import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckResultDataRepository
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckMatchDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
@@ -59,7 +62,7 @@ internal class RegisterCheckServiceTest {
     private lateinit var registerCheckRepository: RegisterCheckRepository
 
     @Mock
-    private lateinit var registerCheckRequestDataRepository: RegisterCheckRequestDataRepository
+    private lateinit var registerCheckRequestDataRepository: RegisterCheckResultDataRepository
 
     @Mock
     private lateinit var pendingRegisterCheckMapper: PendingRegisterCheckMapper
@@ -69,6 +72,9 @@ internal class RegisterCheckServiceTest {
 
     @InjectMocks
     private lateinit var registerCheckService: RegisterCheckService
+
+    @Captor
+    private lateinit var registerCheckRequestDataCaptor: ArgumentCaptor<RegisterCheckResultData>
 
     companion object {
         private const val DEFAULT_PAGE_SIZE = 100
@@ -302,7 +308,7 @@ internal class RegisterCheckServiceTest {
 
             // When
             val ex = catchThrowableOfType(
-                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto, requestBodyJson(requestId)) },
+                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
                 RequestIdMismatchException::class.java
             )
 
@@ -328,7 +334,7 @@ internal class RegisterCheckServiceTest {
 
             // When
             val ex = catchThrowableOfType(
-                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto, requestBodyJson(requestId)) },
+                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
                 GssCodeMismatchException::class.java
             )
 
@@ -337,7 +343,7 @@ internal class RegisterCheckServiceTest {
             assertThat(ex.message).isEqualTo("Request gssCode:[E12345678] does not match with gssCode for certificateSerial:[123456789]")
             verify(ierApiClient).getEroIdentifier(certificateSerial)
             verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
-            verifyNoInteractions(registerCheckRepository, registerCheckResultMapper, registerCheckRequestDataRepository)
+            verifyNoInteractions(registerCheckRepository, registerCheckResultMapper)
         }
 
         @Test
@@ -356,7 +362,7 @@ internal class RegisterCheckServiceTest {
 
             // When
             val ex = catchThrowableOfType(
-                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto, requestBodyJson(requestId)) },
+                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
                 PendingRegisterCheckNotFoundException::class.java
             )
 
@@ -366,7 +372,7 @@ internal class RegisterCheckServiceTest {
             verify(ierApiClient).getEroIdentifier(certificateSerial)
             verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
             verify(registerCheckRepository).findByCorrelationId(requestId)
-            verifyNoInteractions(registerCheckResultMapper, registerCheckRequestDataRepository)
+            verifyNoInteractions(registerCheckResultMapper)
         }
 
         @ParameterizedTest
@@ -396,7 +402,7 @@ internal class RegisterCheckServiceTest {
 
             // When
             val ex = catchThrowableOfType(
-                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto, requestBodyJson(requestId)) },
+                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
                 RegisterCheckUnexpectedStatusException::class.java
             )
 
@@ -406,7 +412,7 @@ internal class RegisterCheckServiceTest {
             verify(ierApiClient).getEroIdentifier(certificateSerial)
             verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
             verify(registerCheckRepository).findByCorrelationId(requestId)
-            verifyNoInteractions(registerCheckResultMapper, registerCheckRequestDataRepository)
+            verifyNoInteractions(registerCheckResultMapper)
         }
 
         @ParameterizedTest
@@ -445,17 +451,12 @@ internal class RegisterCheckServiceTest {
             }
 
             // When
-            registerCheckService.updatePendingRegisterCheck(
-                certificateSerial,
-                registerCheckResultDto,
-                requestBodyJson(requestId)
-            )
+            registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto)
 
             // Then
             verify(ierApiClient).getEroIdentifier(certificateSerial)
             verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
             verify(registerCheckRepository).findByCorrelationId(requestId)
-            verify(registerCheckRequestDataRepository).save(any())
             registerCheckMatchDtoList.forEach { verify(registerCheckResultMapper).fromDtoToRegisterCheckMatchEntity(it) }
         }
 
@@ -470,14 +471,14 @@ internal class RegisterCheckServiceTest {
 
             // When
             val ex = catchThrowableOfType(
-                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto, requestBodyJson(randomUUID())) },
+                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
                 IerEroNotFoundException::class.java
             )
 
             // Then
             assertThat(ex).isEqualTo(expected)
             verify(ierApiClient).getEroIdentifier(certificateSerial)
-            verifyNoInteractions(eroService, registerCheckRepository, registerCheckResultMapper, registerCheckRequestDataRepository)
+            verifyNoInteractions(eroService, registerCheckRepository, registerCheckResultMapper)
         }
 
         @Test
@@ -491,14 +492,14 @@ internal class RegisterCheckServiceTest {
 
             // When
             val ex = catchThrowableOfType(
-                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto, requestBodyJson(randomUUID())) },
+                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
                 IerGeneralException::class.java
             )
 
             // Then
             assertThat(ex).isEqualTo(expected)
             verify(ierApiClient).getEroIdentifier(certificateSerial)
-            verifyNoInteractions(eroService, registerCheckRepository, registerCheckResultMapper, registerCheckRequestDataRepository)
+            verifyNoInteractions(eroService, registerCheckRepository, registerCheckResultMapper)
         }
 
         @Test
@@ -514,7 +515,7 @@ internal class RegisterCheckServiceTest {
 
             // When
             val ex = catchThrowableOfType(
-                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto, requestBodyJson(randomUUID())) },
+                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
                 ElectoralRegistrationOfficeNotFoundException::class.java
             )
 
@@ -522,7 +523,7 @@ internal class RegisterCheckServiceTest {
             assertThat(ex).isEqualTo(expected)
             verify(ierApiClient).getEroIdentifier(certificateSerial)
             verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
-            verifyNoInteractions(registerCheckRepository, registerCheckResultMapper, registerCheckRequestDataRepository)
+            verifyNoInteractions(registerCheckRepository, registerCheckResultMapper)
         }
 
         @Test
@@ -538,24 +539,41 @@ internal class RegisterCheckServiceTest {
 
             // When
             val ex = catchThrowableOfType(
-                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto, requestBodyJson(randomUUID())) },
+                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
                 ElectoralRegistrationOfficeGeneralException::class.java
             )
 
             // Then
             assertThat(ex).isEqualTo(expected)
             verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
-            verifyNoInteractions(registerCheckRepository, registerCheckResultMapper, registerCheckRequestDataRepository)
+            verifyNoInteractions(registerCheckRepository, registerCheckResultMapper)
+        }
+
+        @Test
+        fun `should audit request body`() {
+            // Given
+            val correlationId = randomUUID()
+            val requestBodyJson = requestBodyJson(correlationId)
+
+            // When
+            registerCheckService.auditRequestBody(correlationId, requestBodyJson)
+
+            // Then
+            verify(registerCheckRequestDataRepository).save(registerCheckRequestDataCaptor.capture())
+            val registerCheckResultData = registerCheckRequestDataCaptor.value
+            assertThat(registerCheckResultData.correlationId).isEqualTo(correlationId)
+            assertThat(registerCheckResultData.requestBody).isEqualTo(requestBodyJson)
         }
 
         private fun requestBodyJson(requestId: UUID): String =
-            "{" +
-                "    \"requestid\": \"$requestId\"," +
-                "    \"gssCode\": \"T12345679\"," +
-                "    \"createdAt\": \"2022-10-05T10:28:37.3052627+01:00\"," +
-                "    \"registerCheckMatches\": []," +
-                "    \"registerCheckMatchCount\": 0" +
-                "  }" +
-                "}"
+            """
+                {
+                "requestid": "$requestId",
+                "gssCode": "T12345679",
+                "createdAt": "2022-10-05T10:28:37.3052627+01:00",
+                "registerCheckMatches": [],
+                "registerCheckMatchCount": 0
+                }
+            """.trimIndent()
     }
 }

@@ -10,7 +10,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import software.amazon.awssdk.services.sqs.SqsClient
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
-import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRequestDataRepository
+import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckResultDataRepository
 import uk.gov.dluhc.registercheckerapi.testsupport.WiremockService
 
 /**
@@ -31,7 +31,7 @@ internal abstract class IntegrationTest {
     protected lateinit var registerCheckRepository: RegisterCheckRepository
 
     @Autowired
-    protected lateinit var registerCheckRequestDataRepository: RegisterCheckRequestDataRepository
+    protected lateinit var registerCheckResultDataRepository: RegisterCheckResultDataRepository
 
     @Autowired
     protected lateinit var sqsClient: SqsClient

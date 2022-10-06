@@ -65,11 +65,13 @@ class RegisterCheckerController(
         @Valid @RequestBody request: RegisterCheckResultRequest
     ) {
         logger.info("Updating pending register checks for EMS ERO certificateSerial=[${authentication.credentials}] with requestId=[$requestId]")
+
+        registerCheckService.auditRequestBody(request.requestid, objectMapper.writeValueAsString(request))
+
         registerCheckService
             .updatePendingRegisterCheck(
                 certificateSerial = authentication.credentials.toString(),
-                registerCheckResultDto = registerCheckResultMapper.fromRegisterCheckResultRequestApiToDto(requestId, request),
-                objectMapper.writeValueAsString(request)
+                registerCheckResultDto = registerCheckResultMapper.fromRegisterCheckResultRequestApiToDto(requestId, request)
             )
     }
 }

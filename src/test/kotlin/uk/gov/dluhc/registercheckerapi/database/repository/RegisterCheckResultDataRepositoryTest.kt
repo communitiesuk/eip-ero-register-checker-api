@@ -6,7 +6,7 @@ import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
 import java.util.UUID
 
-internal class RegisterCheckRequestDataRepositoryTest : IntegrationTest() {
+internal class RegisterCheckResultDataRepositoryTest : IntegrationTest() {
 
     @Test
     fun `should save request body data`() {
@@ -14,10 +14,10 @@ internal class RegisterCheckRequestDataRepositoryTest : IntegrationTest() {
         val correlationId = UUID.randomUUID()
         val requestBodyJson = requestBodyJson(correlationId)
         val registerCheckResultData = RegisterCheckResultData(correlationId = correlationId, requestBody = requestBodyJson)
-        registerCheckRequestDataRepository.save(registerCheckResultData)
+        registerCheckResultDataRepository.save(registerCheckResultData)
 
         // When
-        val actual = registerCheckRequestDataRepository.findByCorrelationId(correlationId)
+        val actual = registerCheckResultDataRepository.findByCorrelationId(correlationId)
 
         // Then
         assertThat(actual).isNotNull
@@ -28,11 +28,13 @@ internal class RegisterCheckRequestDataRepositoryTest : IntegrationTest() {
     }
 
     private fun requestBodyJson(requestId: UUID): String =
-        "{\n" +
-            "\t\"requestid\": \"$requestId\",\n" +
-            "\t\"gssCode\": \"T12345679\",\n" +
-            "\t\"createdAt\": \"2022-10-05T10:28:37.3052627+01:00\",\n" +
-            "\t\"registerCheckMatches\": [],\n" +
-            "\t\"registerCheckMatchCount\": 0\n" +
-            "}"
+        """
+        {
+          "requestid": "$requestId",
+          "gssCode": "T12345679",
+          "createdAt": "2022-10-05T10:28:37.3052627+01:00",
+          "registerCheckMatches": [],
+          "registerCheckMatchCount": 0
+        }
+        """.trimIndent()
 }

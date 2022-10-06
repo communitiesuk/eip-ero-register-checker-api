@@ -455,14 +455,14 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         wireMockService.verifyGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
 
-        val actualRegisterResultData = registerCheckRequestDataRepository.findByCorrelationId(requestId)
+        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
         Assertions.assertThat(actualRegisterResultData).isNotNull
         Assertions.assertThat(actualRegisterResultData?.id).isNotNull
         Assertions.assertThat(actualRegisterResultData?.correlationId).isNotNull
         Assertions.assertThat(actualRegisterResultData?.dateCreated).isNotNull
         val persistedRequest = objectMapper.readValue(actualRegisterResultData!!.requestBody, RegisterCheckResultRequest::class.java)
         Assertions.assertThat(persistedRequest).usingRecursiveComparison()
-            .ignoringFields("applicationCreatedAt", "registerCheckMatches.applicationCreatedAt")
+            .ignoringFields("registerCheckMatches.applicationCreatedAt")
             .isEqualTo(requestBody)
 
         // TODO verify that SQS message is published to VCA as part of subsequent subtasks

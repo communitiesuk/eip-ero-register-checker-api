@@ -70,6 +70,7 @@ dependencies {
     // jpa/liquibase
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.liquibase:liquibase-core")
+    implementation("com.vladmihalcea:hibernate-types-55:2.19.2")
 
     // mysql
     runtimeOnly("mysql:mysql-connector-java")

@@ -1,5 +1,6 @@
 package uk.gov.dluhc.registercheckerapi.rest
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus.CREATED
 import org.springframework.security.access.prepost.PreAuthorize
@@ -27,7 +28,8 @@ private val logger = KotlinLogging.logger {}
 class RegisterCheckerController(
     private val registerCheckService: RegisterCheckService,
     private val pendingRegisterCheckMapper: PendingRegisterCheckMapper,
-    private val registerCheckResultMapper: RegisterCheckResultMapper
+    private val registerCheckResultMapper: RegisterCheckResultMapper,
+    private val objectMapper: ObjectMapper
 ) {
 
     companion object {
@@ -63,6 +65,9 @@ class RegisterCheckerController(
         @Valid @RequestBody request: RegisterCheckResultRequest
     ) {
         logger.info("Updating pending register checks for EMS ERO certificateSerial=[${authentication.credentials}] with requestId=[$requestId]")
+
+        registerCheckService.auditRequestBody(request.requestid, objectMapper.writeValueAsString(request))
+
         registerCheckService
             .updatePendingRegisterCheck(
                 certificateSerial = authentication.credentials.toString(),

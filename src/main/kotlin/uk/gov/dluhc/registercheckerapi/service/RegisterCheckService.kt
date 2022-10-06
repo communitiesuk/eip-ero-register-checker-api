@@ -6,7 +6,9 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.dluhc.registercheckerapi.client.IerApiClient
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
+import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
+import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckResultDataRepository
 import uk.gov.dluhc.registercheckerapi.dto.PendingRegisterCheckDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
@@ -24,6 +26,7 @@ class RegisterCheckService(
     private val ierApiClient: IerApiClient,
     private val eroService: EroService,
     private val registerCheckRepository: RegisterCheckRepository,
+    private val registerCheckRequestDataRepository: RegisterCheckResultDataRepository,
     private val pendingRegisterCheckMapper: PendingRegisterCheckMapper,
     private val registerCheckResultMapper: RegisterCheckResultMapper
 ) {
@@ -38,6 +41,16 @@ class RegisterCheckService(
         with(pendingRegisterCheckMapper.pendingRegisterCheckDtoToRegisterCheckEntity(pendingRegisterCheckDto)) {
             registerCheckRepository.save(this)
         }
+    }
+
+    @Transactional
+    fun auditRequestBody(correlationId: UUID, requestBodyJson: String) {
+        registerCheckRequestDataRepository.save(
+            RegisterCheckResultData(
+                correlationId = correlationId,
+                requestBody = requestBodyJson
+            )
+        )
     }
 
     @Transactional

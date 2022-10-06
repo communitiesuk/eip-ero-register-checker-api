@@ -8,6 +8,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
+import org.mockito.ArgumentCaptor
+import org.mockito.Captor
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
@@ -25,7 +27,9 @@ import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
 import uk.gov.dluhc.registercheckerapi.client.IerGeneralException
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.PENDING
+import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
+import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckResultDataRepository
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckMatchDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
@@ -43,6 +47,7 @@ import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegister
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatch
 import java.time.Instant
 import java.util.UUID
+import java.util.UUID.randomUUID
 
 @ExtendWith(MockitoExtension::class)
 internal class RegisterCheckServiceTest {
@@ -57,6 +62,9 @@ internal class RegisterCheckServiceTest {
     private lateinit var registerCheckRepository: RegisterCheckRepository
 
     @Mock
+    private lateinit var registerCheckRequestDataRepository: RegisterCheckResultDataRepository
+
+    @Mock
     private lateinit var pendingRegisterCheckMapper: PendingRegisterCheckMapper
 
     @Mock
@@ -64,6 +72,9 @@ internal class RegisterCheckServiceTest {
 
     @InjectMocks
     private lateinit var registerCheckService: RegisterCheckService
+
+    @Captor
+    private lateinit var registerCheckRequestDataCaptor: ArgumentCaptor<RegisterCheckResultData>
 
     companion object {
         private const val DEFAULT_PAGE_SIZE = 100
@@ -290,8 +301,8 @@ internal class RegisterCheckServiceTest {
         fun `should throw RequestMismatchException when requestId in query param mismatches requestId in payload`() {
             // Given
             val certificateSerial = "123456789"
-            val requestId = UUID.fromString("322ff65f-a0a1-497d-a224-04800711a1fb")
-            val correlationId = UUID.fromString("74f66386-a86e-4dbc-af52-3327834f33dc")
+            val requestId = randomUUID()
+            val correlationId = randomUUID()
             val registerCheckResultDto = buildRegisterCheckResultDto(requestId = requestId, correlationId = correlationId)
             val expected = RequestIdMismatchException(requestId, correlationId)
 
@@ -303,7 +314,7 @@ internal class RegisterCheckServiceTest {
 
             // Then
             assertThat(ex.message).isEqualTo(expected.message)
-            assertThat(ex.message).isEqualTo("Request requestId:[322ff65f-a0a1-497d-a224-04800711a1fb] does not match with requestid:[74f66386-a86e-4dbc-af52-3327834f33dc] in body payload")
+            assertThat(ex.message).isEqualTo("Request requestId:[$requestId] does not match with requestid:[$correlationId] in body payload")
             verifyNoInteractions(ierApiClient, eroService, registerCheckRepository, registerCheckResultMapper)
         }
 
@@ -311,7 +322,7 @@ internal class RegisterCheckServiceTest {
         fun `should throw GssCodeMismatchException when gssCode from IER mismatches gssCode in payload`() {
             // Given
             val certificateSerial = "123456789"
-            val requestId = UUID.fromString("322ff65f-a0a1-497d-a224-04800711a1fb")
+            val requestId = randomUUID()
             val requestGssCode = "E12345678"
             val eroIdFromIerApi = getRandomEroId()
             val differentGssCodeFromEroApi = getRandomGssCode()
@@ -339,7 +350,7 @@ internal class RegisterCheckServiceTest {
         fun `should throw PendingRegisterCheckNotFoundException for a non-existing pending register check`() {
             // Given
             val certificateSerial = "123456789"
-            val requestId = UUID.fromString("322ff65f-a0a1-497d-a224-04800711a1fb")
+            val requestId = randomUUID()
             val requestGssCode = "E12345678"
             val eroIdFromIerApi = getRandomEroId()
             val registerCheckResultDto = buildRegisterCheckResultDto(requestId = requestId, correlationId = requestId, gssCode = requestGssCode)
@@ -357,7 +368,7 @@ internal class RegisterCheckServiceTest {
 
             // Then
             assertThat(ex.message).isEqualTo(expected.message)
-            assertThat(ex.message).isEqualTo("Pending register check for requestid:[322ff65f-a0a1-497d-a224-04800711a1fb] not found")
+            assertThat(ex.message).isEqualTo("Pending register check for requestid:[$requestId] not found")
             verify(ierApiClient).getEroIdentifier(certificateSerial)
             verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
             verify(registerCheckRepository).findByCorrelationId(requestId)
@@ -374,7 +385,7 @@ internal class RegisterCheckServiceTest {
         ) {
             // Given
             val certificateSerial = "123456789"
-            val requestId = UUID.fromString("322ff65f-a0a1-497d-a224-04800711a1fb")
+            val requestId = randomUUID()
             val requestGssCode = "E12345678"
             val eroIdFromIerApi = getRandomEroId()
             val registerCheckResultDto = buildRegisterCheckResultDto(
@@ -397,7 +408,7 @@ internal class RegisterCheckServiceTest {
 
             // Then
             assertThat(ex.message).isEqualTo(expected.message)
-            assertThat(ex.message).isEqualTo("Register check with requestid:[322ff65f-a0a1-497d-a224-04800711a1fb] has an unexpected status:[$existingCheckStatusInDb]")
+            assertThat(ex.message).isEqualTo("Register check with requestid:[$requestId] has an unexpected status:[$existingCheckStatusInDb]")
             verify(ierApiClient).getEroIdentifier(certificateSerial)
             verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
             verify(registerCheckRepository).findByCorrelationId(requestId)
@@ -419,7 +430,7 @@ internal class RegisterCheckServiceTest {
         ) {
             // Given
             val certificateSerial = "123456789"
-            val requestId = UUID.fromString("322ff65f-a0a1-497d-a224-04800711a1fb")
+            val requestId = randomUUID()
             val requestGssCode = "E12345678"
             val eroIdFromIerApi = getRandomEroId()
             val registerCheckMatchDtoList = mutableListOf<RegisterCheckMatchDto>().apply { repeat(matchCount) { add(buildRegisterCheckMatchDto()) } }
@@ -432,7 +443,6 @@ internal class RegisterCheckServiceTest {
                 registerCheckStatus = registerCheckStatus,
                 registerCheckMatches = registerCheckMatchDtoList
             )
-
             given(ierApiClient.getEroIdentifier(any())).willReturn(EROCertificateMapping(eroId = eroIdFromIerApi, certificateSerial = certificateSerial))
             given(eroService.lookupGssCodesForEro(any())).willReturn(listOf(requestGssCode))
             given(registerCheckRepository.findByCorrelationId(any())).willReturn(buildRegisterCheck(correlationId = requestId, gssCode = requestGssCode, status = PENDING))
@@ -538,5 +548,32 @@ internal class RegisterCheckServiceTest {
             verify(eroService).lookupGssCodesForEro(eroIdFromIerApi)
             verifyNoInteractions(registerCheckRepository, registerCheckResultMapper)
         }
+
+        @Test
+        fun `should audit request body`() {
+            // Given
+            val correlationId = randomUUID()
+            val requestBodyJson = requestBodyJson(correlationId)
+
+            // When
+            registerCheckService.auditRequestBody(correlationId, requestBodyJson)
+
+            // Then
+            verify(registerCheckRequestDataRepository).save(registerCheckRequestDataCaptor.capture())
+            val registerCheckResultData = registerCheckRequestDataCaptor.value
+            assertThat(registerCheckResultData.correlationId).isEqualTo(correlationId)
+            assertThat(registerCheckResultData.requestBody).isEqualTo(requestBodyJson)
+        }
+
+        private fun requestBodyJson(requestId: UUID): String =
+            """
+                {
+                "requestid": "$requestId",
+                "gssCode": "T12345679",
+                "createdAt": "2022-10-05T10:28:37.3052627+01:00",
+                "registerCheckMatches": [],
+                "registerCheckMatchCount": 0
+                }
+            """.trimIndent()
     }
 }

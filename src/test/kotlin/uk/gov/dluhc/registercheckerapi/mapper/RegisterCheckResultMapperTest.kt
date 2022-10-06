@@ -96,7 +96,7 @@ internal class RegisterCheckResultMapperTest {
                 matchResultSentAt = expectedMatchSentAt,
                 matchCount = apiRequest.registerCheckMatchCount,
                 registerCheckStatus = expectedRegisterCheckStatus,
-                registerCheckMatchDto = apiRequest.registerCheckMatches?.map {
+                registerCheckMatches = apiRequest.registerCheckMatches?.map {
                     toRegisterCheckMapDtoFromApi(it, expectedApplicationCreatedAt)
                 }
             )
@@ -133,7 +133,7 @@ internal class RegisterCheckResultMapperTest {
                 matchResultSentAt = expectedMatchSentAt,
                 matchCount = apiRequest.registerCheckMatchCount,
                 registerCheckStatus = RegisterCheckStatus.NO_MATCH,
-                registerCheckMatchDto = null
+                registerCheckMatches = null
             )
 
             // When

@@ -11,7 +11,7 @@ data class RegisterCheckResultDto(
     val matchResultSentAt: Instant,
     val matchCount: Int,
     val registerCheckStatus: RegisterCheckStatus,
-    val registerCheckMatchDto: List<RegisterCheckMatchDto>?
+    val registerCheckMatches: List<RegisterCheckMatchDto>?
 )
 
 data class RegisterCheckMatchDto(

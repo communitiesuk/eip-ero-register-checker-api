@@ -29,7 +29,6 @@ abstract class RegisterCheckResultMapper {
     @Mapping(target = "matchResultSentAt", source = "apiRequest.createdAt")
     @Mapping(target = "matchCount", source = "apiRequest.registerCheckMatchCount")
     @Mapping(target = "registerCheckStatus", source = "apiRequest.registerCheckMatchCount", qualifiedByName = ["evaluateRegisterCheckStatus"])
-    @Mapping(target = "registerCheckMatchDto", source = "apiRequest.registerCheckMatches")
     abstract fun fromRegisterCheckResultRequestApiToDto(queryParamRequestId: UUID, apiRequest: RegisterCheckResultRequest): RegisterCheckResultDto
 
     abstract fun fromDtoToRegisterCheckMatchEntity(registerCheckMatchDto: RegisterCheckMatchDto): RegisterCheckMatchEntity

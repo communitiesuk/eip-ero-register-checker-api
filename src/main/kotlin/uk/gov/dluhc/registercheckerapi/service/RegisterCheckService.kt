@@ -56,13 +56,12 @@ class RegisterCheckService(
 
     private fun recordCheckResult(registerCheckResultDto: RegisterCheckResultDto, registerCheck: RegisterCheck) {
         with(registerCheckResultDto) {
-            val registerCheckMatches =
-                registerCheckMatchDto?.map(registerCheckResultMapper::fromDtoToRegisterCheckMatchEntity) ?: emptyList()
+            val matches = registerCheckMatches?.map(registerCheckResultMapper::fromDtoToRegisterCheckMatchEntity) ?: emptyList()
             when (this.matchCount) {
                 0 -> registerCheck.recordNoMatch(matchResultSentAt)
-                1 -> registerCheck.recordExactMatch(matchResultSentAt, registerCheckMatches.first())
-                in 2..10 -> registerCheck.recordMultipleMatches(matchResultSentAt, matchCount, registerCheckMatches)
-                else -> registerCheck.recordTooManyMatches(matchResultSentAt, matchCount, registerCheckMatches)
+                1 -> registerCheck.recordExactMatch(matchResultSentAt, matches.first())
+                in 2..10 -> registerCheck.recordMultipleMatches(matchResultSentAt, matchCount, matches)
+                else -> registerCheck.recordTooManyMatches(matchResultSentAt, matchCount, matches)
             }
         }
     }

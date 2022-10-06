@@ -59,10 +59,8 @@ class RegisterCheckService(
         validateGssCodeMatch(certificateSerial, registerCheckResultDto.gssCode)
         getPendingRegisterCheck(registerCheckResultDto.correlationId).apply {
             when (status) {
-                CheckStatus.PENDING -> {
-                    recordCheckResult(registerCheckResultDto, this)
-                    // Subsequent tasks will send SQS message to VCA
-                }
+                CheckStatus.PENDING -> recordCheckResult(registerCheckResultDto, this)
+                // Subsequent tasks will send SQS message to VCA
                 else -> throw RegisterCheckUnexpectedStatusException(correlationId, status)
                     .also { logger.warn { "Register check with correlationId:[$correlationId] is in status [$status] and cannot be set to [${registerCheckResultDto.registerCheckStatus}]" } }
             }

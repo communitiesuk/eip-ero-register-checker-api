@@ -4,6 +4,7 @@ import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.PENDING
 import uk.gov.dluhc.registercheckerapi.database.entity.PersonalDetail
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
+import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.VOTER_CARD
 import java.util.UUID
@@ -17,6 +18,7 @@ fun buildRegisterCheck(
     gssCode: String = "E09000021",
     status: CheckStatus = PENDING,
     matchCount: Int = 0,
+    registerCheckMatches: MutableList<RegisterCheckMatch> = mutableListOf(),
     personalDetail: PersonalDetail = buildPersonalDetail(),
     createdBy: String = "system"
 ) = RegisterCheck(
@@ -28,6 +30,7 @@ fun buildRegisterCheck(
     gssCode = gssCode,
     status = status,
     matchCount = matchCount,
+    registerCheckMatches = registerCheckMatches,
     personalDetail = personalDetail,
     createdBy = createdBy
 )

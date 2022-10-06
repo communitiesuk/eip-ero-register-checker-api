@@ -3,20 +3,15 @@ package uk.gov.dluhc.registercheckerapi.mapper
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
-import org.mockito.InjectMocks
-import org.mockito.junit.jupiter.MockitoExtension
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
 
-@ExtendWith(MockitoExtension::class)
 internal class CheckStatusMapperTest {
 
-    @InjectMocks
     private val mapper = CheckStatusMapperImpl()
 
     @Nested

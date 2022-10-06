@@ -33,7 +33,7 @@ internal class RegisterCheckResultMessageMapperTest {
     inner class FromRegisterCheckEntityToRegisterCheckResultMessage {
 
         @Test
-        fun `should map entity to message when multiple matches`() {
+        fun `should map entity to message when exact match found`() {
             // Given
             val registerCheck = buildRegisterCheck(status = CheckStatus.EXACT_MATCH, registerCheckMatches = mutableListOf(buildRegisterCheckMatch()))
             given(checkStatusMapper.toRegisterCheckStatusResultEnum(any())).willReturn(RegisterCheckResult.EXACT_MATCH)
@@ -99,8 +99,11 @@ internal class RegisterCheckResultMessageMapperTest {
         fun `should map entity to message when optional fields are null`() {
             // Given
             val registerCheck = buildRegisterCheck(
-                status = CheckStatus.EXACT_MATCH,
-                registerCheckMatches = mutableListOf(buildRegisterCheckMatch(personalDetail = buildPersonalDetailWithOptionalFieldsAsNull()))
+                status = CheckStatus.MULTIPLE_MATCH,
+                registerCheckMatches = mutableListOf(
+                    buildRegisterCheckMatch(personalDetail = buildPersonalDetailWithOptionalFieldsAsNull()),
+                    buildRegisterCheckMatch(personalDetail = buildPersonalDetailWithOptionalFieldsAsNull())
+                )
             )
             given(checkStatusMapper.toRegisterCheckStatusResultEnum(any())).willReturn(RegisterCheckResult.MULTIPLE_MATCH)
 
@@ -139,7 +142,8 @@ internal class RegisterCheckResultMessageMapperTest {
 
             // Then
             assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
-            verify(checkStatusMapper).toRegisterCheckStatusResultEnum(CheckStatus.EXACT_MATCH)
+            assertThat(actual.matches).hasSize(2)
+            verify(checkStatusMapper).toRegisterCheckStatusResultEnum(CheckStatus.MULTIPLE_MATCH)
         }
     }
 }

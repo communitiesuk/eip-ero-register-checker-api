@@ -11,10 +11,10 @@ import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
 
 @ExtendWith(MockitoExtension::class)
-internal class RegisterCheckStatusMapperTest {
+internal class CheckStatusMapperTest {
 
     @InjectMocks
-    private val mapper = RegisterCheckStatusMapperImpl()
+    private val mapper = CheckStatusMapperImpl()
 
     @Nested
     inner class ToCheckStatusEntityEnum {

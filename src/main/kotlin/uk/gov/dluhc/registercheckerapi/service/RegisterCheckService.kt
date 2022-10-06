@@ -54,7 +54,7 @@ class RegisterCheckService(
         }
     }
 
-    private fun recordCheckResult(registerCheckResultDto: RegisterCheckResultDto,  registerCheck: RegisterCheck) {
+    private fun recordCheckResult(registerCheckResultDto: RegisterCheckResultDto, registerCheck: RegisterCheck) {
         with(registerCheckResultDto) {
             val registerCheckMatches =
                 registerCheckMatchDto?.map(registerCheckResultMapper::fromDtoToRegisterCheckMatchEntity) ?: emptyList()

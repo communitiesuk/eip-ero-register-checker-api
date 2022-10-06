@@ -82,10 +82,13 @@ class LocalStackContainerConfiguration {
         @Qualifier("localstackContainer") localStackContainer: GenericContainer<*>,
         applicationContext: ConfigurableApplicationContext,
         @Value("\${sqs.initiate-applicant-register-check-queue-name}") initiateApplicantRegisterCheckQueueName: String,
+        @Value("\${sqs.confirm-applicant-register-check-result-queue-name}") confirmRegisterCheckResultMessageQueueName: String,
         objectMapper: ObjectMapper
     ): LocalStackContainerSettings {
         val queueUrlInitiateApplicantRegisterCheck =
             localStackContainer.createSqsQueue(initiateApplicantRegisterCheckQueueName, objectMapper)
+        val queueUrlConfirmRegisterCheckResult =
+            localStackContainer.createSqsQueue(confirmRegisterCheckResultMessageQueueName, objectMapper)
 
         val apiUrl = "http://${localStackContainer.host}:${localStackContainer.getMappedPort(DEFAULT_PORT)}"
 
@@ -96,6 +99,7 @@ class LocalStackContainerConfiguration {
         return LocalStackContainerSettings(
             apiUrl = apiUrl,
             queueUrlInitiateApplicantRegisterCheck = queueUrlInitiateApplicantRegisterCheck,
+            queueUrlConfirmRegisterCheckResult = queueUrlConfirmRegisterCheckResult,
         )
     }
 

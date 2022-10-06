@@ -33,3 +33,4 @@ api:
 sqs:
   ems-cidr-update-queue-name: unknown-queue-yet-to-be-configured
   initiate-applicant-register-check-queue-name: initiate-applicant-register-check
+  confirm-applicant-register-check-result-queue-name: confirm-applicant-register-check-result

@@ -4,9 +4,13 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildAddressDto
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildAddressDtoWithOptionalFieldsNull
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPersonalDetailDto
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPersonalDetailDtoWithOptionalFieldsNull
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildAddress
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildAddressWithOptionalFieldsAsNull
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildPersonalDetail
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildPersonalDetailWithOptionalFieldsAsNull
 
 internal class PersonalDetailMapperTest {
 
@@ -57,26 +61,14 @@ internal class PersonalDetailMapperTest {
         @Test
         fun `should map dto to entity when optional fields are null`() {
             // Given
-            val personalDetailDto = buildPersonalDetailDto(
-                middleNames = null, dateOfBirth = null, email = null, phone = null,
-                address = buildAddressDto(property = null, locality = null, town = null, area = null, uprn = null)
-            )
+            val personalDetailDto = buildPersonalDetailDtoWithOptionalFieldsNull()
 
-            val expected = buildPersonalDetail(
+            val expected = buildPersonalDetailWithOptionalFieldsAsNull(
                 firstName = personalDetailDto.firstName,
-                middleNames = null,
                 surname = personalDetailDto.surname,
-                dateOfBirth = null,
-                email = null,
-                phoneNumber = null,
-                address = buildAddress(
+                address = buildAddressWithOptionalFieldsAsNull(
                     street = personalDetailDto.address.street,
-                    property = null,
-                    locality = null,
-                    town = null,
-                    area = null,
                     postcode = personalDetailDto.address.postcode,
-                    uprn = null
                 )
             )
 
@@ -129,25 +121,13 @@ internal class PersonalDetailMapperTest {
         @Test
         fun `should map entity to dto when optional fields are null`() {
             // Given
-            val personalDetailEntity = buildPersonalDetail(
-                middleNames = null, dateOfBirth = null, email = null, phoneNumber = null,
-                address = buildAddress(property = null, locality = null, town = null, area = null, uprn = null)
-            )
-            val expected = buildPersonalDetailDto(
+            val personalDetailEntity = buildPersonalDetailWithOptionalFieldsAsNull()
+            val expected = buildPersonalDetailDtoWithOptionalFieldsNull(
                 firstName = personalDetailEntity.firstName,
-                middleNames = null,
                 surname = personalDetailEntity.surname,
-                dateOfBirth = null,
-                email = null,
-                phone = null,
-                address = buildAddressDto(
+                address = buildAddressDtoWithOptionalFieldsNull(
                     street = personalDetailEntity.address.street,
-                    property = null,
-                    locality = null,
-                    town = null,
-                    area = null,
                     postcode = personalDetailEntity.address.postcode,
-                    uprn = null
                 )
             )
 

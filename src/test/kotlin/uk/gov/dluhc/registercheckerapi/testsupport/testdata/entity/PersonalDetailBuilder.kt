@@ -22,3 +22,17 @@ fun buildPersonalDetail(
     phoneNumber = phoneNumber,
     address = address
 )
+
+fun buildPersonalDetailWithOptionalFieldsAsNull(
+    firstName: String = faker.name().firstName(),
+    surname: String = faker.name().lastName(),
+    address: Address = buildAddressWithOptionalFieldsAsNull(),
+) = buildPersonalDetail(
+    firstName = firstName,
+    surname = surname,
+    address = address,
+    middleNames = null,
+    dateOfBirth = null,
+    email = null,
+    phoneNumber = null
+)

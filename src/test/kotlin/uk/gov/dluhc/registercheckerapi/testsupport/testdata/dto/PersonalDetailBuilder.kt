@@ -22,3 +22,17 @@ fun buildPersonalDetailDto(
     phone = phone,
     address = address
 )
+
+fun buildPersonalDetailDtoWithOptionalFieldsNull(
+    firstName: String = faker.name().firstName(),
+    surname: String = faker.name().lastName(),
+    address: AddressDto = buildAddressDtoWithOptionalFieldsNull()
+) = buildPersonalDetailDto(
+    firstName = firstName,
+    surname = surname,
+    address = address,
+    middleNames = null,
+    dateOfBirth = null,
+    email = null,
+    phone = null
+)

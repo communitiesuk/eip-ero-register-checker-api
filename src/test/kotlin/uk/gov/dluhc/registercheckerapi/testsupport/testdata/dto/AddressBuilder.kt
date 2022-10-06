@@ -21,3 +21,16 @@ fun buildAddressDto(
     postcode = postcode,
     uprn = uprn
 )
+
+fun buildAddressDtoWithOptionalFieldsNull(
+    street: String = faker.address().streetName(),
+    postcode: String = faker.address().postcode()
+) = buildAddressDto(
+    street = street,
+    postcode = postcode,
+    property = null,
+    locality = null,
+    town = null,
+    area = null,
+    uprn = null
+)

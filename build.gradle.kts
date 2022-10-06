@@ -93,9 +93,9 @@ dependencies {
     testImplementation("com.github.tomakehurst:wiremock-jre8:2.34.0")
     testImplementation("net.datafaker:datafaker:1.6.0")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.17.4")
-    testImplementation("org.testcontainers:testcontainers:1.17.4")
-    testImplementation("org.testcontainers:mysql:1.17.4")
+    testImplementation("org.testcontainers:junit-jupiter:1.17.5")
+    testImplementation("org.testcontainers:testcontainers:1.17.5")
+    testImplementation("org.testcontainers:mysql:1.17.5")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 }
 

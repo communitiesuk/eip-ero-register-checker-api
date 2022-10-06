@@ -15,7 +15,7 @@ fun buildRegisterCheckResultDto(
     matchResultSentAt: Instant = Instant.now(),
     matchCount: Int = 0,
     registerCheckStatus: RegisterCheckStatus = RegisterCheckStatus.NO_MATCH,
-    registerCheckMatchDto: List<RegisterCheckMatchDto>? = listOf(buildRegisterCheckMatchDto())
+    registerCheckMatches: List<RegisterCheckMatchDto>? = listOf(buildRegisterCheckMatchDto())
 ) = RegisterCheckResultDto(
     requestId = requestId,
     correlationId = correlationId,
@@ -23,7 +23,7 @@ fun buildRegisterCheckResultDto(
     matchResultSentAt = matchResultSentAt,
     matchCount = matchCount,
     registerCheckStatus = registerCheckStatus,
-    registerCheckMatchDto = registerCheckMatchDto
+    registerCheckMatches = registerCheckMatches
 )
 
 fun buildRegisterCheckMatchDto(

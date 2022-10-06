@@ -430,7 +430,7 @@ internal class RegisterCheckServiceTest {
                 matchResultSentAt = Instant.now(),
                 matchCount = matchCount,
                 registerCheckStatus = registerCheckStatus,
-                registerCheckMatchDto = registerCheckMatchDtoList
+                registerCheckMatches = registerCheckMatchDtoList
             )
 
             given(ierApiClient.getEroIdentifier(any())).willReturn(EROCertificateMapping(eroId = eroIdFromIerApi, certificateSerial = certificateSerial))

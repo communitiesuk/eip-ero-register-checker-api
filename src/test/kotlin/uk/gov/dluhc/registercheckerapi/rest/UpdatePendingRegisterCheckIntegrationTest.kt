@@ -462,7 +462,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         Assertions.assertThat(actualRegisterResultData?.dateCreated).isNotNull
         val persistedRequest = objectMapper.readValue(actualRegisterResultData!!.requestBody, RegisterCheckResultRequest::class.java)
         Assertions.assertThat(persistedRequest).usingRecursiveComparison()
-            .ignoringFields("applicationCreatedAt", "registerCheckMatches")
+            .ignoringFields("applicationCreatedAt", "registerCheckMatches.applicationCreatedAt")
             .isEqualTo(requestBody)
 
         // TODO verify that SQS message is published to VCA as part of subsequent subtasks

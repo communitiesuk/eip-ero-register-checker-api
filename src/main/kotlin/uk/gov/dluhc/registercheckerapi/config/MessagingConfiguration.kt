@@ -19,11 +19,11 @@ import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessa
 class MessagingConfiguration {
 
     @Value("\${sqs.confirm-applicant-register-check-result-queue-name}")
-    private lateinit var confirmRegisterCheckResultMessageQueueName: String
+    private lateinit var confirmRegisterCheckResultQueueName: String
 
     @Bean
-    fun confirmRegisterCheckResultMessageQueue(queueMessagingTemplate: QueueMessagingTemplate) =
-        MessageQueue<RegisterCheckResultMessage>(confirmRegisterCheckResultMessageQueueName, queueMessagingTemplate)
+    fun confirmRegisterCheckResultQueue(queueMessagingTemplate: QueueMessagingTemplate) =
+        MessageQueue<RegisterCheckResultMessage>(confirmRegisterCheckResultQueueName, queueMessagingTemplate)
 
     @Bean
     fun queueMessageHandlerFactory(

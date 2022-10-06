@@ -496,7 +496,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
     private fun assertMessageSubmittedToSqs(expectedMessageContent: RegisterCheckResultMessage) {
         val stopWatch = StopWatch.createStarted()
-        await.atMost(5000, TimeUnit.SECONDS).untilAsserted {
+        await.atMost(5, TimeUnit.SECONDS).untilAsserted {
             val sqsMessages: List<Message> = getLatestSqsMessages()
             assertThat(sqsMessages).anyMatch {
                 assertRegisterCheckResultMessage(it, expectedMessageContent)

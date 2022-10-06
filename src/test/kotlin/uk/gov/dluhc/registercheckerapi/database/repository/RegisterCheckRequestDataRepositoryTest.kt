@@ -17,16 +17,14 @@ internal class RegisterCheckRequestDataRepositoryTest : IntegrationTest() {
         registerCheckRequestDataRepository.save(registerCheckResultData)
 
         // When
-        val actual = registerCheckRequestDataRepository.findById(registerCheckResultData.id!!)
+        val actual = registerCheckRequestDataRepository.findByCorrelationId(correlationId)
 
         // Then
-        assertThat(actual.isPresent).isTrue
-        with(actual.get()) {
-            assertThat(id).isNotNull
-            assertThat(this.correlationId).isEqualTo(correlationId)
-            assertThat(requestBodyJson.contains(correlationId.toString())).isTrue
-            assertThat(dateCreated).isNotNull
-        }
+        assertThat(actual).isNotNull
+        assertThat(actual?.id).isNotNull
+        assertThat(actual?.correlationId).isEqualTo(correlationId)
+        assertThat(actual?.requestBody?.contains(correlationId.toString())).isTrue
+        assertThat(actual?.dateCreated).isNotNull
     }
 
     private fun requestBodyJson(requestId: UUID): String =

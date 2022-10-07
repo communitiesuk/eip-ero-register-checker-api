@@ -1,7 +1,7 @@
 cloud:
   aws:
     region:
-      static: eu-west-2
+      static: us-east-1
     credentials:
       access-key: test
       secret-key: test

@@ -16,6 +16,14 @@ $ ./gradlew ktlintApplyToIdea
 ```
 This only needs doing once to setup your IDE with the code styles.
 
+### Integration Test Development
+Integration tests use TestContainers to manage Docker containers, to reduce development time of writing IT tests it is
+recommended to reuse running containers so that the only need to be set up once for the session.  After development is
+completed the Docker containers must be manually tidied up.
+
+To enable TestContainer reuse ensure your home directory has a file named `.testcontainers.properties` and includes:
+`testcontainers.reuse.enable=true`
+
 #### Running Tests
 In order to run the tests successfully, you will first need to set the `LOCALSTACK_API_KEY` environment variable (i.e.
 within your .bash_profile or similar). Then run:

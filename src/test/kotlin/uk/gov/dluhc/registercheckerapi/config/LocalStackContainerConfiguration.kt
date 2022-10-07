@@ -1,7 +1,6 @@
 package uk.gov.dluhc.registercheckerapi.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.util.TestPropertyValues
 import org.springframework.context.ConfigurableApplicationContext
@@ -23,8 +22,36 @@ import java.net.URI
 @Configuration
 class LocalStackContainerConfiguration {
 
-    private companion object {
+    companion object {
+        const val DEFAULT_REGION = "us-east-1"
         const val DEFAULT_PORT = 4566
+
+        val localStackContainer: GenericContainer<*> = getInstance()
+        private var container: GenericContainer<*>? = null
+
+        /**
+         * Creates and starts LocalStack configured with a basic (empty) SQS service.
+         * Returns the container that can subsequently be used for further setup and configuration.
+         */
+        @Synchronized fun getInstance(): GenericContainer<*> {
+            if (container == null) {
+                container = GenericContainer(
+                    DockerImageName.parse("localstack/localstack:1.1.0")
+                ).withEnv(
+                    mapOf(
+                        "SERVICES" to "sqs, sts",
+                        "AWS_DEFAULT_REGION" to DEFAULT_REGION,
+                    )
+                )
+                    .withReuse(true)
+                    .withExposedPorts(DEFAULT_PORT)
+                    .apply {
+                        start()
+                    }
+            }
+
+            return container!!
+        }
     }
 
     @Bean
@@ -34,33 +61,9 @@ class LocalStackContainerConfiguration {
     ): AwsCredentialsProvider =
         StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey))
 
-    /**
-     * Creates and starts LocalStack configured with a basic (empty) STS+SQS service.
-     * Returns the container that can subsequently be used for further setup and configuration.
-     */
-    @Bean
-    fun localstackContainer(
-        @Value("\${cloud.aws.region.static}") region: String,
-        @Value("\${localstack.api.key}") localStackApiKey: String
-    ): GenericContainer<*> {
-        return GenericContainer(
-            DockerImageName.parse("localstack/localstack:1.1.0")
-        ).withEnv(
-            mapOf(
-                "SERVICES" to "sqs,sts",
-                "AWS_DEFAULT_REGION" to region,
-                "LOCALSTACK_API_KEY" to localStackApiKey
-            )
-        ).withExposedPorts(DEFAULT_PORT)
-            .apply {
-                start()
-            }
-    }
-
     @Bean
     @Primary
     fun localStackStsClient(
-        @Qualifier("localstackContainer") localStackContainer: GenericContainer<*>,
         awsCredentialsProvider: AwsCredentialsProvider
     ): StsClient {
 
@@ -79,7 +82,6 @@ class LocalStackContainerConfiguration {
      */
     @Bean
     fun localStackContainerSqsSettings(
-        @Qualifier("localstackContainer") localStackContainer: GenericContainer<*>,
         applicationContext: ConfigurableApplicationContext,
         @Value("\${sqs.initiate-applicant-register-check-queue-name}") initiateApplicantRegisterCheckQueueName: String,
         @Value("\${sqs.confirm-applicant-register-check-result-queue-name}") confirmRegisterCheckResultMessageQueueName: String,

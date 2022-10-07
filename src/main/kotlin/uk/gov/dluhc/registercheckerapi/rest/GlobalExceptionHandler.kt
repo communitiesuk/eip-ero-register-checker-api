@@ -19,6 +19,7 @@ import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
 import uk.gov.dluhc.registercheckerapi.config.ApiRequestErrorAttributes
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
 import uk.gov.dluhc.registercheckerapi.exception.PendingRegisterCheckNotFoundException
+import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckMatchCountMismatchException
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckUnexpectedStatusException
 import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
 import javax.servlet.RequestDispatcher.ERROR_MESSAGE
@@ -70,9 +71,14 @@ class GlobalExceptionHandler(
         return populateErrorResponseAndHandleExceptionInternal(e, FORBIDDEN, request)
     }
 
-    @ExceptionHandler(value = [RequestIdMismatchException::class])
-    protected fun handleRequestIdMismatchException(
-        e: RequestIdMismatchException,
+    @ExceptionHandler(
+        value = [
+            RequestIdMismatchException::class,
+            RegisterCheckMatchCountMismatchException::class
+        ]
+    )
+    protected fun handleBadRequestBusinessException(
+        e: RuntimeException,
         request: WebRequest
     ): ResponseEntity<Any?>? {
         return populateErrorResponseAndHandleExceptionInternal(e, HttpStatus.BAD_REQUEST, request)

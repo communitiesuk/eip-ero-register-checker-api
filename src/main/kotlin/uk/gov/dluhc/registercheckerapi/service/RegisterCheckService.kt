@@ -3,7 +3,6 @@ package uk.gov.dluhc.registercheckerapi.service
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.dluhc.registercheckerapi.client.IerApiClient
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
@@ -14,7 +13,6 @@ import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
 import uk.gov.dluhc.registercheckerapi.exception.PendingRegisterCheckNotFoundException
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckUnexpectedStatusException
-import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMapper
 import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMessageMapper
@@ -26,8 +24,7 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class RegisterCheckService(
-    private val ierApiClient: IerApiClient,
-    private val eroService: EroService,
+    private val retrieveGssCodeService: RetrieveGssCodeService,
     private val registerCheckRepository: RegisterCheckRepository,
     private val registerCheckResultDataRepository: RegisterCheckResultDataRepository,
     private val pendingRegisterCheckMapper: PendingRegisterCheckMapper,
@@ -36,10 +33,11 @@ class RegisterCheckService(
     private val confirmRegisterCheckResultMessageQueue: MessageQueue<RegisterCheckResultMessage>,
 ) {
 
-    fun getPendingRegisterChecks(certificateSerial: String, pageSize: Int): List<PendingRegisterCheckDto> {
-        val eroIdFromIer = ierApiClient.getEroIdentifier(certificateSerial).eroId!!
-        return findPendingRegisterChecksByGssCodes(eroIdFromIer, pageSize)
-    }
+    fun getPendingRegisterChecks(certificateSerial: String, pageSize: Int): List<PendingRegisterCheckDto> =
+        retrieveGssCodeService.getGssCodeFromCertificateSerial(certificateSerial).let {
+            registerCheckRepository.findPendingEntriesByGssCodes(it, pageSize)
+                .map(pendingRegisterCheckMapper::registerCheckEntityToPendingRegisterCheckDto)
+        }
 
     @Transactional
     fun save(pendingRegisterCheckDto: PendingRegisterCheckDto) {
@@ -56,13 +54,12 @@ class RegisterCheckService(
                 requestBody = requestBodyJson
             )
         )
+        logger.debug { "Register check POST request payload audited/saved for requestId:[$correlationId]" }
     }
 
     @Transactional
     fun updatePendingRegisterCheck(certificateSerial: String, registerCheckResultDto: RegisterCheckResultDto) {
-        validateRequestIdMatch(registerCheckResultDto)
         validateGssCodeMatch(certificateSerial, registerCheckResultDto.gssCode)
-
         val registerCheck = getPendingRegisterCheck(registerCheckResultDto.correlationId).apply {
             when (status) {
                 CheckStatus.PENDING -> recordCheckResult(registerCheckResultDto, this)
@@ -71,6 +68,7 @@ class RegisterCheckService(
             }
         }
         with(registerCheckResultMessageMapper.fromRegisterCheckEntityToRegisterCheckResultMessage(registerCheck)) {
+            logger.info { "Publishing ConfirmRegisterCheckResultMessage with sourceType:[$sourceType], sourceReferenceApplicationId:[$sourceReference], sourceCorrelationId:[$sourceCorrelationId]" }
             confirmRegisterCheckResultMessageQueue.submit(this)
         }
     }
@@ -87,22 +85,8 @@ class RegisterCheckService(
         }
     }
 
-    private fun findPendingRegisterChecksByGssCodes(eroId: String, pageSize: Int): List<PendingRegisterCheckDto> =
-        eroService.lookupGssCodesForEro(eroId).let {
-            registerCheckRepository.findPendingEntriesByGssCodes(it, pageSize)
-                .map(pendingRegisterCheckMapper::registerCheckEntityToPendingRegisterCheckDto)
-        }
-
-    private fun validateRequestIdMatch(registerCheckResultDto: RegisterCheckResultDto) {
-        if (registerCheckResultDto.requestId != registerCheckResultDto.correlationId) {
-            throw RequestIdMismatchException(registerCheckResultDto.requestId, registerCheckResultDto.correlationId)
-                .also { logger.warn { it.message } }
-        }
-    }
-
     private fun validateGssCodeMatch(certificateSerial: String, requestGssCode: String) {
-        val eroIdFromIer = ierApiClient.getEroIdentifier(certificateSerial).eroId!!
-        if (requestGssCode !in eroService.lookupGssCodesForEro(eroIdFromIer))
+        if (requestGssCode !in retrieveGssCodeService.getGssCodeFromCertificateSerial(certificateSerial))
             throw GssCodeMismatchException(certificateSerial, requestGssCode)
                 .also { logger.warn { it.message } }
     }

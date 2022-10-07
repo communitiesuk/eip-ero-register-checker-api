@@ -13,8 +13,8 @@ fun buildRegisterCheckResultDto(
     correlationId: UUID = requestId,
     gssCode: String = "E09000021",
     matchResultSentAt: Instant = Instant.now(),
-    matchCount: Int = 0,
-    registerCheckStatus: RegisterCheckStatus = RegisterCheckStatus.NO_MATCH,
+    matchCount: Int = 1,
+    registerCheckStatus: RegisterCheckStatus = RegisterCheckStatus.EXACT_MATCH,
     registerCheckMatches: List<RegisterCheckMatchDto>? = listOf(buildRegisterCheckMatchDto())
 ) = RegisterCheckResultDto(
     requestId = requestId,

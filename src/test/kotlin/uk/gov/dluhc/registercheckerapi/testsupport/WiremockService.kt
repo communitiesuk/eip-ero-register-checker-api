@@ -22,16 +22,16 @@ class WiremockService(private val wireMockServer: WireMockServer) {
         wireMockServer.resetAll()
     }
 
-    fun verifyGetEroIdentifierCalledOnce() {
-        verifyGetEroIdentifierCalled(1)
+    fun verifyIerGetEroIdentifierCalledOnce() {
+        verifyIerGetEroIdentifierCalled(1)
     }
 
-    fun verifyGetEroIdentifierCalled(count: Int) {
+    fun verifyIerGetEroIdentifierCalled(count: Int) {
         wireMockServer.verify(count, getRequestedFor(urlPathMatching(IER_ERO_GET_URL)))
     }
 
-    fun verifyGetEroIdentifierNeverCalled() {
-        verifyGetEroIdentifierCalled(0)
+    fun verifyIerGetEroIdentifierNeverCalled() {
+        verifyIerGetEroIdentifierCalled(0)
     }
 
     fun verifyEroManagementGetEroIdentifierCalledOnce() {
@@ -101,16 +101,6 @@ class WiremockService(private val wireMockServer: WireMockServer) {
                 .willReturn(
                     responseDefinition()
                         .withStatus(404)
-                )
-        )
-    }
-
-    fun stubEroManagementGetEroThrowsInternalServerError() {
-        wireMockServer.stubFor(
-            get(urlPathMatching(ERO_MANAGEMENT_ERO_GET_URL))
-                .willReturn(
-                    responseDefinition()
-                        .withStatus(500)
                 )
         )
     }

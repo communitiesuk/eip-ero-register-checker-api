@@ -12,7 +12,7 @@ fun buildRegisterCheckResultRequest(
     requestId: UUID = UUID.randomUUID(),
     gssCode: String = "E12345678",
     createdAt: OffsetDateTime = OffsetDateTime.now(),
-    registerCheckMatchCount: Int = 0,
+    registerCheckMatchCount: Int = 1,
     applicationCreatedAt: OffsetDateTime? = OffsetDateTime.now(),
     registerCheckMatches: List<RegisterCheckMatch>? = listOf(buildRegisterCheckMatchRequest(applicationCreatedAt = applicationCreatedAt))
 ) = RegisterCheckResultRequest(

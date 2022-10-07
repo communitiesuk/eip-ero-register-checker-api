@@ -4,6 +4,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.catchThrowableOfType
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.NullAndEmptySource
+import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckMatchDto
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckMatchCountMismatchException
 import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildRegisterCheckMatchDto
@@ -83,6 +86,25 @@ internal class RegisterCheckRequestValidatorTest {
             // Then
             assertThat(ex.message).isEqualTo(expected.message)
             assertThat(ex.message).isEqualTo("Request [registerCheckMatches] array must be null or empty for [registerCheckMatchCount:11] in body payload")
+        }
+
+        @ParameterizedTest
+        @NullAndEmptySource
+        fun `should validate successfully when matchCount is greater than 10 and registerCheckMatch is null or empty`(matches: List<RegisterCheckMatchDto>?) {
+            // Given
+            val requestId = randomUUID()
+            val matchCount = 11
+            val registerCheckResultDto = buildRegisterCheckResultDto(
+                requestId = requestId,
+                correlationId = requestId,
+                matchCount = matchCount,
+                registerCheckMatches = matches
+            )
+
+            // When
+            registerCheckRequestValidator.validateRequestBody("123456789", registerCheckResultDto)
+
+            // Then
         }
     }
 }

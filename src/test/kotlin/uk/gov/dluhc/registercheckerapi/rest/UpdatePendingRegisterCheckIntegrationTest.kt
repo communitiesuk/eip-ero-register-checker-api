@@ -158,7 +158,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     }
 
     @Test
-    fun `should return bad request given matchCount in requestBody does not matches matchRequest array size`() {
+    fun `should return bad request given registerCheckMatchCount in requestBody mismatches registerCheckMatches array size`() {
         // Given
         val eroIdFromIerApi = "camden-city-council"
         val firstGssCodeFromEroApi = "E12345678"

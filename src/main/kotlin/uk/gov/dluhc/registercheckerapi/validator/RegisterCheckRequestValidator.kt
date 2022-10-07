@@ -1,23 +1,19 @@
-package uk.gov.dluhc.registercheckerapi.service
+package uk.gov.dluhc.registercheckerapi.validator
 
 import mu.KotlinLogging
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
-import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckMatchCountMismatchException
 import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
 
 private val logger = KotlinLogging.logger {}
 
-@Service
-class RegisterCheckValidationService(
-    private val retrieveGssCodeService: RetrieveGssCodeService
-) {
+@Component
+class RegisterCheckRequestValidator {
 
     fun validateRequestBody(certificateSerial: String, registerCheckResultDto: RegisterCheckResultDto) {
         validateRequestIdMatch(registerCheckResultDto)
         validateMatchCountWithRegisterCheckMatchList(registerCheckResultDto)
-        validateGssCodeMatch(certificateSerial, registerCheckResultDto.gssCode)
     }
 
     private fun validateRequestIdMatch(registerCheckResultDto: RegisterCheckResultDto) {
@@ -46,11 +42,5 @@ class RegisterCheckValidationService(
                 }
             }
         }
-    }
-
-    private fun validateGssCodeMatch(certificateSerial: String, requestGssCode: String) {
-        if (requestGssCode !in retrieveGssCodeService.getGssCodeFromCertificateSerial(certificateSerial))
-            throw GssCodeMismatchException(certificateSerial, requestGssCode)
-                .also { logger.warn { it.message } }
     }
 }

@@ -10,6 +10,7 @@ import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckReposito
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckResultDataRepository
 import uk.gov.dluhc.registercheckerapi.dto.PendingRegisterCheckDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
+import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
 import uk.gov.dluhc.registercheckerapi.exception.PendingRegisterCheckNotFoundException
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckUnexpectedStatusException
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
@@ -58,6 +59,7 @@ class RegisterCheckService(
 
     @Transactional
     fun updatePendingRegisterCheck(certificateSerial: String, registerCheckResultDto: RegisterCheckResultDto) {
+        validateGssCodeMatch(certificateSerial, registerCheckResultDto.gssCode)
         val registerCheck = getPendingRegisterCheck(registerCheckResultDto.correlationId).apply {
             when (status) {
                 CheckStatus.PENDING -> recordCheckResult(registerCheckResultDto, this)
@@ -81,6 +83,12 @@ class RegisterCheckService(
                 else -> registerCheck.recordTooManyMatches(matchResultSentAt, matchCount, matches)
             }
         }
+    }
+
+    private fun validateGssCodeMatch(certificateSerial: String, requestGssCode: String) {
+        if (requestGssCode !in retrieveGssCodeService.getGssCodeFromCertificateSerial(certificateSerial))
+            throw GssCodeMismatchException(certificateSerial, requestGssCode)
+                .also { logger.warn { it.message } }
     }
 
     private fun getPendingRegisterCheck(correlationId: UUID): RegisterCheck =

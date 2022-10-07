@@ -18,7 +18,7 @@ import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMapper
 import uk.gov.dluhc.registercheckerapi.models.PendingRegisterChecksResponse
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 import uk.gov.dluhc.registercheckerapi.service.RegisterCheckService
-import uk.gov.dluhc.registercheckerapi.service.RegisterCheckValidationService
+import uk.gov.dluhc.registercheckerapi.validator.RegisterCheckRequestValidator
 import java.util.UUID
 import javax.validation.Valid
 
@@ -28,7 +28,7 @@ private val logger = KotlinLogging.logger {}
 @CrossOrigin
 class RegisterCheckerController(
     private val registerCheckService: RegisterCheckService,
-    private val registerCheckValidationService: RegisterCheckValidationService,
+    private val registerCheckRequestValidator: RegisterCheckRequestValidator,
     private val pendingRegisterCheckMapper: PendingRegisterCheckMapper,
     private val registerCheckResultMapper: RegisterCheckResultMapper,
     private val objectMapper: ObjectMapper
@@ -72,7 +72,7 @@ class RegisterCheckerController(
         registerCheckService.auditRequestBody(request.requestid, objectMapper.writeValueAsString(request))
 
         val registerCheckResultDto = registerCheckResultMapper.fromRegisterCheckResultRequestApiToDto(requestId, request)
-        registerCheckValidationService.validateRequestBody(certificateSerial, registerCheckResultDto)
+        registerCheckRequestValidator.validateRequestBody(certificateSerial, registerCheckResultDto)
 
         logger.debug("Post request body validation successful for EMS certificateSerial=[$certificateSerial] with requestId=[$requestId]")
         registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto)

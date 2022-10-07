@@ -53,6 +53,7 @@ class RegisterCheckService(
                 requestBody = requestBodyJson
             )
         )
+        logger.debug { "Register check POST request payload audited/saved for requestId:[$correlationId]" }
     }
 
     @Transactional
@@ -65,6 +66,7 @@ class RegisterCheckService(
             }
         }
         with(registerCheckResultMessageMapper.fromRegisterCheckEntityToRegisterCheckResultMessage(registerCheck)) {
+            logger.info { "Publishing ConfirmRegisterCheckResultMessage with sourceType:[$sourceType], sourceReferenceApplicationId:[$sourceReference], sourceCorrelationId:[$sourceCorrelationId]" }
             confirmRegisterCheckResultMessageQueue.submit(this)
         }
     }

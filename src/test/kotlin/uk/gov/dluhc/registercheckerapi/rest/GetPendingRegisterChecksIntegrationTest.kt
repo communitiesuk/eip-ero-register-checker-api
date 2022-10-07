@@ -31,7 +31,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
             .exchange()
             .expectStatus()
             .isForbidden
-        wireMockService.verifyGetEroIdentifierNeverCalled()
+        wireMockService.verifyIerGetEroIdentifierNeverCalled()
         wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
     }
 
@@ -57,7 +57,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
         assertThat(actual).isNotNull
         assertThat(actual!!.pageSize).isZero
         PendingRegisterCheckAssert.assertThat(actual.registerCheckRequests).hasEmptyPendingRegisterChecks()
-        wireMockService.verifyGetEroIdentifierCalledOnce()
+        wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
     }
 
@@ -108,7 +108,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
                     pendingRegisterCheckResult3ForGssCode1
                 )
             )
-        wireMockService.verifyGetEroIdentifierCalledOnce()
+        wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
     }
 
@@ -134,7 +134,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
             .hasStatus(404)
             .hasError("Not Found")
             .hasMessage("EROCertificateMapping for certificateSerial=[543219999] not found")
-        wireMockService.verifyGetEroIdentifierCalledOnce()
+        wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
     }
 
@@ -160,7 +160,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
             .hasStatus(500)
             .hasError("Internal Server Error")
             .hasMessage("Error getting eroId for certificate serial")
-        wireMockService.verifyGetEroIdentifierCalledOnce()
+        wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
     }
 
@@ -187,7 +187,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
             .hasStatus(500)
             .hasError("Internal Server Error")
             .hasMessage("Error retrieving GSS codes")
-        wireMockService.verifyGetEroIdentifierCalledOnce()
+        wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
     }
 

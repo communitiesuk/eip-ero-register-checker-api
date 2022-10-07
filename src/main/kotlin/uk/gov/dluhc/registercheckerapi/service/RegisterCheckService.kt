@@ -3,7 +3,6 @@ package uk.gov.dluhc.registercheckerapi.service
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.dluhc.registercheckerapi.client.IerApiClient
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
@@ -24,8 +23,7 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class RegisterCheckService(
-    private val ierApiClient: IerApiClient,
-    private val eroService: EroService,
+    private val retrieveGssCodeService: RetrieveGssCodeService,
     private val registerCheckRepository: RegisterCheckRepository,
     private val registerCheckResultDataRepository: RegisterCheckResultDataRepository,
     private val pendingRegisterCheckMapper: PendingRegisterCheckMapper,
@@ -34,10 +32,11 @@ class RegisterCheckService(
     private val confirmRegisterCheckResultMessageQueue: MessageQueue<RegisterCheckResultMessage>,
 ) {
 
-    fun getPendingRegisterChecks(certificateSerial: String, pageSize: Int): List<PendingRegisterCheckDto> {
-        val eroIdFromIer = ierApiClient.getEroIdentifier(certificateSerial).eroId!!
-        return findPendingRegisterChecksByGssCodes(eroIdFromIer, pageSize)
-    }
+    fun getPendingRegisterChecks(certificateSerial: String, pageSize: Int): List<PendingRegisterCheckDto> =
+        retrieveGssCodeService.getGssCodeFromCertificateSerial(certificateSerial).let {
+            registerCheckRepository.findPendingEntriesByGssCodes(it, pageSize)
+                .map(pendingRegisterCheckMapper::registerCheckEntityToPendingRegisterCheckDto)
+        }
 
     @Transactional
     fun save(pendingRegisterCheckDto: PendingRegisterCheckDto) {
@@ -81,12 +80,6 @@ class RegisterCheckService(
             }
         }
     }
-
-    private fun findPendingRegisterChecksByGssCodes(eroId: String, pageSize: Int): List<PendingRegisterCheckDto> =
-        eroService.lookupGssCodesForEro(eroId).let {
-            registerCheckRepository.findPendingEntriesByGssCodes(it, pageSize)
-                .map(pendingRegisterCheckMapper::registerCheckEntityToPendingRegisterCheckDto)
-        }
 
     private fun getPendingRegisterCheck(correlationId: UUID): RegisterCheck =
         registerCheckRepository.findByCorrelationId(correlationId)

@@ -2,7 +2,6 @@ package uk.gov.dluhc.registercheckerapi.service
 
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
-import uk.gov.dluhc.registercheckerapi.client.IerApiClient
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckMatchCountMismatchException
@@ -11,9 +10,8 @@ import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
 private val logger = KotlinLogging.logger {}
 
 @Service
-class RegisterCheckRequestValidationService(
-    private val ierApiClient: IerApiClient,
-    private val eroService: EroService
+class RegisterCheckValidationService(
+    private val retrieveGssCodeService: RetrieveGssCodeService
 ) {
 
     fun validateRequestBody(certificateSerial: String, registerCheckResultDto: RegisterCheckResultDto) {
@@ -51,8 +49,7 @@ class RegisterCheckRequestValidationService(
     }
 
     private fun validateGssCodeMatch(certificateSerial: String, requestGssCode: String) {
-        val eroIdFromIer = ierApiClient.getEroIdentifier(certificateSerial).eroId!!
-        if (requestGssCode !in eroService.lookupGssCodesForEro(eroIdFromIer))
+        if (requestGssCode !in retrieveGssCodeService.getGssCodeFromCertificateSerial(certificateSerial))
             throw GssCodeMismatchException(certificateSerial, requestGssCode)
                 .also { logger.warn { it.message } }
     }

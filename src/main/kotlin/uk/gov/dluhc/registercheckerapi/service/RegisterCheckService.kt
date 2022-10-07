@@ -11,10 +11,8 @@ import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckReposito
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckResultDataRepository
 import uk.gov.dluhc.registercheckerapi.dto.PendingRegisterCheckDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
-import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
 import uk.gov.dluhc.registercheckerapi.exception.PendingRegisterCheckNotFoundException
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckUnexpectedStatusException
-import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMapper
 import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMessageMapper
@@ -60,9 +58,6 @@ class RegisterCheckService(
 
     @Transactional
     fun updatePendingRegisterCheck(certificateSerial: String, registerCheckResultDto: RegisterCheckResultDto) {
-        validateRequestIdMatch(registerCheckResultDto)
-        validateGssCodeMatch(certificateSerial, registerCheckResultDto.gssCode)
-
         val registerCheck = getPendingRegisterCheck(registerCheckResultDto.correlationId).apply {
             when (status) {
                 CheckStatus.PENDING -> recordCheckResult(registerCheckResultDto, this)
@@ -92,20 +87,6 @@ class RegisterCheckService(
             registerCheckRepository.findPendingEntriesByGssCodes(it, pageSize)
                 .map(pendingRegisterCheckMapper::registerCheckEntityToPendingRegisterCheckDto)
         }
-
-    private fun validateRequestIdMatch(registerCheckResultDto: RegisterCheckResultDto) {
-        if (registerCheckResultDto.requestId != registerCheckResultDto.correlationId) {
-            throw RequestIdMismatchException(registerCheckResultDto.requestId, registerCheckResultDto.correlationId)
-                .also { logger.warn { it.message } }
-        }
-    }
-
-    private fun validateGssCodeMatch(certificateSerial: String, requestGssCode: String) {
-        val eroIdFromIer = ierApiClient.getEroIdentifier(certificateSerial).eroId!!
-        if (requestGssCode !in eroService.lookupGssCodesForEro(eroIdFromIer))
-            throw GssCodeMismatchException(certificateSerial, requestGssCode)
-                .also { logger.warn { it.message } }
-    }
 
     private fun getPendingRegisterCheck(correlationId: UUID): RegisterCheck =
         registerCheckRepository.findByCorrelationId(correlationId)

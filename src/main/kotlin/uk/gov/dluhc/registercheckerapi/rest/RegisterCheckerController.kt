@@ -17,6 +17,7 @@ import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMapper
 import uk.gov.dluhc.registercheckerapi.models.PendingRegisterChecksResponse
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
+import uk.gov.dluhc.registercheckerapi.service.RegisterCheckRequestValidationService
 import uk.gov.dluhc.registercheckerapi.service.RegisterCheckService
 import java.util.UUID
 import javax.validation.Valid
@@ -27,6 +28,7 @@ private val logger = KotlinLogging.logger {}
 @CrossOrigin
 class RegisterCheckerController(
     private val registerCheckService: RegisterCheckService,
+    private val registerCheckRequestValidationService: RegisterCheckRequestValidationService,
     private val pendingRegisterCheckMapper: PendingRegisterCheckMapper,
     private val registerCheckResultMapper: RegisterCheckResultMapper,
     private val objectMapper: ObjectMapper
@@ -64,14 +66,15 @@ class RegisterCheckerController(
         @PathVariable requestId: UUID,
         @Valid @RequestBody request: RegisterCheckResultRequest
     ) {
-        logger.info("Updating pending register checks for EMS ERO certificateSerial=[${authentication.credentials}] with requestId=[$requestId]")
+        val certificateSerial = authentication.credentials.toString()
+        logger.info("Updating pending register checks for EMS certificateSerial=[$certificateSerial] with requestId=[$requestId]")
 
         registerCheckService.auditRequestBody(request.requestid, objectMapper.writeValueAsString(request))
 
-        registerCheckService
-            .updatePendingRegisterCheck(
-                certificateSerial = authentication.credentials.toString(),
-                registerCheckResultDto = registerCheckResultMapper.fromRegisterCheckResultRequestApiToDto(requestId, request)
-            )
+        val registerCheckResultDto = registerCheckResultMapper.fromRegisterCheckResultRequestApiToDto(requestId, request)
+        registerCheckRequestValidationService.validateRequestBody(certificateSerial, registerCheckResultDto)
+
+        logger.debug("Post request body validation successful for EMS certificateSerial=[$certificateSerial] with requestId=[$requestId]")
+        registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto)
     }
 }

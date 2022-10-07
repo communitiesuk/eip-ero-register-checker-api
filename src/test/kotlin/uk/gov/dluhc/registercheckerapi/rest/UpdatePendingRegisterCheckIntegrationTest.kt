@@ -6,7 +6,6 @@ import mu.KotlinLogging
 import org.apache.commons.lang3.time.StopWatch
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
-import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType.APPLICATION_JSON
 import reactor.core.publisher.Mono
@@ -482,12 +481,12 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
 
         val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
-        Assertions.assertThat(actualRegisterResultData).isNotNull
-        Assertions.assertThat(actualRegisterResultData?.id).isNotNull
-        Assertions.assertThat(actualRegisterResultData?.correlationId).isNotNull
-        Assertions.assertThat(actualRegisterResultData?.dateCreated).isNotNull
+        assertThat(actualRegisterResultData).isNotNull
+        assertThat(actualRegisterResultData?.id).isNotNull
+        assertThat(actualRegisterResultData?.correlationId).isNotNull
+        assertThat(actualRegisterResultData?.dateCreated).isNotNull
         val persistedRequest = objectMapper.readValue(actualRegisterResultData!!.requestBody, RegisterCheckResultRequest::class.java)
-        Assertions.assertThat(persistedRequest).usingRecursiveComparison()
+        assertThat(persistedRequest).usingRecursiveComparison()
             .ignoringFields("registerCheckMatches.applicationCreatedAt")
             .isEqualTo(requestBody)
 

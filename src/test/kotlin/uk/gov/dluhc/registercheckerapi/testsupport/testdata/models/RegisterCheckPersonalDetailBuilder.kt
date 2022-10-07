@@ -48,7 +48,7 @@ fun buildRegisterCheckAddress(
 
 fun buildRegisterCheckPersonalDetailFromMatchModel(match: uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch): RegisterCheckPersonalDetail =
     with(match) {
-        RegisterCheckPersonalDetail(
+        buildRegisterCheckPersonalDetail(
             firstName = fn,
             middleNames = mn,
             surname = ln,
@@ -61,7 +61,7 @@ fun buildRegisterCheckPersonalDetailFromMatchModel(match: uk.gov.dluhc.registerc
 
 fun buildRegisterCheckAddress(match: uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch) =
     with(match) {
-        RegisterCheckAddress(
+        buildRegisterCheckAddress(
             property = regproperty,
             street = regstreet,
             locality = reglocality,
@@ -74,7 +74,7 @@ fun buildRegisterCheckAddress(match: uk.gov.dluhc.registercheckerapi.models.Regi
 
 fun buildRegisterCheckPersonalDetailFromMatchDto(match: RegisterCheckMatchDto): RegisterCheckPersonalDetail =
     with(match.personalDetail) {
-        RegisterCheckPersonalDetail(
+        buildRegisterCheckPersonalDetail(
             firstName = firstName,
             middleNames = middleNames,
             surname = surname,
@@ -87,7 +87,7 @@ fun buildRegisterCheckPersonalDetailFromMatchDto(match: RegisterCheckMatchDto): 
 
 fun buildRegisterCheckAddress(address: AddressDto): RegisterCheckAddress =
     with(address) {
-        RegisterCheckAddress(
+        buildRegisterCheckAddress(
             property = property,
             street = street,
             locality = locality,

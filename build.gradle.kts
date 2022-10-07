@@ -2,6 +2,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.tasks.KtLintCheckTask
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.owasp.dependencycheck.reporting.ReportGenerator.Format.HTML
+import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
+import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 
 plugins {
     id("org.springframework.boot") version "2.7.4"
@@ -171,6 +173,14 @@ sourceSets["main"].java {
 // Linting is dependent on GenerateTask
 tasks.withType<KtLintCheckTask> {
     dependsOn(tasks.withType<GenerateTask>())
+}
+
+tasks.withType<BootBuildImage> {
+    environment = mapOf("BP_HEALTH_CHECKER_ENABLED" to "true")
+    buildpacks = listOf(
+            "urn:cnb:builder:paketo-buildpacks/java",
+            "gcr.io/paketo-buildpacks/health-checker",
+    )
 }
 
 // Exclude generated code from linting

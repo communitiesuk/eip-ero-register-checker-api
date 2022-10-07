@@ -68,7 +68,7 @@ internal class RegisterCheckServiceTest {
     private lateinit var registerCheckRepository: RegisterCheckRepository
 
     @Mock
-    private lateinit var registerCheckRequestDataRepository: RegisterCheckResultDataRepository
+    private lateinit var registerCheckResultDataRepository: RegisterCheckResultDataRepository
 
     @Mock
     private lateinit var pendingRegisterCheckMapper: PendingRegisterCheckMapper
@@ -585,7 +585,7 @@ internal class RegisterCheckServiceTest {
             registerCheckService.auditRequestBody(correlationId, requestBodyJson)
 
             // Then
-            verify(registerCheckRequestDataRepository).save(registerCheckRequestDataCaptor.capture())
+            verify(registerCheckResultDataRepository).save(registerCheckRequestDataCaptor.capture())
             val registerCheckResultData = registerCheckRequestDataCaptor.value
             assertThat(registerCheckResultData.correlationId).isEqualTo(correlationId)
             assertThat(registerCheckResultData.requestBody).isEqualTo(requestBodyJson)

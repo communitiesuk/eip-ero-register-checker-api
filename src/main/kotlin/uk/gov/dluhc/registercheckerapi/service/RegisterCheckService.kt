@@ -29,7 +29,7 @@ class RegisterCheckService(
     private val ierApiClient: IerApiClient,
     private val eroService: EroService,
     private val registerCheckRepository: RegisterCheckRepository,
-    private val registerCheckRequestDataRepository: RegisterCheckResultDataRepository,
+    private val registerCheckResultDataRepository: RegisterCheckResultDataRepository,
     private val pendingRegisterCheckMapper: PendingRegisterCheckMapper,
     private val registerCheckResultMapper: RegisterCheckResultMapper,
     private val registerCheckResultMessageMapper: RegisterCheckResultMessageMapper,
@@ -50,7 +50,7 @@ class RegisterCheckService(
 
     @Transactional
     fun auditRequestBody(correlationId: UUID, requestBodyJson: String) {
-        registerCheckRequestDataRepository.save(
+        registerCheckResultDataRepository.save(
             RegisterCheckResultData(
                 correlationId = correlationId,
                 requestBody = requestBodyJson

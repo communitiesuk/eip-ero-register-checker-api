@@ -5,8 +5,10 @@ import java.net.URI
 data class LocalStackContainerSettings(
     val apiUrl: String,
     val queueUrlInitiateApplicantRegisterCheck: String,
+    val queueUrlConfirmRegisterCheckResult: String,
 ) {
     val mappedQueueUrlInitiateApplicantRegisterCheck: String = toMappedUrl(queueUrlInitiateApplicantRegisterCheck, apiUrl)
+    val mappedQueueUrlConfirmRegisterCheckResult: String = toMappedUrl(queueUrlConfirmRegisterCheckResult, apiUrl)
 
     private fun toMappedUrl(rawUrlString: String, apiUrlString: String): String {
         val rawUrl = URI.create(rawUrlString)

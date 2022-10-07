@@ -1,5 +1,6 @@
 package uk.gov.dluhc.registercheckerapi.config
 
+import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,6 +23,9 @@ import uk.gov.dluhc.registercheckerapi.testsupport.WiremockService
 internal abstract class IntegrationTest {
 
     @Autowired
+    protected lateinit var localStackContainerSettings: LocalStackContainerSettings
+
+    @Autowired
     protected lateinit var webTestClient: WebTestClient
 
     @Autowired
@@ -35,6 +39,9 @@ internal abstract class IntegrationTest {
 
     @Autowired
     protected lateinit var sqsClient: SqsClient
+
+    @Autowired
+    protected lateinit var amazonSQSAsync: AmazonSQSAsync
 
     @Autowired
     protected lateinit var objectMapper: ObjectMapper

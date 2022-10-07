@@ -17,6 +17,9 @@ import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckUnexpectedStatusEx
 import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMapper
+import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMessageMapper
+import uk.gov.dluhc.registercheckerapi.messaging.MessageQueue
+import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -26,9 +29,11 @@ class RegisterCheckService(
     private val ierApiClient: IerApiClient,
     private val eroService: EroService,
     private val registerCheckRepository: RegisterCheckRepository,
-    private val registerCheckRequestDataRepository: RegisterCheckResultDataRepository,
+    private val registerCheckResultDataRepository: RegisterCheckResultDataRepository,
     private val pendingRegisterCheckMapper: PendingRegisterCheckMapper,
-    private val registerCheckResultMapper: RegisterCheckResultMapper
+    private val registerCheckResultMapper: RegisterCheckResultMapper,
+    private val registerCheckResultMessageMapper: RegisterCheckResultMessageMapper,
+    private val confirmRegisterCheckResultMessageQueue: MessageQueue<RegisterCheckResultMessage>,
 ) {
 
     fun getPendingRegisterChecks(certificateSerial: String, pageSize: Int): List<PendingRegisterCheckDto> {
@@ -45,7 +50,7 @@ class RegisterCheckService(
 
     @Transactional
     fun auditRequestBody(correlationId: UUID, requestBodyJson: String) {
-        registerCheckRequestDataRepository.save(
+        registerCheckResultDataRepository.save(
             RegisterCheckResultData(
                 correlationId = correlationId,
                 requestBody = requestBodyJson
@@ -57,13 +62,16 @@ class RegisterCheckService(
     fun updatePendingRegisterCheck(certificateSerial: String, registerCheckResultDto: RegisterCheckResultDto) {
         validateRequestIdMatch(registerCheckResultDto)
         validateGssCodeMatch(certificateSerial, registerCheckResultDto.gssCode)
-        getPendingRegisterCheck(registerCheckResultDto.correlationId).apply {
+
+        val registerCheck = getPendingRegisterCheck(registerCheckResultDto.correlationId).apply {
             when (status) {
                 CheckStatus.PENDING -> recordCheckResult(registerCheckResultDto, this)
-                // Subsequent tasks will send SQS message to VCA
                 else -> throw RegisterCheckUnexpectedStatusException(correlationId, status)
                     .also { logger.warn { "Register check with correlationId:[$correlationId] is in status [$status] and cannot be set to [${registerCheckResultDto.registerCheckStatus}]" } }
             }
+        }
+        with(registerCheckResultMessageMapper.fromRegisterCheckEntityToRegisterCheckResultMessage(registerCheck)) {
+            confirmRegisterCheckResultMessageQueue.submit(this)
         }
     }
 

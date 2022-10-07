@@ -47,6 +47,7 @@ The following environment variables must be set in order to run the application:
 - `API_IER_STS_ASSUME_ROLE` - the IAM role in IER's AWS subscription that should be assumed in order to invoke IER REST API services.
 - `SQS_EMS_CIDR_UPDATE_QUEUE_NAME` is the name of the queue for EMS CIDR update notifications from IER
 - `SQS_INITIATE_APPLICANT_REGISTER_CHECK_QUEUE_NAME` - the queue name for requesting an automated check to determine if the applicant is on the electoral register
+- `SQS_CONFIRM_APPLICANT_REGISTER_CHECK_RESULT_QUEUE_NAME` - the queue name for responding with the result of the register check
 
 #### MYSQL Configuration
 The application requires the following environment variables to connect to Mysql:

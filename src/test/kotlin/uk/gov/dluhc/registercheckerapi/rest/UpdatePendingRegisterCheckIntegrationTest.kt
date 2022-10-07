@@ -1,11 +1,20 @@
 package uk.gov.dluhc.registercheckerapi.rest
 
-import org.assertj.core.api.Assertions
+import com.amazonaws.services.sqs.model.Message
+import com.amazonaws.services.sqs.model.ReceiveMessageRequest
+import mu.KotlinLogging
+import org.apache.commons.lang3.time.StopWatch
+import org.assertj.core.api.Assertions.assertThat
+import org.awaitility.core.ConditionTimeoutException
+import org.awaitility.kotlin.await
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType.APPLICATION_JSON
 import reactor.core.publisher.Mono
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
+import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
+import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
+import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType
 import uk.gov.dluhc.registercheckerapi.models.ErrorResponse
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.entity.RegisterCheckAssert
@@ -13,11 +22,15 @@ import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.models.Err
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatchEntityFromRegisterCheckMatchApi
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchRequest
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckPersonalDetailFromMatchModel
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckResultRequest
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.UUID
+import java.util.concurrent.TimeUnit
+
+private val logger = KotlinLogging.logger {}
 
 private const val REQUEST_HEADER_NAME = "client-cert-serial"
 private const val CERT_SERIAL_NUMBER_VALUE = "543212222"
@@ -364,7 +377,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
         wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
         wireMockService.stubEroManagementGetEro(eroIdFromIerApi, firstGssCodeFromEroApi, secondGssCodeFromEroApi)
-        registerCheckRepository.save(
+        val savedPendingRegisterCheckEntity = registerCheckRepository.save(
             buildRegisterCheck(
                 correlationId = requestId,
                 gssCode = firstGssCodeFromEroApi,
@@ -398,10 +411,12 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasNoValidationErrors()
         wireMockService.verifyGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
+
+        assertMessageNotSubmittedToSqs(savedPendingRegisterCheckEntity.sourceReference)
     }
 
     @Test
-    fun `should return success given pending register check with multiple match found for a given requestId`() {
+    fun `should return success and submit message given pending register check with multiple match found for a given requestId`() {
         // Given
         val requestId = UUID.randomUUID()
         val eroIdFromIerApi = "camden-city-council"
@@ -411,7 +426,13 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
         wireMockService.stubEroManagementGetEro(eroIdFromIerApi, firstGssCodeFromEroApi, secondGssCodeFromEroApi)
 
-        registerCheckRepository.save(buildRegisterCheck(correlationId = requestId, gssCode = firstGssCodeFromEroApi, status = CheckStatus.PENDING))
+        val savedPendingRegisterCheckEntity = registerCheckRepository.save(
+            buildRegisterCheck(
+                correlationId = requestId,
+                gssCode = firstGssCodeFromEroApi,
+                status = CheckStatus.PENDING
+            )
+        )
         registerCheckRepository.save(buildRegisterCheck(correlationId = UUID.randomUUID()))
 
         val matchResultSentAt = OffsetDateTime.now(ZoneOffset.UTC)
@@ -420,6 +441,13 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         val expectedRegisterCheckMatchEntityList = listOf(
             buildRegisterCheckMatchEntityFromRegisterCheckMatchApi(matches[0]),
             buildRegisterCheckMatchEntityFromRegisterCheckMatchApi(matches[1])
+        )
+        val expectedMessageContent = RegisterCheckResultMessage(
+            sourceType = RegisterCheckSourceType.VOTER_CARD,
+            sourceReference = savedPendingRegisterCheckEntity.sourceReference,
+            sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
+            registerCheckResult = RegisterCheckResult.MULTIPLE_MATCH,
+            matches = matches.map { buildRegisterCheckPersonalDetailFromMatchModel(it) }
         )
         val requestBody = buildRegisterCheckResultRequest(
             requestId = requestId,
@@ -456,16 +484,65 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
 
         val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
-        Assertions.assertThat(actualRegisterResultData).isNotNull
-        Assertions.assertThat(actualRegisterResultData?.id).isNotNull
-        Assertions.assertThat(actualRegisterResultData?.correlationId).isNotNull
-        Assertions.assertThat(actualRegisterResultData?.dateCreated).isNotNull
+        assertThat(actualRegisterResultData).isNotNull
+        assertThat(actualRegisterResultData?.id).isNotNull
+        assertThat(actualRegisterResultData?.correlationId).isNotNull
+        assertThat(actualRegisterResultData?.dateCreated).isNotNull
         val persistedRequest = objectMapper.readValue(actualRegisterResultData!!.requestBody, RegisterCheckResultRequest::class.java)
-        Assertions.assertThat(persistedRequest).usingRecursiveComparison()
+        assertThat(persistedRequest).usingRecursiveComparison()
             .ignoringFields("registerCheckMatches.applicationCreatedAt")
             .isEqualTo(requestBody)
 
-        // TODO verify that SQS message is published to VCA as part of subsequent subtasks
+        assertMessageSubmittedToSqs(expectedMessageContent)
+    }
+
+    private fun assertMessageSubmittedToSqs(expectedMessageContent: RegisterCheckResultMessage) {
+        val stopWatch = StopWatch.createStarted()
+        await.atMost(5, TimeUnit.SECONDS).untilAsserted {
+            val sqsMessages: List<Message> = getLatestSqsMessages()
+            assertThat(sqsMessages).anyMatch {
+                assertRegisterCheckResultMessage(it, expectedMessageContent)
+            }
+
+            stopWatch.stop()
+            logger.info("completed assertions in $stopWatch")
+        }
+    }
+
+    private fun assertMessageNotSubmittedToSqs(sourceReferenceNotExpected: String) {
+        try {
+            await.atMost(5, TimeUnit.SECONDS).until {
+                val sqsMessages: List<Message> = getLatestSqsMessages()
+                assertThat(sqsMessages).noneMatch {
+                    val actualRegisterCheckResultMessage = objectMapper.readValue(it.body, RegisterCheckResultMessage::class.java)
+                    actualRegisterCheckResultMessage.sourceReference == sourceReferenceNotExpected
+                }
+                false
+            }
+        } catch (expectedException: ConditionTimeoutException) {
+            // expect timeout exception when successful
+        }
+    }
+
+    private fun getLatestSqsMessages(): List<Message> {
+        val receiveMessageRequest =
+            ReceiveMessageRequest(localStackContainerSettings.mappedQueueUrlConfirmRegisterCheckResult)
+                .withMaxNumberOfMessages(10)
+
+        return amazonSQSAsync.receiveMessage(receiveMessageRequest).messages
+    }
+
+    private fun assertRegisterCheckResultMessage(
+        actualMessage: Message,
+        expectedMessage: RegisterCheckResultMessage
+    ): Boolean {
+        val actualRegisterCheckResultMessage = objectMapper.readValue(actualMessage.body, RegisterCheckResultMessage::class.java)
+
+        assertThat(actualRegisterCheckResultMessage)
+            .usingRecursiveComparison()
+            .ignoringCollectionOrder()
+            .isEqualTo(expectedMessage)
+        return true
     }
 
     private fun buildUri(requestId: UUID = UUID.randomUUID()) =

@@ -23,6 +23,8 @@ import java.util.UUID
 import javax.validation.Valid
 
 private val logger = KotlinLogging.logger {}
+private const val DEFAULT_PAGE_SIZE = 100
+private const val QUERY_PARAM_PAGE_SIZE = "pageSize"
 
 @RestController
 @CrossOrigin
@@ -33,11 +35,6 @@ class RegisterCheckerController(
     private val registerCheckResultMapper: RegisterCheckResultMapper,
     private val objectMapper: ObjectMapper
 ) {
-
-    companion object {
-        private const val DEFAULT_PAGE_SIZE = 100
-        private const val QUERY_PARAM_PAGE_SIZE = "pageSize"
-    }
 
     @GetMapping("/registerchecks")
     @PreAuthorize("isAuthenticated()")

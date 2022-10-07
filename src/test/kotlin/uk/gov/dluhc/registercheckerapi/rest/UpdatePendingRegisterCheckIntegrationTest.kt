@@ -5,6 +5,7 @@ import com.amazonaws.services.sqs.model.ReceiveMessageRequest
 import mu.KotlinLogging
 import org.apache.commons.lang3.time.StopWatch
 import org.assertj.core.api.Assertions.assertThat
+import org.awaitility.core.ConditionTimeoutException
 import org.awaitility.kotlin.await
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType.APPLICATION_JSON
@@ -376,7 +377,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
         wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
         wireMockService.stubEroManagementGetEro(eroIdFromIerApi, firstGssCodeFromEroApi, secondGssCodeFromEroApi)
-        registerCheckRepository.save(
+        val savedPendingRegisterCheckEntity = registerCheckRepository.save(
             buildRegisterCheck(
                 correlationId = requestId,
                 gssCode = firstGssCodeFromEroApi,
@@ -410,6 +411,8 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasNoValidationErrors()
         wireMockService.verifyGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
+
+        assertMessageNotSubmittedToSqs(savedPendingRegisterCheckEntity.sourceReference)
     }
 
     @Test
@@ -503,6 +506,21 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
             stopWatch.stop()
             logger.info("completed assertions in $stopWatch")
+        }
+    }
+
+    private fun assertMessageNotSubmittedToSqs(sourceReferenceNotExpected: String) {
+        try {
+            await.atMost(5, TimeUnit.SECONDS).until {
+                val sqsMessages: List<Message> = getLatestSqsMessages()
+                assertThat(sqsMessages).noneMatch {
+                    val actualRegisterCheckResultMessage = objectMapper.readValue(it.body, RegisterCheckResultMessage::class.java)
+                    actualRegisterCheckResultMessage.sourceReference == sourceReferenceNotExpected
+                }
+                false
+            }
+        } catch (expectedException: ConditionTimeoutException) {
+            // expect timeout exception when successful
         }
     }
 

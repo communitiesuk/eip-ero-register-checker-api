@@ -7,6 +7,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 class InstantMapperTest {
+
     private val instantMapper = InstantMapper()
 
     @Test
@@ -33,5 +34,30 @@ class InstantMapperTest {
 
         // Then
         assertThat(actual).isEqualTo(expected)
+    }
+
+    @Test
+    fun `should convert OffsetDateTime string to Instant`() {
+        // Given
+        val offsetDateTime = OffsetDateTime.parse("1966-05-01T02:42:44.348Z")
+        val expected = offsetDateTime.toInstant()
+
+        // When
+        val actual = instantMapper.toInstant(offsetDateTime)
+
+        // Then
+        assertThat(actual).isEqualTo(expected)
+    }
+
+    @Test
+    fun `should convert null OffsetDateTime to null Instant`() {
+        // Given
+        val offsetDateTime = null
+
+        // When
+        val actual = instantMapper.toInstant(offsetDateTime)
+
+        // Then
+        assertThat(actual).isNull()
     }
 }

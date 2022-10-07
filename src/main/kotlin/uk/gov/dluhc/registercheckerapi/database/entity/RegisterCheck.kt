@@ -1,5 +1,6 @@
 package uk.gov.dluhc.registercheckerapi.database.entity
 
+import mu.KotlinLogging
 import org.hibernate.Hibernate
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.GenericGenerator
@@ -28,6 +29,8 @@ import javax.persistence.Table
 import javax.persistence.Version
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
+
+private val logger = KotlinLogging.logger {}
 
 @Table
 @Entity
@@ -130,6 +133,8 @@ class RegisterCheck(
         matchResultSentAt: Instant,
         registerCheckMatches: List<RegisterCheckMatch>
     ) {
+        // TODO remove logger
+        logger.info { "Setting values for status:$status, matchCount:$matchCount, matchResultSentAt:$matchResultSentAt, registerCheckMatches:$registerCheckMatches" }
         this.status = status
         this.matchCount = matchCount
         this.matchResultSentAt = matchResultSentAt

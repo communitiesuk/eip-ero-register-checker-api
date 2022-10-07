@@ -8,6 +8,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.core.ConditionTimeoutException
 import org.awaitility.kotlin.await
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.MediaType.APPLICATION_JSON
 import reactor.core.publisher.Mono
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
@@ -527,17 +529,62 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
 
-        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
-        assertThat(actualRegisterResultData).isNotNull
-        assertThat(actualRegisterResultData?.id).isNotNull
-        assertThat(actualRegisterResultData?.correlationId).isNotNull
-        assertThat(actualRegisterResultData?.dateCreated).isNotNull
-        val persistedRequest = objectMapper.readValue(actualRegisterResultData!!.requestBody, RegisterCheckResultRequest::class.java)
-        assertThat(persistedRequest).usingRecursiveComparison()
-            .ignoringFields("registerCheckMatches.applicationCreatedAt")
-            .isEqualTo(requestBody)
-
+        assertRequestIsAudited(requestId, requestBody)
         assertMessageSubmittedToSqs(expectedMessageContent)
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["2022-09-13T21:03:03.7788394+05:30", "1986-05-01T02:42:44.348Z"])
+    fun `should return created for json payload and submit message given pending register check with exact match found for a given requestId`(
+        createdAtFromRequest: String
+    ) {
+        // Given
+        val requestId = UUID.fromString("90ab1157-f489-42c6-99d1-2ee2ff75996e")
+        val eroIdFromIerApi = "camden-city-council"
+        val gssCodeFromEroApi = "E12345678"
+
+        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
+        wireMockService.stubEroManagementGetEro(eroIdFromIerApi, gssCodeFromEroApi)
+
+        val savedPendingRegisterCheckEntity = registerCheckRepository.save(
+            buildRegisterCheck(
+                correlationId = requestId,
+                gssCode = gssCodeFromEroApi,
+                status = CheckStatus.PENDING
+            )
+        )
+        registerCheckRepository.save(buildRegisterCheck(correlationId = UUID.randomUUID()))
+
+        val matchCount = 1
+        val bodyPayloadAsJson = buildJsonPayload(
+            requestId = requestId.toString(),
+            createdAt = createdAtFromRequest,
+            matchCount = matchCount
+        )
+        val matchResultSentAt = OffsetDateTime.parse(createdAtFromRequest)
+        println(matchResultSentAt) // TODO remove this print statement
+
+        // When
+        webTestClient.post()
+            .uri(buildUri(requestId))
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
+            .contentType(APPLICATION_JSON)
+            .bodyValue(bodyPayloadAsJson)
+            .exchange()
+            .expectStatus()
+            .isCreated
+
+        // Then
+        val actualRegisterCheckJpaEntity = registerCheckRepository.findByCorrelationId(requestId)
+        RegisterCheckAssert
+            .assertThat(actualRegisterCheckJpaEntity)
+            .ignoringIdFields()
+            .ignoringDateFields()
+            .hasStatus(CheckStatus.EXACT_MATCH)
+            .hasMatchResultSentAt(matchResultSentAt.toInstant())
+            .hasMatchCount(matchCount)
+        wireMockService.verifyIerGetEroIdentifierCalledOnce()
+        wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
     }
 
     private fun assertMessageSubmittedToSqs(expectedMessageContent: RegisterCheckResultMessage) {
@@ -587,6 +634,71 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .ignoringCollectionOrder()
             .isEqualTo(expectedMessage)
         return true
+    }
+
+    private fun assertRequestIsAudited(requestId: UUID, requestBody: RegisterCheckResultRequest) {
+        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
+        assertThat(actualRegisterResultData).isNotNull
+        assertThat(actualRegisterResultData?.id).isNotNull
+        assertThat(actualRegisterResultData?.correlationId).isNotNull
+        assertThat(actualRegisterResultData?.dateCreated).isNotNull
+        val persistedRequest =
+            objectMapper.readValue(actualRegisterResultData!!.requestBody, RegisterCheckResultRequest::class.java)
+        assertThat(persistedRequest).usingRecursiveComparison()
+            .ignoringFields("registerCheckMatches.applicationCreatedAt")
+            .isEqualTo(requestBody)
+    }
+    private fun buildJsonPayload(
+        requestId: String,
+        createdAt: String,
+        matchCount: Int,
+    ): String {
+        return """
+            {
+            "requestid": "$requestId",
+            "gssCode": "E12345678",
+            "createdAt": "$createdAt",
+            "registerCheckMatchCount": $matchCount,
+            "registerCheckMatches": [
+              {
+                "emsElectorId": "150",
+                "fn": "Jason",
+                "mn": "WRM",
+                "ln": "Bins",
+                "dob": "1949-08-04T00:00:00",
+                "regproperty": "Dobbs Hall",
+                "regstreet": "Kling Meadows",
+                "reglocality": "Arnside",
+                "regtown": "Carnforth",
+                "regarea": "Lancs.",
+                "regpostcode": "SW19 5AG",
+                "reguprn": "10034114198",
+                "phone": "",
+                "email": "noone@nowhere.invalid",
+                "registeredStartDate": "2014-06-20T16:52:39",
+                "registeredEndDate": null,
+                "attestationCount": 0,
+                "franchiseCode": "",
+                "postalVote": {
+                  "postalVoteUntilFurtherNotice": true,
+                  "postalVoteForSingleDate": null,
+                  "postalVoteStartDate": null,
+                  "postalVoteEndDate": null,
+                  "ballotproperty": null,
+                  "ballotstreet": null,
+                  "ballotlocality": null,
+                  "ballottown": null,
+                  "ballotarea": null,
+                  "ballotpostcode": null,
+                  "ballotuprn": null,
+                  "ballotAddressReason": null
+                },
+                "proxyVote": null,
+                "applicationCreatedAt": null
+              }
+            ]
+            }
+        """.trimIndent()
     }
 
     private fun buildUri(requestId: UUID = UUID.randomUUID()) =

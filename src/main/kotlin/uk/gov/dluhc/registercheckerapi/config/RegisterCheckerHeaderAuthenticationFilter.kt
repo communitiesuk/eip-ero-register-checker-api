@@ -33,7 +33,7 @@ class RegisterCheckerHeaderAuthenticationFilter(requestHeaderName: String) : Req
         val requestHeaderValue = super.getPreAuthenticatedPrincipal(servletRequest as HttpServletRequest?) as String?
 
         if (requestHeaderValue.isNullOrBlank()) {
-            logger.info("[$clientCertSerialHeaderName] header is not present in request header")
+            logger.debug("[$clientCertSerialHeaderName] header is not present in request header")
         } else {
             val authToken =
                 PreAuthenticatedAuthenticationToken(clientCertSerialHeaderName, requestHeaderValue, AUTHORITIES)

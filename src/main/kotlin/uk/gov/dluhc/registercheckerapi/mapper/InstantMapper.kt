@@ -10,5 +10,5 @@ class InstantMapper {
 
     fun toOffsetDateTime(instant: Instant?): OffsetDateTime? = instant?.atOffset(ZoneOffset.UTC)
 
-    fun toInstant(offsetDateTime: OffsetDateTime): Instant = offsetDateTime.toInstant()
+    fun toInstant(offsetDateTime: OffsetDateTime?): Instant? = offsetDateTime?.toInstant()
 }

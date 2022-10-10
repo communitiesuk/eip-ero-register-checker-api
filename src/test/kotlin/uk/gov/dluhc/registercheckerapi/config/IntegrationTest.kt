@@ -60,6 +60,7 @@ internal abstract class IntegrationTest {
 
     @BeforeEach
     fun clearDatabase() {
+        registerCheckResultDataRepository.deleteAll()
         registerCheckRepository.deleteAll()
     }
 }

@@ -14,6 +14,7 @@ import org.springframework.http.MediaType.APPLICATION_JSON
 import reactor.core.publisher.Mono
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
+import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType
@@ -21,6 +22,7 @@ import uk.gov.dluhc.registercheckerapi.models.ErrorResponse
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.entity.RegisterCheckAssert
 import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.models.ErrorResponseAssert.Companion.assertThat
+import uk.gov.dluhc.registercheckerapi.testsupport.getRandomGssCode
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatchEntityFromRegisterCheckMatchApi
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchRequest
@@ -462,20 +464,20 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     }
 
     @Test
-    fun `should return success and submit message given pending register check with multiple match found for a given requestId`() {
+    fun `should return created by saving request, updating status and submitting message given pending register check with multiple match found for a given requestId`() {
         // Given
         val requestId = UUID.randomUUID()
         val eroIdFromIerApi = "camden-city-council"
-        val firstGssCodeFromEroApi = "E12345678"
-        val secondGssCodeFromEroApi = "E98764532"
+        val gssCodeFromEroApi = "E12345678"
+        val anotherGssCodeFromEroApi = "E98764532"
 
         wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
-        wireMockService.stubEroManagementGetEro(eroIdFromIerApi, firstGssCodeFromEroApi, secondGssCodeFromEroApi)
+        wireMockService.stubEroManagementGetEro(eroIdFromIerApi, gssCodeFromEroApi, anotherGssCodeFromEroApi)
 
         val savedPendingRegisterCheckEntity = registerCheckRepository.save(
             buildRegisterCheck(
                 correlationId = requestId,
-                gssCode = firstGssCodeFromEroApi,
+                gssCode = gssCodeFromEroApi,
                 status = CheckStatus.PENDING
             )
         )
@@ -497,7 +499,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         )
         val requestBody = buildRegisterCheckResultRequest(
             requestId = requestId,
-            gssCode = firstGssCodeFromEroApi,
+            gssCode = gssCodeFromEroApi,
             createdAt = matchResultSentAt,
             registerCheckMatchCount = matchCount,
             registerCheckMatches = matches
@@ -529,24 +531,30 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
 
-        assertRequestIsAudited(requestId, requestBody)
+        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
+        assertRequestIsAudited(actualRegisterResultData, requestId, matchResultSentAt.toString(), gssCodeFromEroApi, matchCount)
+        val persistedRequest = objectMapper.readValue(actualRegisterResultData!!.requestBody, RegisterCheckResultRequest::class.java)
+        assertThat(persistedRequest).usingRecursiveComparison()
+            .ignoringFields("registerCheckMatches.applicationCreatedAt")
+            .isEqualTo(requestBody)
+
         assertMessageSubmittedToSqs(expectedMessageContent)
     }
 
     @ParameterizedTest
     @ValueSource(strings = ["2022-09-13T21:03:03.7788394+05:30", "1986-05-01T02:42:44.348Z"])
-    fun `should return created for json payload and submit message given pending register check with exact match found for a given requestId`(
+    fun `should return created by saving request, updating status given pending register check with exact match`(
         createdAtFromRequest: String
     ) {
         // Given
-        val requestId = UUID.fromString("90ab1157-f489-42c6-99d1-2ee2ff75996e")
+        val requestId = UUID.randomUUID()
         val eroIdFromIerApi = "camden-city-council"
-        val gssCodeFromEroApi = "E12345678"
+        val gssCodeFromEroApi = getRandomGssCode()
 
         wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
         wireMockService.stubEroManagementGetEro(eroIdFromIerApi, gssCodeFromEroApi)
 
-        val savedPendingRegisterCheckEntity = registerCheckRepository.save(
+        registerCheckRepository.save(
             buildRegisterCheck(
                 correlationId = requestId,
                 gssCode = gssCodeFromEroApi,
@@ -559,10 +567,10 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         val bodyPayloadAsJson = buildJsonPayload(
             requestId = requestId.toString(),
             createdAt = createdAtFromRequest,
-            matchCount = matchCount
+            matchCount = matchCount,
+            gssCode = gssCodeFromEroApi
         )
         val matchResultSentAt = OffsetDateTime.parse(createdAtFromRequest)
-        println(matchResultSentAt) // TODO remove this print statement
 
         // When
         webTestClient.post()
@@ -585,6 +593,9 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasMatchCount(matchCount)
         wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
+
+        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
+        assertRequestIsAudited(actualRegisterResultData, requestId, createdAtFromRequest, gssCodeFromEroApi, matchCount)
     }
 
     private fun assertMessageSubmittedToSqs(expectedMessageContent: RegisterCheckResultMessage) {
@@ -636,27 +647,34 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         return true
     }
 
-    private fun assertRequestIsAudited(requestId: UUID, requestBody: RegisterCheckResultRequest) {
-        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
+    private fun assertRequestIsAudited(
+        actualRegisterResultData: RegisterCheckResultData?,
+        expectedRequestId: UUID,
+        expectedCreatedAt: String,
+        expectedGssCode: String,
+        matchCount: Int
+    ) {
         assertThat(actualRegisterResultData).isNotNull
-        assertThat(actualRegisterResultData?.id).isNotNull
-        assertThat(actualRegisterResultData?.correlationId).isNotNull
-        assertThat(actualRegisterResultData?.dateCreated).isNotNull
-        val persistedRequest =
-            objectMapper.readValue(actualRegisterResultData!!.requestBody, RegisterCheckResultRequest::class.java)
-        assertThat(persistedRequest).usingRecursiveComparison()
-            .ignoringFields("registerCheckMatches.applicationCreatedAt")
-            .isEqualTo(requestBody)
+        assertThat(actualRegisterResultData!!.id).isNotNull
+        assertThat(actualRegisterResultData.correlationId).isNotNull
+        assertThat(actualRegisterResultData.dateCreated).isNotNull
+        val persistedRequest = objectMapper.readValue(actualRegisterResultData.requestBody, RegisterCheckResultRequest::class.java)
+        assertThat(persistedRequest.requestid).isEqualTo(expectedRequestId)
+        assertThat(persistedRequest.createdAt).isEqualTo(expectedCreatedAt)
+        assertThat(persistedRequest.gssCode).isEqualTo(expectedGssCode)
+        assertThat(persistedRequest.registerCheckMatchCount).isEqualTo(matchCount)
     }
+
     private fun buildJsonPayload(
         requestId: String,
         createdAt: String,
         matchCount: Int,
+        gssCode: String,
     ): String {
         return """
             {
             "requestid": "$requestId",
-            "gssCode": "E12345678",
+            "gssCode": "$gssCode",
             "createdAt": "$createdAt",
             "registerCheckMatchCount": $matchCount,
             "registerCheckMatches": [

@@ -68,7 +68,10 @@ class RegisterCheckService(
             }
         }
         with(registerCheckResultMessageMapper.fromRegisterCheckEntityToRegisterCheckResultMessage(registerCheck)) {
-            logger.info { "Publishing ConfirmRegisterCheckResultMessage with sourceType:[$sourceType], sourceReferenceApplicationId:[$sourceReference], sourceCorrelationId:[$sourceCorrelationId]" }
+            logger.info {
+                "Publishing ConfirmRegisterCheckResultMessage with sourceType:[$sourceType], sourceReferenceApplicationId:[$sourceReference], " +
+                    "sourceCorrelationId:[$sourceCorrelationId] for correlationId:[${registerCheck.correlationId}]"
+            }
             confirmRegisterCheckResultMessageQueue.submit(this)
         }
     }
@@ -81,6 +84,11 @@ class RegisterCheckService(
                 1 -> registerCheck.recordExactMatch(matchResultSentAt, matches.first())
                 in 2..10 -> registerCheck.recordMultipleMatches(matchResultSentAt, matchCount, matches)
                 else -> registerCheck.recordTooManyMatches(matchResultSentAt, matchCount, matches)
+            }.also {
+                logger.info {
+                    "Updated register check status to [${registerCheck.status}], matchCount to [${registerCheck.matchCount}], " +
+                        "matchResultSentAt to [${registerCheck.matchResultSentAt}] for correlationId:[${registerCheck.correlationId}]"
+                }
             }
         }
     }

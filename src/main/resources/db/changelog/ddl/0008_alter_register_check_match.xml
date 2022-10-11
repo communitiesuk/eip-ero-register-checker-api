@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+
+    <changeSet author="vishal.gupta@valtech.com" id="0008_EIP1-493_alter_register_check_match - Rename correlation_id to register_check_id column" context="ddl">
+        <renameColumn tableName="register_check_match"
+                      oldColumnName="correlation_id"
+                      newColumnName="register_check_id"
+                      columnDataType="uuid"/>
+        <rollback>
+            <renameColumn tableName="register_check_match"
+                          oldColumnName="register_check_id"
+                          newColumnName="correlation_id"
+                          columnDataType="uuid"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet author="vishal.gupta@valtech.com" id="0008_EIP1-493_alter_register_check_match - Drop index" context="ddl" >
+        <dropIndex tableName="register_check_match"
+                   indexName="register_check_match_correlation_id_idx"/>
+        <rollback>
+            <createIndex tableName="register_check_match"
+                         indexName="register_check_match_correlation_id_idx">
+                <column name="correlation_id"/>
+            </createIndex>
+        </rollback>
+    </changeSet>
+
+   <changeSet author="vishal.gupta@valtech.com" id="0008_EIP1-493_alter_register_check_match - Create index" context="ddl" >
+        <createIndex tableName="register_check_match"
+                     indexName="register_check_match_register_check_id_idx">
+            <column name="register_check_id"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex tableName="register_check_match"
+                       indexName="register_check_match_register_check_id_idx"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

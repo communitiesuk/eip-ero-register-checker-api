@@ -43,8 +43,12 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
     @Test
     fun `should return forbidden given valid header key is not present`() {
+        // Given
+        val requestId = UUID.randomUUID()
+
+        // When
         webTestClient.post()
-            .uri(buildUri())
+            .uri(buildUri(requestId))
             .contentType(APPLICATION_JSON)
             .body(
                 Mono.just(buildRegisterCheckResultRequest()),
@@ -57,6 +61,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         // Then
         wireMockService.verifyIerGetEroIdentifierNeverCalled()
         wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
+        assertRequestIsNotAudited(requestId)
     }
 
     @Test
@@ -89,6 +94,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasNoValidationErrors()
         wireMockService.verifyIerGetEroIdentifierNeverCalled()
         wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
+        assertRequestIsAudited(requestIdInRequestBody)
     }
 
     @Test
@@ -121,6 +127,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasMessage("EROCertificateMapping for certificateSerial=[543212222] not found")
         wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
+        assertRequestIsAudited(requestId)
     }
 
     @Test
@@ -159,6 +166,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasNoValidationErrors()
         wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
+        assertRequestIsAudited(requestId)
     }
 
     @Test
@@ -203,6 +211,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasMessage("Request [registerCheckMatches:1] array size must be same as [registerCheckMatchCount:10] in body payload")
         wireMockService.verifyIerGetEroIdentifierNeverCalled()
         wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
+        assertRequestIsAudited(requestId)
     }
 
     @Test
@@ -242,6 +251,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasMessage("Request gssCode:[E10101010] does not match with gssCode for certificateSerial:[543212222]")
         wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
+        assertRequestIsAudited(requestId)
     }
 
     @Test
@@ -274,6 +284,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasMessage("Error getting eroId for certificate serial")
         wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
+        assertRequestIsAudited(requestId)
     }
 
     @Test
@@ -307,14 +318,16 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasMessage("Error retrieving GSS codes")
         wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
+        assertRequestIsAudited(requestId)
     }
 
     @Test
     fun `should return bad request given request with invalid field names that cannot deserialize into a RegisterCheckResultRequest`() {
         // Given
+        val requestIdInBody = UUID.fromString("5e881061-57fd-4dc1-935f-8401ebe5758f")
         val requestBody = """
             {
-              "requestid": "5e881061-57fd-4dc1-935f-8401ebe5758f",
+              "requestid": "$requestIdInBody",
               "gssCode": "T12345678",
               "createdAt": null,
               "registerCheckMatchCount": 1,
@@ -359,6 +372,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasError("Bad Request")
             .hasMessageContaining("Instantiation of [simple type, class uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest]")
             .hasMessageContaining("failed for JSON property createdAt due to missing (therefore NULL) value")
+        assertRequestIsNotAudited(requestIdInBody)
     }
 
     @Test
@@ -412,6 +426,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasMessage("Validation failed for object='registerCheckResultRequest'. Error count: 2")
             .hasValidationError("Error on field 'gssCode': rejected value [1234], must match \"^[a-zA-Z]\\d{8}\$\"")
             .hasValidationError("Error on field 'registerCheckMatches[0].email': rejected value [not an email address], must be a well-formed email address")
+        assertRequestIsNotAudited(UUID.fromString("5e881061-57fd-4dc1-935f-8401ebe5758f"))
     }
 
     @Test
@@ -460,6 +475,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
 
+        assertRequestIsAudited(requestId)
         assertMessageNotSubmittedToSqs(savedPendingRegisterCheckEntity.sourceReference)
     }
 
@@ -645,6 +661,19 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .ignoringCollectionOrder()
             .isEqualTo(expectedMessage)
         return true
+    }
+
+    private fun assertRequestIsNotAudited(requestId: UUID) {
+        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
+        assertThat(actualRegisterResultData).isNull()
+    }
+
+    private fun assertRequestIsAudited(requestId: UUID) {
+        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
+        assertThat(actualRegisterResultData).isNotNull
+        assertThat(actualRegisterResultData!!.id).isNotNull
+        assertThat(actualRegisterResultData.correlationId).isNotNull
+        assertThat(actualRegisterResultData.dateCreated).isNotNull
     }
 
     private fun assertRequestIsAudited(

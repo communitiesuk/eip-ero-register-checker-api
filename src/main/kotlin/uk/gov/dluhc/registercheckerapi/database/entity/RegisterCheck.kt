@@ -78,7 +78,7 @@ class RegisterCheck(
     var matchResultSentAt: Instant? = null,
 
     @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "correlation_id", nullable = false)
+    @JoinColumn(name = "register_check_id", referencedColumnName = "id", nullable = false)
     var registerCheckMatches: MutableList<RegisterCheckMatch> = mutableListOf(),
 
     @NotNull

@@ -18,6 +18,10 @@ class SecurityConfiguration(
     private val requestHeaderName: String
 ) {
 
+    companion object {
+        private val BYPASS_URLS_FOR_REQUEST_HEADER_AUTHENTICATION = listOf("/actuator/")
+    }
+
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         return http.also { httpSecurity ->
@@ -34,7 +38,7 @@ class SecurityConfiguration(
                     it.antMatchers("/actuator/**").permitAll()
                     it.anyRequest().authenticated()
                 }
-                .addFilter(RegisterCheckerHeaderAuthenticationFilter(requestHeaderName))
+                .addFilter(RegisterCheckerHeaderAuthenticationFilter(requestHeaderName, BYPASS_URLS_FOR_REQUEST_HEADER_AUTHENTICATION))
         }.build()
     }
 }

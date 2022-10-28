@@ -7,15 +7,15 @@ import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 plugins {
     id("org.springframework.boot") version "2.7.4"
     id("io.spring.dependency-management") version "1.0.14.RELEASE"
-    kotlin("jvm") version "1.7.0"
-    kotlin("kapt") version "1.7.10"
+    kotlin("jvm") version "1.7.20"
+    kotlin("kapt") version "1.7.20"
     kotlin("plugin.spring") version "1.7.0"
-    kotlin("plugin.jpa") version "1.7.0"
-    kotlin("plugin.allopen") version "1.7.0"
+    kotlin("plugin.jpa") version "1.7.20"
+    kotlin("plugin.allopen") version "1.7.20"
     id("org.jlleitschuh.gradle.ktlint") version "10.3.0"
     id("org.jlleitschuh.gradle.ktlint-idea") version "10.3.0"
-    id("org.openapi.generator") version "6.0.1"
-    id("org.owasp.dependencycheck") version "7.1.2"
+    id("org.openapi.generator") version "6.2.0"
+    id("org.owasp.dependencycheck") version "7.2.0"
 }
 
 group = "uk.gov.dluhc"
@@ -49,16 +49,16 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-    implementation("io.github.microutils:kotlin-logging-jvm:3.0.0")
+    implementation("io.github.microutils:kotlin-logging-jvm:3.0.2")
     implementation("org.apache.commons:commons-lang3:3.12.0")
     implementation("org.apache.httpcomponents:httpclient:4.5.13")
-    implementation("org.mapstruct:mapstruct:1.5.2.Final")
-    kapt("org.mapstruct:mapstruct-processor:1.5.2.Final")
+    implementation("org.mapstruct:mapstruct:1.5.3.Final")
+    kapt("org.mapstruct:mapstruct-processor:1.5.3.Final")
 
     // api
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springdoc:springdoc-openapi-ui:1.6.11")
+    implementation("org.springdoc:springdoc-openapi-ui:1.6.12")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
     // webclient
@@ -71,7 +71,7 @@ dependencies {
     // jpa/liquibase
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.liquibase:liquibase-core")
-    implementation("com.vladmihalcea:hibernate-types-55:2.19.2")
+    implementation("com.vladmihalcea:hibernate-types-55:2.20.0")
 
     // mysql
     runtimeOnly("mysql:mysql-connector-java")

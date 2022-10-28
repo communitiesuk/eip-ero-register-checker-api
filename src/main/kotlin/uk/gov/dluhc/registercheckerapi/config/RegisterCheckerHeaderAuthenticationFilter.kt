@@ -11,9 +11,10 @@ import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
 import javax.servlet.http.HttpServletRequest
 
-class RegisterCheckerHeaderAuthenticationFilter(requestHeaderName: String) : RequestHeaderAuthenticationFilter() {
-
-    private val clientCertSerialHeaderName = requestHeaderName
+class RegisterCheckerHeaderAuthenticationFilter(
+    private val requestHeaderName: String,
+    private val bypassRequestHeaderAuthenticationUrls: List<String>
+) : RequestHeaderAuthenticationFilter() {
 
     companion object {
         private val AUTHORITIES = listOf(SimpleGrantedAuthority("ROLE_EMS_SYSTEM"))
@@ -31,15 +32,20 @@ class RegisterCheckerHeaderAuthenticationFilter(requestHeaderName: String) : Req
         filterChain: FilterChain?
     ) {
         val requestHeaderValue = super.getPreAuthenticatedPrincipal(servletRequest as HttpServletRequest?) as String?
+        val currentRequestUri = servletRequest?.requestURI
+        val bypassAuthentication = bypassRequestHeaderAuthenticationUrls.any { currentRequestUri?.contains(it) ?: false }
 
-        if (requestHeaderValue.isNullOrBlank()) {
-            logger.info("[$clientCertSerialHeaderName] header is not present in request header")
+        if (bypassAuthentication) {
+            // do nothing
+            logger.debug("Authentication not required for url:[$currentRequestUri]")
         } else {
-            val authToken =
-                PreAuthenticatedAuthenticationToken(clientCertSerialHeaderName, requestHeaderValue, AUTHORITIES)
-            SecurityContextHolder.getContext().authentication = authToken
+            if (requestHeaderValue.isNullOrBlank()) {
+                logger.info("[$requestHeaderName] header is not present in request header")
+            } else {
+                val authToken = PreAuthenticatedAuthenticationToken(requestHeaderName, requestHeaderValue, AUTHORITIES)
+                SecurityContextHolder.getContext().authentication = authToken
+            }
         }
-
         filterChain?.doFilter(servletRequest, servletResponse)
     }
 }

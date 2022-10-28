@@ -32,11 +32,12 @@ class RegisterCheckerHeaderAuthenticationFilter(
         filterChain: FilterChain?
     ) {
         val requestHeaderValue = super.getPreAuthenticatedPrincipal(servletRequest as HttpServletRequest?) as String?
-        val bypassRequestHeaderAuthentication = servletRequest != null && bypassRequestHeaderAuthenticationUrls.any { servletRequest.requestURI.contains(it) }
+        val currentRequestUri = servletRequest?.requestURI
+        val bypassAuthentication = bypassRequestHeaderAuthenticationUrls.any { currentRequestUri?.contains(it) ?: false }
 
-        if (bypassRequestHeaderAuthentication) {
+        if (bypassAuthentication) {
             // do nothing
-            logger.debug("Authentication not required for url:[${servletRequest!!.requestURI}]")
+            logger.debug("Authentication not required for url:[$currentRequestUri]")
         } else {
             if (requestHeaderValue.isNullOrBlank()) {
                 logger.info("[$requestHeaderName] header is not present in request header")

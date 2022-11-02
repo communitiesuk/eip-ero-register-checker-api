@@ -119,7 +119,8 @@ internal class RegisterCheckResultMapperTest {
                 "' ',       -2,  , EXACT_MATCH", // start date is in the past
                 "'   ',     -2, 2, EXACT_MATCH", // start/end dates in past/future means status is EXACT_MATCH
                 "G,         -2, 2, EXACT_MATCH", // francise code is still not blank nor "PENDING"
-                "PENDING,   -2, 2, NO_MATCH", // francise code means status is NO_MATCH
+                "PENDING,   -2, 2, NO_MATCH", // francise code pending with valid dates means status is NO_MATCH
+                "PENDING,     ,  , NO_MATCH", // francise code pending with null dates means status is NO_MATCH
                 "'',         2, 2, NO_MATCH", // start date in the future means status is NO_MATCH
                 "' ',       -2,-2, NO_MATCH", // end date in the past means status is NO_MATCH
                 "'',         2,-2, NO_MATCH", // start/end dates in future/past means status is NO_MATCH

@@ -1,16 +1,15 @@
 package uk.gov.dluhc.registercheckerapi.mapper
 
+import org.apache.commons.lang3.StringUtils.equalsIgnoreCase
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Named
-import uk.gov.dluhc.registercheckerapi.dto.AddressDto
-import uk.gov.dluhc.registercheckerapi.dto.PersonalDetailDto
-import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckMatchDto
-import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
-import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
+import uk.gov.dluhc.registercheckerapi.dto.*
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
-import java.util.UUID
+import java.time.Instant
+import java.time.ZoneOffset.UTC
+import java.util.*
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch as RegisterCheckMatchEntity
 
 /**
@@ -28,7 +27,7 @@ abstract class RegisterCheckResultMapper {
     @Mapping(target = "correlationId", source = "apiRequest.requestid")
     @Mapping(target = "matchResultSentAt", source = "apiRequest.createdAt")
     @Mapping(target = "matchCount", source = "apiRequest.registerCheckMatchCount")
-    @Mapping(target = "registerCheckStatus", source = "apiRequest.registerCheckMatchCount", qualifiedByName = ["evaluateRegisterCheckStatus"])
+    @Mapping(target = "registerCheckStatus", source = "apiRequest", qualifiedByName = ["evaluateRegisterCheckStatus"])
     abstract fun fromRegisterCheckResultRequestApiToDto(queryParamRequestId: UUID, apiRequest: RegisterCheckResultRequest): RegisterCheckResultDto
 
     abstract fun fromDtoToRegisterCheckMatchEntity(registerCheckMatchDto: RegisterCheckMatchDto): RegisterCheckMatchEntity
@@ -53,11 +52,29 @@ abstract class RegisterCheckResultMapper {
     protected abstract fun toAddressDto(registerCheckMatchApi: RegisterCheckMatch): AddressDto
 
     @Named("evaluateRegisterCheckStatus")
-    protected fun evaluateRegisterCheckStatus(registerCheckMatchCount: Int): RegisterCheckStatus =
-        when (registerCheckMatchCount) {
+    protected fun evaluateRegisterCheckStatus(apiRequest: RegisterCheckResultRequest) =
+        when (apiRequest.registerCheckMatchCount) {
             0 -> RegisterCheckStatus.NO_MATCH
-            1 -> RegisterCheckStatus.EXACT_MATCH
+            1 -> evaluateRegisterCheckStatusWithOneMatch(apiRequest.registerCheckMatches!!.first())
             in 2..10 -> RegisterCheckStatus.MULTIPLE_MATCH
             else -> RegisterCheckStatus.TOO_MANY_MATCHES
+        }
+
+    private fun evaluateRegisterCheckStatusWithOneMatch(registerCheckMatch: RegisterCheckMatch): RegisterCheckStatus =
+        with(registerCheckMatch) {
+            return if (equalsIgnoreCase(franchiseCode, "PENDING")) {
+                RegisterCheckStatus.NO_MATCH
+            } else {
+                val now = Instant.now()
+                val registeredStartInstant = registeredStartDate?.atStartOfDay(UTC)?.toInstant()
+                val registeredEndInstant = registeredEndDate?.atStartOfDay(UTC)?.toInstant()
+                if (registeredStartInstant?.isAfter(now) == true) {
+                    RegisterCheckStatus.NO_MATCH
+                } else if (registeredEndInstant?.isBefore(now) == true) {
+                    RegisterCheckStatus.NO_MATCH
+                } else {
+                    RegisterCheckStatus.EXACT_MATCH
+                }
+            }
         }
 }

@@ -27,6 +27,7 @@ import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegister
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchRequest
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckResultRequest
 import java.time.Instant
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -56,7 +57,6 @@ internal class RegisterCheckResultMapperTest {
         @CsvSource(
             value = [
                 "0,   NO_MATCH",
-                "1,   EXACT_MATCH",
                 "2,   MULTIPLE_MATCH",
                 "3,   MULTIPLE_MATCH",
                 "4,   MULTIPLE_MATCH",
@@ -70,7 +70,7 @@ internal class RegisterCheckResultMapperTest {
                 "100, TOO_MANY_MATCHES",
             ]
         )
-        fun `should map api to dto for a given registerCheckMatchCount`(
+        fun `should map api to dto for a given registerCheckMatchCount when it is not 1`(
             givenRegisterCheckMatchCount: Int,
             expectedRegisterCheckStatus: RegisterCheckStatus
         ) {
@@ -109,6 +109,50 @@ internal class RegisterCheckResultMapperTest {
             assertThat(actual.registerCheckStatus).isEqualTo(expectedRegisterCheckStatus)
             verify(instantMapper).toInstant(createdAt)
             verify(instantMapper).toInstant(applicationCreatedAt)
+        }
+
+        @ParameterizedTest
+        @CsvSource(
+            value = [
+                "'',          ,  , EXACT_MATCH", // no franchise code nor start nor end date
+                "' ',         , 2, EXACT_MATCH", // end date is in the future
+                "' ',       -2,  , EXACT_MATCH", // start date is in the past
+                "'   ',     -2, 2, EXACT_MATCH", // start/end dates in past/future means status is EXACT_MATCH
+                "G,         -2, 2, EXACT_MATCH", // franchise code is still not blank nor "PENDING"
+                "PENDING,   -2, 2, NO_MATCH", // franchise code pending with valid dates means status is NO_MATCH
+                "PENDING,     ,  , NO_MATCH", // franchise code pending with null dates means status is NO_MATCH
+                "'',         2, 2, NO_MATCH", // start date in the future means status is NO_MATCH
+                "' ',       -2,-2, NO_MATCH", // end date in the past means status is NO_MATCH
+                "'',         2,-2, NO_MATCH", // start/end dates in future/past means status is NO_MATCH
+            ]
+        )
+        fun `should map api to dto for a given registerCheckMatchCount when it is 1`(
+            franchiseCode: String,
+            relativeRegisteredStartDate: Long?,
+            relativeRegisteredEndDate: Long?,
+            expectedStatus: RegisterCheckStatus
+        ) {
+            // Given
+            val registeredStartDate = relativeRegisteredStartDate?.let { LocalDate.now().plusDays(it) }
+            val registeredEndDate = relativeRegisteredEndDate?.let { LocalDate.now().plusDays(it) }
+            val apiRequest = buildRegisterCheckResultRequest(
+                registerCheckMatches = listOf(
+                    buildRegisterCheckMatchRequest(
+                        franchiseCode = franchiseCode,
+                        registeredStartDate = registeredStartDate,
+                        registeredEndDate = registeredEndDate,
+                    )
+                )
+            )
+            val queryParamRequestId = UUID.randomUUID()
+
+            given(instantMapper.toInstant(eq(apiRequest.createdAt))).willReturn(apiRequest.createdAt.toInstant())
+
+            // When
+            val actual = mapper.fromRegisterCheckResultRequestApiToDto(queryParamRequestId, apiRequest)
+
+            // Then
+            assertThat(actual.registerCheckStatus).isEqualTo(expectedStatus)
         }
 
         @Test

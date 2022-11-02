@@ -114,15 +114,15 @@ internal class RegisterCheckResultMapperTest {
         @ParameterizedTest
         @CsvSource(
             value = [
-                "'',          ,  , EXACT_MATCH",
-                "' ',         , 2, EXACT_MATCH",
-                "' ',       -2,  , EXACT_MATCH",
-                "'   ',     -2, 2, EXACT_MATCH",
-                "G,         -2, 2, EXACT_MATCH",
-                "PENDING,   -2, 2, NO_MATCH", // PENDING RESULTS IN NO MATCH
-                "G,          2, 2, NO_MATCH", // START DATE IN THE FUTURE RESULTS IN NO MATCH
-                "G,         -2,-2, NO_MATCH", // END DATE IN THE PAST RESULTS IN NO MATCH
-                "G,          2,-2, NO_MATCH", // START AND END DATES INCORRECT
+                "'',          ,  , EXACT_MATCH", // no franchise code nor start nor end date
+                "' ',         , 2, EXACT_MATCH", // end date is in the future
+                "' ',       -2,  , EXACT_MATCH", // start date is in the past
+                "'   ',     -2, 2, EXACT_MATCH", // start/end dates in past/future means status is EXACT_MATCH
+                "G,         -2, 2, EXACT_MATCH", // francise code is still not blank nor "PENDING"
+                "PENDING,   -2, 2, NO_MATCH", // francise code means status is NO_MATCH
+                "G,          2, 2, NO_MATCH", // start date in the future means status is NO_MATCH
+                "G,         -2,-2, NO_MATCH", // end date in the past means status is NO_MATCH
+                "G,          2,-2, NO_MATCH", // start/end dates in future/past means status is NO_MATCH
             ]
         )
         fun `should map api to dto for a given registerCheckMatchCount when it is 1`(

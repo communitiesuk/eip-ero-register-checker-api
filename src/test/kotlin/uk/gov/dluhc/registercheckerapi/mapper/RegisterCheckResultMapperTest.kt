@@ -57,7 +57,6 @@ internal class RegisterCheckResultMapperTest {
         @CsvSource(
             value = [
                 "0,   NO_MATCH",
-                "1,   EXACT_MATCH",
                 "2,   MULTIPLE_MATCH",
                 "3,   MULTIPLE_MATCH",
                 "4,   MULTIPLE_MATCH",
@@ -71,7 +70,7 @@ internal class RegisterCheckResultMapperTest {
                 "100, TOO_MANY_MATCHES",
             ]
         )
-        fun `should map api to dto for a given registerCheckMatchCount`(
+        fun `should map api to dto for a given registerCheckMatchCount when it is not 1`(
             givenRegisterCheckMatchCount: Int,
             expectedRegisterCheckStatus: RegisterCheckStatus
         ) {
@@ -112,6 +111,49 @@ internal class RegisterCheckResultMapperTest {
             verify(instantMapper).toInstant(applicationCreatedAt)
         }
 
+        @ParameterizedTest
+        @CsvSource(
+            value = [
+                "'',          ,  , EXACT_MATCH",
+                "' ',         , 2, EXACT_MATCH",
+                "' ',       -2,  , EXACT_MATCH",
+                "'   ',     -2, 2, EXACT_MATCH",
+                "G,         -2, 2, EXACT_MATCH",
+                "PENDING,   -2, 2, NO_MATCH", // PENDING RESULTS IN NO MATCH
+                "G,          2, 2, NO_MATCH", // START DATE IN THE FUTURE RESULTS IN NO MATCH
+                "G,         -2,-2, NO_MATCH", // END DATE IN THE PAST RESULTS IN NO MATCH
+                "G,          2,-2, NO_MATCH", // START AND END DATES INCORRECT
+            ]
+        )
+        fun `should map api to dto for a given registerCheckMatchCount when it is 1`(
+            franchiseCode: String,
+            relativeRegisteredStartDate: Long?,
+            relativeRegisteredEndDate: Long?,
+            expectedStatus: RegisterCheckStatus
+        ) {
+            // Given
+            val registeredStartDate = relativeRegisteredStartDate?.let { LocalDate.now().plusDays(it) }
+            val registeredEndDate = relativeRegisteredEndDate?.let { LocalDate.now().plusDays(it) }
+            val apiRequest = buildRegisterCheckResultRequest(
+                registerCheckMatches = listOf(
+                    buildRegisterCheckMatchRequest(
+                        franchiseCode = franchiseCode,
+                        registeredStartDate = registeredStartDate,
+                        registeredEndDate = registeredEndDate,
+                    )
+                )
+            )
+            val queryParamRequestId = UUID.randomUUID()
+
+            given(instantMapper.toInstant(eq(apiRequest.createdAt))).willReturn(apiRequest.createdAt.toInstant())
+
+            // When
+            val actual = mapper.fromRegisterCheckResultRequestApiToDto(queryParamRequestId, apiRequest)
+
+            // Then
+            assertThat(actual.registerCheckStatus).isEqualTo(expectedStatus)
+        }
+
         @Test
         fun `should map api to dto when optional fields are null`() {
             // Given
@@ -144,47 +186,6 @@ internal class RegisterCheckResultMapperTest {
             assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
             assertThat(actual.registerCheckStatus).isEqualTo(RegisterCheckStatus.NO_MATCH)
             verify(instantMapper).toInstant(createdAt)
-        }
-
-        @ParameterizedTest
-        @CsvSource(
-                value = [
-                    "'',          ,  , EXACT_MATCH",
-                    "' ',         , 2, EXACT_MATCH",
-                    "' ',       -2,  , EXACT_MATCH",
-                    "'   ',     -2, 2, EXACT_MATCH",
-                    "G,         -2, 2, EXACT_MATCH",
-                    "PENDING,   -2, 2, NO_MATCH",   // PENDING RESULTS IN NO MATCH
-                    "G,          2, 2, NO_MATCH",   // START DATE IN THE FUTURE RESULTS IN NO MATCH
-                    "G,         -2,-2, NO_MATCH",   // END DATE IN THE PAST RESULTS IN NO MATCH
-                    "G,          2,-2, NO_MATCH",   // END DATE IN THE PAST RESULTS IN NO MATCH
-                ]
-        )
-        fun `should map api to dto for different register check status outcomes`(
-                franchiseCode: String,
-                relativeRegisteredStartDate: Long?,
-                relativeRegisteredEndDate: Long?,
-                expectedStatus: RegisterCheckStatus)
-        {
-            // Given
-            val registeredStartDate = relativeRegisteredStartDate?.let { LocalDate.now().plusDays(it) }
-            val registeredEndDate = relativeRegisteredEndDate?.let { LocalDate.now().plusDays(it) }
-            val apiRequest = buildRegisterCheckResultRequest(
-                    registerCheckMatches = listOf(buildRegisterCheckMatchRequest(
-                            franchiseCode = franchiseCode,
-                            registeredStartDate = registeredStartDate,
-                            registeredEndDate = registeredEndDate,
-                    ))
-            )
-            val queryParamRequestId = UUID.randomUUID()
-
-            given(instantMapper.toInstant(eq(apiRequest.createdAt))).willReturn(apiRequest.createdAt.toInstant())
-
-            // When
-            val actual = mapper.fromRegisterCheckResultRequestApiToDto(queryParamRequestId, apiRequest)
-
-            // Then
-            assertThat(actual.registerCheckStatus).isEqualTo(expectedStatus)
         }
     }
 

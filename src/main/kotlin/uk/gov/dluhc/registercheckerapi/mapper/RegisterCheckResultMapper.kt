@@ -4,12 +4,16 @@ import org.apache.commons.lang3.StringUtils.equalsIgnoreCase
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Named
-import uk.gov.dluhc.registercheckerapi.dto.*
+import uk.gov.dluhc.registercheckerapi.dto.AddressDto
+import uk.gov.dluhc.registercheckerapi.dto.PersonalDetailDto
+import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckMatchDto
+import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
+import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 import java.time.Instant
 import java.time.ZoneOffset.UTC
-import java.util.*
+import java.util.UUID
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch as RegisterCheckMatchEntity
 
 /**

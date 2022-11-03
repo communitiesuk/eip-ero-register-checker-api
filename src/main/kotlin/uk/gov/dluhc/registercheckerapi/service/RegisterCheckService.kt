@@ -10,6 +10,7 @@ import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckReposito
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckResultDataRepository
 import uk.gov.dluhc.registercheckerapi.dto.PendingRegisterCheckDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
+import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
 import uk.gov.dluhc.registercheckerapi.exception.PendingRegisterCheckNotFoundException
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckUnexpectedStatusException
@@ -79,11 +80,11 @@ class RegisterCheckService(
     private fun recordCheckResult(registerCheckResultDto: RegisterCheckResultDto, registerCheck: RegisterCheck) {
         with(registerCheckResultDto) {
             val matches = registerCheckMatches?.map(registerCheckResultMapper::fromDtoToRegisterCheckMatchEntity) ?: emptyList()
-            when (this.matchCount) {
-                0 -> registerCheck.recordNoMatch(matchResultSentAt)
-                1 -> registerCheck.recordExactMatch(matchResultSentAt, matches.first())
-                in 2..10 -> registerCheck.recordMultipleMatches(matchResultSentAt, matchCount, matches)
-                else -> registerCheck.recordTooManyMatches(matchResultSentAt, matchCount, matches)
+            when (registerCheckStatus) {
+                RegisterCheckStatus.NO_MATCH -> registerCheck.recordNoMatch(matchResultSentAt)
+                RegisterCheckStatus.EXACT_MATCH -> registerCheck.recordExactMatch(matchResultSentAt, matches.first())
+                RegisterCheckStatus.MULTIPLE_MATCH -> registerCheck.recordMultipleMatches(matchResultSentAt, matchCount, matches)
+                RegisterCheckStatus.TOO_MANY_MATCHES -> registerCheck.recordTooManyMatches(matchResultSentAt, matchCount, matches)
             }.also {
                 logger.info {
                     "Updated register check status to [${registerCheck.status}], matchCount to [${registerCheck.matchCount}], " +

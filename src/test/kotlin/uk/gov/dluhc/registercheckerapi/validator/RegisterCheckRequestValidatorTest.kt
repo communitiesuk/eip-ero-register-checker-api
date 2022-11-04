@@ -42,7 +42,7 @@ internal class RegisterCheckRequestValidatorTest {
         }
 
         @Test
-        fun `should throw RegisterCheckMatchCountMismatchException when matchCount is 0 and registerCheckMatch is not null or empty`() {
+        fun `should throw RegisterCheckMatchCountMismatchException when matchCount is 0 and registerCheckMatch contains entries`() {
             // Given
             val requestId = randomUUID()
             val matchCount = 0

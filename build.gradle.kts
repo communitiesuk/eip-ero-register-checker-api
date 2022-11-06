@@ -5,8 +5,8 @@ import org.owasp.dependencycheck.reporting.ReportGenerator.Format.HTML
 import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 
 plugins {
-    id("org.springframework.boot") version "2.7.4"
-    id("io.spring.dependency-management") version "1.0.14.RELEASE"
+    id("org.springframework.boot") version "2.7.5"
+    id("io.spring.dependency-management") version "1.1.0"
     kotlin("jvm") version "1.7.20"
     kotlin("kapt") version "1.7.20"
     kotlin("plugin.spring") version "1.7.0"
@@ -21,7 +21,11 @@ plugins {
 group = "uk.gov.dluhc"
 version = "latest"
 java.sourceCompatibility = JavaVersion.VERSION_17
-ext["snakeyaml.version"] = "1.31"
+
+ext["snakeyaml.version"] = "1.33"
+ext["spring-security.version"] = "5.7.5" // Fixed CVE-2022-31690 and CVE-2022-31692 - https://spring.io/blog/2022/10/31/cve-2022-31690-privilege-escalation-in-spring-security-oauth2-client
+extra["awsSdkVersion"] = "2.18.9"
+extra["springCloudVersion"] = "2.4.2"
 
 allOpen {
     annotations("javax.persistence.Entity", "javax.persistence.MappedSuperclass", "javax.persistence.Embedabble")
@@ -39,9 +43,6 @@ apply(plugin = "org.jetbrains.kotlin.jvm")
 apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 apply(plugin = "org.jetbrains.kotlin.plugin.jpa")
 apply(plugin = "org.jetbrains.kotlin.plugin.allopen")
-
-extra["awsSdkVersion"] = "2.17.285"
-extra["springCloudVersion"] = "2.4.2"
 
 dependencies {
     // framework
@@ -75,7 +76,7 @@ dependencies {
 
     // mysql
     runtimeOnly("mysql:mysql-connector-java")
-    runtimeOnly("software.aws.rds:aws-mysql-jdbc:1.1.0")
+    runtimeOnly("software.aws.rds:aws-mysql-jdbc:1.1.1")
     runtimeOnly("software.amazon.awssdk:rds")
 
     // AWS dependencies (that are defined in the BOM "software.amazon.awssdk")

@@ -25,7 +25,7 @@ class RegisterCheckRequestValidator {
 
     private fun validateMatchCountWithRegisterCheckMatchList(registerCheckResultDto: RegisterCheckResultDto) {
         when (registerCheckResultDto.matchCount) {
-            in 0..10 -> {
+            in 1..10 -> {
                 val matchResultsSize = registerCheckResultDto.registerCheckMatches?.size
                 if (registerCheckResultDto.matchCount != matchResultsSize) {
                     val errorMessage = "Request [registerCheckMatches:$matchResultsSize] array size must be same as " +

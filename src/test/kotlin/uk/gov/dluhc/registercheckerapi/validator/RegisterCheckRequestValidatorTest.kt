@@ -5,6 +5,7 @@ import org.assertj.core.api.Assertions.catchThrowableOfType
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.NullAndEmptySource
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckMatchDto
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckMatchCountMismatchException
@@ -38,6 +39,87 @@ internal class RegisterCheckRequestValidatorTest {
             // Then
             assertThat(ex.message).isEqualTo(expected.message)
             assertThat(ex.message).isEqualTo("Request requestId:[$requestId] does not match with requestid:[$correlationId] in body payload")
+        }
+
+        @Test
+        fun `should throw RegisterCheckMatchCountMismatchException when matchCount is 0 and registerCheckMatch contains entries`() {
+            // Given
+            val requestId = randomUUID()
+            val matchCount = 0
+            val registerCheckResultDto = buildRegisterCheckResultDto(
+                requestId = requestId,
+                correlationId = requestId,
+                matchCount = matchCount,
+                registerCheckMatches = listOf(buildRegisterCheckMatchDto())
+            )
+            val expected = RegisterCheckMatchCountMismatchException("Request [registerCheckMatches] array must be null or empty for [registerCheckMatchCount:$matchCount] in body payload")
+
+            // When
+            val ex = catchThrowableOfType(
+                { registerCheckRequestValidator.validateRequestBody("123456789", registerCheckResultDto) },
+                RegisterCheckMatchCountMismatchException::class.java
+            )
+
+            // Then
+            assertThat(ex.message).isEqualTo(expected.message)
+            assertThat(ex.message).isEqualTo("Request [registerCheckMatches] array must be null or empty for [registerCheckMatchCount:0] in body payload")
+        }
+
+        @ParameterizedTest
+        @NullAndEmptySource
+        fun `should validate successfully when matchCount is 0 and registerCheckMatch is null or empty`(matches: List<RegisterCheckMatchDto>?) {
+            // Given
+            val requestId = randomUUID()
+            val matchCount = 0
+            val registerCheckResultDto = buildRegisterCheckResultDto(
+                requestId = requestId,
+                correlationId = requestId,
+                matchCount = matchCount,
+                registerCheckMatches = matches
+            )
+
+            // When
+            registerCheckRequestValidator.validateRequestBody("123456789", registerCheckResultDto)
+
+            // Then
+        }
+
+        @Test
+        fun `should validate successfully when matchCount is 1 and registerCheckMatch is valid in payload`() {
+            // Given
+            val requestId = randomUUID()
+            val matchCount = 1
+            val registerCheckResultDto = buildRegisterCheckResultDto(
+                requestId = requestId,
+                correlationId = requestId,
+                matchCount = matchCount,
+                registerCheckMatches = listOf(buildRegisterCheckMatchDto())
+            )
+
+            // When
+            registerCheckRequestValidator.validateRequestBody("123456789", registerCheckResultDto)
+
+            // Then
+        }
+
+        @ParameterizedTest
+        @CsvSource(value = ["2", "3", "4", "5", "6", "7", "8", "9", "10"])
+        fun `should validate successfully when matchCount is between 2 and 10 and registerCheckMatch is valid in payload`(matchCount: Int) {
+            // Given
+            val requestId = randomUUID()
+            val matches = mutableListOf<RegisterCheckMatchDto>().apply { repeat(matchCount) { add(buildRegisterCheckMatchDto()) } }
+            val registerCheckResultDto = buildRegisterCheckResultDto(
+                requestId = requestId,
+                correlationId = requestId,
+                matchCount = matchCount,
+                registerCheckMatches = matches
+
+            )
+
+            // When
+            registerCheckRequestValidator.validateRequestBody("123456789", registerCheckResultDto)
+
+            // Then
         }
 
         @Test

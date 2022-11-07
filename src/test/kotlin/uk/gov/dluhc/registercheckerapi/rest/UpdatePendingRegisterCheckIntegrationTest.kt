@@ -480,7 +480,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     }
 
     @Test
-    fun `should return created by saving request, updating status and submitting message given pending register check with multiple match found for a given requestId`() {
+    fun `should return created given a post request with multiple matches found`() {
         // Given
         val requestId = UUID.randomUUID()
         val eroIdFromIerApi = "camden-city-council"
@@ -559,7 +559,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
     @ParameterizedTest
     @ValueSource(strings = ["2022-09-13T21:03:03.7788394+05:30", "1986-05-01T02:42:44.348Z"])
-    fun `should return created by saving request, updating status given pending register check with exact match`(
+    fun `should return created given a post request with an exact match found`(
         createdAtFromRequest: String
     ) {
         // Given
@@ -605,6 +605,60 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .ignoringIdFields()
             .ignoringDateFields()
             .hasStatus(CheckStatus.EXACT_MATCH)
+            .hasMatchResultSentAt(matchResultSentAt.toInstant())
+            .hasMatchCount(matchCount)
+        wireMockService.verifyIerGetEroIdentifierCalledOnce()
+        wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
+
+        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
+        assertRequestIsAudited(actualRegisterResultData, requestId, createdAtFromRequest, gssCodeFromEroApi, matchCount)
+    }
+
+    @Test
+    fun `should return created given a post request with no matches found`() {
+        // Given
+        val requestId = UUID.randomUUID()
+        val eroIdFromIerApi = "camden-city-council"
+        val gssCodeFromEroApi = getRandomGssCode()
+        val createdAtFromRequest = "2022-09-13T21:03:03.7788394+05:30"
+
+        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
+        wireMockService.stubEroManagementGetEro(eroIdFromIerApi, gssCodeFromEroApi)
+
+        registerCheckRepository.save(
+            buildRegisterCheck(
+                correlationId = requestId,
+                gssCode = gssCodeFromEroApi,
+                status = CheckStatus.PENDING
+            )
+        )
+        registerCheckRepository.save(buildRegisterCheck(correlationId = UUID.randomUUID()))
+
+        val matchCount = 0
+        val bodyPayloadAsJson = buildJsonPayloadWithNoMatches(
+            requestId = requestId.toString(),
+            createdAt = createdAtFromRequest,
+            gssCode = gssCodeFromEroApi
+        )
+        val matchResultSentAt = OffsetDateTime.parse(createdAtFromRequest)
+
+        // When
+        webTestClient.post()
+            .uri(buildUri(requestId))
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
+            .contentType(APPLICATION_JSON)
+            .bodyValue(bodyPayloadAsJson)
+            .exchange()
+            .expectStatus()
+            .isCreated
+
+        // Then
+        val actualRegisterCheckJpaEntity = registerCheckRepository.findByCorrelationId(requestId)
+        RegisterCheckAssert
+            .assertThat(actualRegisterCheckJpaEntity)
+            .ignoringIdFields()
+            .ignoringDateFields()
+            .hasStatus(CheckStatus.NO_MATCH)
             .hasMatchResultSentAt(matchResultSentAt.toInstant())
             .hasMatchCount(matchCount)
         wireMockService.verifyIerGetEroIdentifierCalledOnce()
@@ -801,6 +855,21 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
                 "applicationCreatedAt": null
               }
             ]
+            }
+        """.trimIndent()
+    }
+
+    private fun buildJsonPayloadWithNoMatches(
+        requestId: String,
+        createdAt: String,
+        gssCode: String,
+    ): String {
+        return """
+            {
+            "requestid": "$requestId",
+            "gssCode": "$gssCode",
+            "createdAt": "$createdAt",
+            "registerCheckMatchCount": 0
             }
         """.trimIndent()
     }

@@ -4,6 +4,10 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
+import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.EXACT_MATCH
+import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.EXPIRED
+import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.NOT_STARTED
+import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.PENDING_DETERMINATION
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
@@ -82,7 +86,10 @@ class RegisterCheckService(
             val matches = registerCheckMatches?.map(registerCheckResultMapper::fromDtoToRegisterCheckMatchEntity) ?: emptyList()
             when (registerCheckStatus) {
                 RegisterCheckStatus.NO_MATCH -> registerCheck.recordNoMatch(matchResultSentAt)
-                RegisterCheckStatus.EXACT_MATCH -> registerCheck.recordExactMatch(matchResultSentAt, matches.first())
+                RegisterCheckStatus.EXACT_MATCH -> registerCheck.recordExactMatch(EXACT_MATCH, matchResultSentAt, matches.first())
+                RegisterCheckStatus.PENDING_DETERMINATION -> registerCheck.recordExactMatch(PENDING_DETERMINATION, matchResultSentAt, matches.first())
+                RegisterCheckStatus.EXPIRED -> registerCheck.recordExactMatch(EXPIRED, matchResultSentAt, matches.first())
+                RegisterCheckStatus.NOT_STARTED -> registerCheck.recordExactMatch(NOT_STARTED, matchResultSentAt, matches.first())
                 RegisterCheckStatus.MULTIPLE_MATCH -> registerCheck.recordMultipleMatches(matchResultSentAt, matchCount, matches)
                 RegisterCheckStatus.TOO_MANY_MATCHES -> registerCheck.recordTooManyMatches(matchResultSentAt, matchCount, matches)
             }.also {

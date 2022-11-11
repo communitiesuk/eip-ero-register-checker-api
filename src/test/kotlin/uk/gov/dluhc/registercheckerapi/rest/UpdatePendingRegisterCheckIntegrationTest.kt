@@ -25,8 +25,8 @@ import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.models.Err
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomGssCode
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatchEntityFromRegisterCheckMatchApi
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchFromMatchModel
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchRequest
-import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckPersonalDetailFromMatchModel
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckResultRequest
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -511,7 +511,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             sourceReference = savedPendingRegisterCheckEntity.sourceReference,
             sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
             registerCheckResult = RegisterCheckResult.MULTIPLE_MATCH,
-            matches = matches.map { buildRegisterCheckPersonalDetailFromMatchModel(it) }
+            matches = matches.map { buildRegisterCheckMatchFromMatchModel(it) }
         )
         val requestBody = buildRegisterCheckResultRequest(
             requestId = requestId,
@@ -559,7 +559,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
     @ParameterizedTest
     @ValueSource(strings = ["2022-09-13T21:03:03.7788394+05:30", "1986-05-01T02:42:44.348Z"])
-    fun `should return created given a post request with an exact match found`(
+    fun `should return created by saving request, updating status given pending register check with exact match`(
         createdAtFromRequest: String
     ) {
         // Given
@@ -584,7 +584,8 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             requestId = requestId.toString(),
             createdAt = createdAtFromRequest,
             matchCount = matchCount,
-            gssCode = gssCodeFromEroApi
+            gssCode = gssCodeFromEroApi,
+            franchiseCode = "pending",
         )
         val matchResultSentAt = OffsetDateTime.parse(createdAtFromRequest)
 
@@ -604,7 +605,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .assertThat(actualRegisterCheckJpaEntity)
             .ignoringIdFields()
             .ignoringDateFields()
-            .hasStatus(CheckStatus.EXACT_MATCH)
+            .hasStatus(CheckStatus.PENDING_DETERMINATION)
             .hasMatchResultSentAt(matchResultSentAt.toInstant())
             .hasMatchCount(matchCount)
         wireMockService.verifyIerGetEroIdentifierCalledOnce()
@@ -714,9 +715,9 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .assertThat(actualRegisterCheckJpaEntity)
             .ignoringIdFields()
             .ignoringDateFields()
-            .hasStatus(CheckStatus.NO_MATCH)
+            .hasStatus(CheckStatus.PENDING_DETERMINATION)
             .hasMatchResultSentAt(matchResultSentAt.toInstant())
-            .hasMatchCount(0)
+            .hasMatchCount(1)
         wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
 

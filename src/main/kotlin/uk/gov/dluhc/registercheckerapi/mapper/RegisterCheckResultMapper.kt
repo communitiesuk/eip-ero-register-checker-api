@@ -66,16 +66,16 @@ abstract class RegisterCheckResultMapper {
 
     private fun evaluateRegisterCheckStatusWithOneMatch(registerCheckMatch: RegisterCheckMatch): RegisterCheckStatus =
         with(registerCheckMatch) {
-            return if (equalsIgnoreCase(franchiseCode, "PENDING")) {
-                RegisterCheckStatus.NO_MATCH
+            return if (equalsIgnoreCase(franchiseCode.trim(), "PENDING")) {
+                RegisterCheckStatus.PENDING_DETERMINATION
             } else {
                 val now = Instant.now()
                 val registeredStartInstant = registeredStartDate?.atStartOfDay(UTC)?.toInstant()
                 val registeredEndInstant = registeredEndDate?.atStartOfDay(UTC)?.toInstant()
                 if (registeredStartInstant?.isAfter(now) == true) {
-                    RegisterCheckStatus.NO_MATCH
+                    RegisterCheckStatus.NOT_STARTED
                 } else if (registeredEndInstant?.isBefore(now) == true) {
-                    RegisterCheckStatus.NO_MATCH
+                    RegisterCheckStatus.EXPIRED
                 } else {
                     RegisterCheckStatus.EXACT_MATCH
                 }

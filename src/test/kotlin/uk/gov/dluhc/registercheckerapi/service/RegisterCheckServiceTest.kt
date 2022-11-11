@@ -47,7 +47,7 @@ import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildRegisterChe
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildRegisterCheckResultDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatch
-import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckPersonalDetailFromMatchDto
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchFromMatchDto
 import java.time.Instant
 import java.util.UUID
 import java.util.UUID.randomUUID
@@ -355,6 +355,9 @@ internal class RegisterCheckServiceTest {
             value = [
                 "0, NO_MATCH, NO_MATCH",
                 "1, EXACT_MATCH, EXACT_MATCH",
+                "1, PENDING_DETERMINATION, PENDING_DETERMINATION",
+                "1, EXPIRED, EXPIRED",
+                "1, NOT_STARTED, NOT_STARTED",
                 "10, MULTIPLE_MATCH, MULTIPLE_MATCH",
                 "11, TOO_MANY_MATCHES, TOO_MANY_MATCHES"
             ]
@@ -385,7 +388,7 @@ internal class RegisterCheckServiceTest {
                 sourceReference = savedPendingRegisterCheckEntity.sourceReference,
                 sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
                 registerCheckResult = registerCheckResult,
-                matches = registerCheckResultDto.registerCheckMatches!!.map { buildRegisterCheckPersonalDetailFromMatchDto(it) }
+                matches = registerCheckResultDto.registerCheckMatches!!.map { buildRegisterCheckMatchFromMatchDto(it) }
             )
 
             given(retrieveGssCodeService.getGssCodeFromCertificateSerial(any())).willReturn(listOf(matchingGssCode, otherGssCode))

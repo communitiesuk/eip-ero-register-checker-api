@@ -7,7 +7,6 @@ import org.hibernate.annotations.NotFound
 import org.hibernate.annotations.NotFoundAction
 import org.hibernate.annotations.Type
 import org.hibernate.annotations.UpdateTimestamp
-import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.EXACT_MATCH
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.MULTIPLE_MATCH
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.NO_MATCH
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.TOO_MANY_MATCHES
@@ -115,8 +114,8 @@ class RegisterCheck(
     fun recordNoMatch(matchResultSentAt: Instant) =
         recordMatchResult(NO_MATCH, 0, matchResultSentAt, emptyList())
 
-    fun recordExactMatch(matchResultSentAt: Instant, registerCheckMatch: RegisterCheckMatch) =
-        recordMatchResult(EXACT_MATCH, 1, matchResultSentAt, listOf(registerCheckMatch))
+    fun recordExactMatch(status: CheckStatus, matchResultSentAt: Instant, registerCheckMatch: RegisterCheckMatch) =
+        recordMatchResult(status, 1, matchResultSentAt, listOf(registerCheckMatch))
 
     fun recordMultipleMatches(matchResultSentAt: Instant, matchCount: Int, registerCheckMatches: List<RegisterCheckMatch>) =
         recordMatchResult(MULTIPLE_MATCH, matchCount, matchResultSentAt, registerCheckMatches)
@@ -146,5 +145,8 @@ enum class CheckStatus {
     NO_MATCH,
     EXACT_MATCH,
     MULTIPLE_MATCH,
-    TOO_MANY_MATCHES
+    TOO_MANY_MATCHES,
+    PENDING_DETERMINATION,
+    EXPIRED,
+    NOT_STARTED,
 }

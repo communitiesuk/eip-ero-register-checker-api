@@ -2,12 +2,14 @@ package uk.gov.dluhc.registercheckerapi.testsupport.testdata.models
 
 import net.datafaker.Address
 import org.apache.commons.lang3.RandomStringUtils
+import uk.gov.dluhc.registercheckerapi.database.entity.PersonalDetail
 import uk.gov.dluhc.registercheckerapi.dto.AddressDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckMatchDto
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckAddress
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckPersonalDetail
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.DataFaker
 import java.time.LocalDate
+import uk.gov.dluhc.registercheckerapi.database.entity.Address as Address_Entity
 
 fun buildRegisterCheckPersonalDetail(
     firstName: String = DataFaker.faker.name().firstName(),
@@ -85,7 +87,33 @@ fun buildRegisterCheckPersonalDetailFromMatchDto(match: RegisterCheckMatchDto): 
         )
     }
 
+fun buildRegisterCheckPersonalDetailFromEntity(personalDetailEntity: PersonalDetail): RegisterCheckPersonalDetail =
+    with(personalDetailEntity) {
+        buildRegisterCheckPersonalDetail(
+            firstName = firstName,
+            middleNames = middleNames,
+            surname = surname,
+            dateOfBirth = dateOfBirth,
+            phone = phoneNumber,
+            email = email,
+            address = buildRegisterCheckAddress(address)
+        )
+    }
+
 fun buildRegisterCheckAddress(address: AddressDto): RegisterCheckAddress =
+    with(address) {
+        buildRegisterCheckAddress(
+            property = property,
+            street = street,
+            locality = locality,
+            town = town,
+            area = area,
+            postcode = postcode,
+            uprn = uprn,
+        )
+    }
+
+fun buildRegisterCheckAddress(address: Address_Entity): RegisterCheckAddress =
     with(address) {
         buildRegisterCheckAddress(
             property = property,

@@ -112,13 +112,13 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
     @Nested
     inner class RecordMatchResult {
 
-        @Test
+        @Test // todo parameterize test for +3 statuses
         fun `should record exact match`() {
             // Given
             val registerCheckToSearch = buildRegisterCheck()
             val registerCheckAnother = buildRegisterCheck()
             registerCheckRepository.saveAll(listOf(registerCheckToSearch, registerCheckAnother))
-            registerCheckToSearch.recordExactMatch(Instant.now(), buildRegisterCheckMatch())
+            registerCheckToSearch.recordExactMatch(CheckStatus.EXACT_MATCH, Instant.now(), buildRegisterCheckMatch())
             registerCheckAnother.recordNoMatch(Instant.now())
             registerCheckRepository.saveAll(listOf(registerCheckToSearch, registerCheckAnother))
 

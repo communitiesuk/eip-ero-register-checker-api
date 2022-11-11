@@ -9,7 +9,7 @@ data class RegisterCheckResultMessage(
     // the VoterCardApplicationRegisterStatus.id to allow the response from rca to be associated with the correct register status
     val sourceCorrelationId: UUID,
     val registerCheckResult: RegisterCheckResult,
-    val matches: List<RegisterCheckPersonalDetail>,
+    val matches: List<RegisterCheckMatch>,
 )
 
 enum class RegisterCheckResult {
@@ -17,4 +17,7 @@ enum class RegisterCheckResult {
     NO_MATCH,
     MULTIPLE_MATCH,
     TOO_MANY_MATCHES,
+    PENDING_DETERMINATION,
+    EXPIRED,
+    NOT_STARTED,
 }

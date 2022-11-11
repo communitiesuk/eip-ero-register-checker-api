@@ -33,7 +33,7 @@ fun buildRegisterCheckMatchDto(
     registeredStartDate: LocalDate? = LocalDate.now(),
     registeredEndDate: LocalDate? = LocalDate.now(),
     applicationCreatedAt: Instant? = Instant.now(),
-    franchiseCode: String? = "Franchise123"
+    franchiseCode: String = "Franchise123"
 ) = RegisterCheckMatchDto(
     emsElectorId = emsElectorId,
     attestationCount = attestationCount,

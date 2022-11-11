@@ -146,7 +146,7 @@ enum class CheckStatus {
     EXACT_MATCH,
     MULTIPLE_MATCH,
     TOO_MANY_MATCHES,
-    PENDING_DETERMINATION,
-    EXPIRED,
-    NOT_STARTED,
+    PENDING_DETERMINATION, // Franchise codes indicate the electors voting eligibility is still pending a decision
+    EXPIRED, // elector is on the register but their registered end date is in the past
+    NOT_STARTED, // elector is on the register but their registered start date is in the future
 }

@@ -35,5 +35,5 @@ abstract class RegisterCheckResultMessageMapper {
     @Mapping(target = "email", source = "personalDetail.email")
     @Mapping(target = "phone", source = "personalDetail.phoneNumber")
     @Mapping(target = "address", source = "personalDetail.address")
-    protected abstract fun personalDetailToRegisterCheckPersonalDetail(personalDetail: PersonalDetail): RegisterCheckPersonalDetail
+    protected abstract fun personalDetailEntityToRegisterCheckPersonalDetailModel(personalDetail: PersonalDetail): RegisterCheckPersonalDetail
 }

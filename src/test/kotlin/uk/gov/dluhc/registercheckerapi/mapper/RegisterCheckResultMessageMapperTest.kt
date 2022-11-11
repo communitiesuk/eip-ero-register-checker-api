@@ -43,17 +43,17 @@ internal class RegisterCheckResultMessageMapperTest {
                 "NOT_STARTED, NOT_STARTED"
             ]
         )
-        fun `should map entity to message when exact match found`(initialStatus: CheckStatus, expectedStatus: RegisterCheckResult) {
+        fun `should map entity to message when one match found`(initialStatus: CheckStatus, expectedStatus: RegisterCheckResult) {
             // Given
-            val registerCheck = buildRegisterCheck(status = initialStatus, registerCheckMatches = mutableListOf(buildRegisterCheckMatch()))
+            val registerCheckEntity = buildRegisterCheck(status = initialStatus, registerCheckMatches = mutableListOf(buildRegisterCheckMatch()))
             given(checkStatusMapper.toRegisterCheckStatusResultEnum(any())).willReturn(expectedStatus)
 
-            val expected = buildRegisterCheckResultMessage(
+            val expectedMessage = buildRegisterCheckResultMessage(
                 sourceType = RegisterCheckSourceType.VOTER_CARD,
-                sourceReference = registerCheck.sourceReference,
-                sourceCorrelationId = registerCheck.sourceCorrelationId,
+                sourceReference = registerCheckEntity.sourceReference,
+                sourceCorrelationId = registerCheckEntity.sourceCorrelationId,
                 registerCheckResult = expectedStatus,
-                matches = registerCheck.registerCheckMatches.map { registerCheckMatch ->
+                matches = registerCheckEntity.registerCheckMatches.map { registerCheckMatch ->
                     with(registerCheckMatch) {
                         buildRegisterCheckMatchModel(
                             personalDetail = buildRegisterCheckPersonalDetailFromEntity(personalDetail),
@@ -67,10 +67,10 @@ internal class RegisterCheckResultMessageMapperTest {
             )
 
             // When
-            val actual = mapper.fromRegisterCheckEntityToRegisterCheckResultMessage(registerCheck)
+            val actual = mapper.fromRegisterCheckEntityToRegisterCheckResultMessage(registerCheckEntity)
 
             // Then
-            assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
+            assertThat(actual).usingRecursiveComparison().isEqualTo(expectedMessage)
             verify(checkStatusMapper).toRegisterCheckStatusResultEnum(initialStatus)
         }
 

@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
@@ -112,13 +113,21 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
     @Nested
     inner class RecordMatchResult {
 
-        @Test // todo parameterize test for +3 statuses
-        fun `should record exact match`() {
+        @ParameterizedTest
+        @CsvSource(
+            value = [
+                "EXACT_MATCH",
+                "PENDING_DETERMINATION",
+                "EXPIRED",
+                "NOT_STARTED"
+            ]
+        )
+        fun `should record exact match`(checkStatus: CheckStatus) {
             // Given
             val registerCheckToSearch = buildRegisterCheck()
             val registerCheckAnother = buildRegisterCheck()
             registerCheckRepository.saveAll(listOf(registerCheckToSearch, registerCheckAnother))
-            registerCheckToSearch.recordExactMatch(CheckStatus.EXACT_MATCH, Instant.now(), buildRegisterCheckMatch())
+            registerCheckToSearch.recordExactMatch(checkStatus, Instant.now(), buildRegisterCheckMatch())
             registerCheckAnother.recordNoMatch(Instant.now())
             registerCheckRepository.saveAll(listOf(registerCheckToSearch, registerCheckAnother))
 
@@ -128,7 +137,7 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             // Then
             assertThat(actual).isNotNull
             assertThat(actual).isEqualTo(registerCheckToSearch)
-            assertThat(actual?.status).isEqualTo(CheckStatus.EXACT_MATCH)
+            assertThat(actual?.status).isEqualTo(checkStatus)
             assertThat(actual?.matchCount).isOne
             assertThat(actual?.registerCheckMatches).hasSize(1)
             for (registerCheckMatch in actual?.registerCheckMatches!!) {

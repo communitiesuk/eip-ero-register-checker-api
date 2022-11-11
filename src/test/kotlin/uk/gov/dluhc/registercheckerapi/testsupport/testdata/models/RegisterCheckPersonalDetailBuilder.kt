@@ -29,7 +29,46 @@ fun buildRegisterCheckPersonalDetail(
     address = address
 )
 
-fun buildRegisterCheckAddress(
+fun buildRegisterCheckPersonalDetailFromApiModel(match: uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch): RegisterCheckPersonalDetail =
+    with(match) {
+        buildRegisterCheckPersonalDetail(
+            firstName = fn,
+            middleNames = mn,
+            surname = ln,
+            dateOfBirth = dob,
+            phone = phone,
+            email = email,
+            address = buildRegisterCheckAddressFromApiModel(match)
+        )
+    }
+
+fun buildRegisterCheckPersonalDetailFromDto(match: RegisterCheckMatchDto): RegisterCheckPersonalDetail =
+    with(match.personalDetail) {
+        buildRegisterCheckPersonalDetail(
+            firstName = firstName,
+            middleNames = middleNames,
+            surname = surname,
+            dateOfBirth = dateOfBirth,
+            phone = phone,
+            email = email,
+            address = buildRegisterCheckAddressFromDto(address)
+        )
+    }
+
+fun buildRegisterCheckPersonalDetailFromEntity(personalDetailEntity: PersonalDetail): RegisterCheckPersonalDetail =
+    with(personalDetailEntity) {
+        buildRegisterCheckPersonalDetail(
+            firstName = firstName,
+            middleNames = middleNames,
+            surname = surname,
+            dateOfBirth = dateOfBirth,
+            phone = phoneNumber,
+            email = email,
+            address = buildRegisterCheckAddressFromEntity(address)
+        )
+    }
+
+private fun buildRegisterCheckAddress(
     fakeAddress: Address = DataFaker.faker.address(),
     property: String? = fakeAddress.buildingNumber(),
     street: String = fakeAddress.streetName(),
@@ -48,20 +87,7 @@ fun buildRegisterCheckAddress(
     uprn = uprn,
 )
 
-fun buildRegisterCheckPersonalDetailFromMatchModel(match: uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch): RegisterCheckPersonalDetail =
-    with(match) {
-        buildRegisterCheckPersonalDetail(
-            firstName = fn,
-            middleNames = mn,
-            surname = ln,
-            dateOfBirth = dob,
-            phone = phone,
-            email = email,
-            address = buildRegisterCheckAddress(match)
-        )
-    }
-
-fun buildRegisterCheckAddress(match: uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch) =
+private fun buildRegisterCheckAddressFromApiModel(match: uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch) =
     with(match) {
         buildRegisterCheckAddress(
             property = regproperty,
@@ -74,33 +100,7 @@ fun buildRegisterCheckAddress(match: uk.gov.dluhc.registercheckerapi.models.Regi
         )
     }
 
-fun buildRegisterCheckPersonalDetailFromMatchDto(match: RegisterCheckMatchDto): RegisterCheckPersonalDetail =
-    with(match.personalDetail) {
-        buildRegisterCheckPersonalDetail(
-            firstName = firstName,
-            middleNames = middleNames,
-            surname = surname,
-            dateOfBirth = dateOfBirth,
-            phone = phone,
-            email = email,
-            address = buildRegisterCheckAddress(address)
-        )
-    }
-
-fun buildRegisterCheckPersonalDetailFromEntity(personalDetailEntity: PersonalDetail): RegisterCheckPersonalDetail =
-    with(personalDetailEntity) {
-        buildRegisterCheckPersonalDetail(
-            firstName = firstName,
-            middleNames = middleNames,
-            surname = surname,
-            dateOfBirth = dateOfBirth,
-            phone = phoneNumber,
-            email = email,
-            address = buildRegisterCheckAddress(address)
-        )
-    }
-
-fun buildRegisterCheckAddress(address: AddressDto): RegisterCheckAddress =
+private fun buildRegisterCheckAddressFromDto(address: AddressDto): RegisterCheckAddress =
     with(address) {
         buildRegisterCheckAddress(
             property = property,
@@ -113,7 +113,7 @@ fun buildRegisterCheckAddress(address: AddressDto): RegisterCheckAddress =
         )
     }
 
-fun buildRegisterCheckAddress(address: Address_Entity): RegisterCheckAddress =
+private fun buildRegisterCheckAddressFromEntity(address: Address_Entity): RegisterCheckAddress =
     with(address) {
         buildRegisterCheckAddress(
             property = property,

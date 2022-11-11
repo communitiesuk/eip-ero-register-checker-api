@@ -23,7 +23,7 @@ fun buildRegisterCheckMatchModel(
 fun buildRegisterCheckMatchFromMatchApiModel(match: uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch): RegisterCheckMatch =
     with(match) {
         buildRegisterCheckMatchModel(
-            personalDetail = buildRegisterCheckPersonalDetailFromMatchModel(this),
+            personalDetail = buildRegisterCheckPersonalDetailFromApiModel(this),
             emsElectoralId = emsElectorId,
             franchiseCode = franchiseCode,
             registeredStartDate = registeredStartDate,
@@ -34,7 +34,7 @@ fun buildRegisterCheckMatchFromMatchApiModel(match: uk.gov.dluhc.registerchecker
 fun buildRegisterCheckMatchFromMatchDto(match: RegisterCheckMatchDto): RegisterCheckMatch =
     with(match) {
         buildRegisterCheckMatchModel(
-            personalDetail = buildRegisterCheckPersonalDetailFromMatchDto(this),
+            personalDetail = buildRegisterCheckPersonalDetailFromDto(this),
             emsElectoralId = emsElectorId,
             franchiseCode = franchiseCode,
             registeredStartDate = registeredStartDate,

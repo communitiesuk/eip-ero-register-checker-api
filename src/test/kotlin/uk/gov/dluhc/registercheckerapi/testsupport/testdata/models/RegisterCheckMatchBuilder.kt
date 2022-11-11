@@ -44,4 +44,4 @@ fun buildRegisterCheckMatchFromMatchDto(match: RegisterCheckMatchDto): RegisterC
 
 private fun aValidEmsElectoralId() = DataFaker.faker.examplify("AAAAAAA")
 
-private fun aValidFranchiseCode(): String = DataFaker.faker.examplify("AAA")
+private fun aValidFranchiseCode() = DataFaker.faker.examplify("AAA")

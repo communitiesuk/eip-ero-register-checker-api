@@ -121,9 +121,9 @@ internal class RegisterCheckResultMapperTest {
                 "G,         -2, 2, EXACT_MATCH", // franchise code is still not blank nor "PENDING"
                 "PENDING,   -2, 2, PENDING_DETERMINATION", // a franchise code of pending with valid dates means status is PENDING_DETERMINATION
                 "PENDING,     ,  , PENDING_DETERMINATION", // a franchise code of pending with null dates means status is PENDING_DETERMINATION
-                "'',         2, 2, NOT_STARTED", // start date in the future means status is NO_MATCH
-                "' ',       -2,-2, EXPIRED", // end date in the past means status is NO_MATCH
-                "'',         2,-2, NOT_STARTED", // start/end dates in future/past means status is NO_MATCH
+                "'',         2, 2, NOT_STARTED", // start date in the future means status is NOT_STARTED
+                "' ',       -2,-2, EXPIRED", // end date in the past means status is EXPIRED
+                "'',         2,-2, NOT_STARTED", // start/end dates in future/past means status is NOT_STARTED
             ]
         )
         fun `should map api to dto for a given registerCheckMatchCount when it is 1`(

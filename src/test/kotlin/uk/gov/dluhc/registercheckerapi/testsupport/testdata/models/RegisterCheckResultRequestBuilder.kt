@@ -39,8 +39,8 @@ fun buildRegisterCheckMatchRequest(
     regarea: String? = faker.address().state(),
     regpostcode: String = faker.address().postcode(),
     reguprn: String? = RandomStringUtils.randomNumeric(12),
-    registeredStartDate: LocalDate? = LocalDate.now(),
-    registeredEndDate: LocalDate? = LocalDate.now(),
+    registeredStartDate: LocalDate? = LocalDate.now().minusDays(2),
+    registeredEndDate: LocalDate? = LocalDate.now().plusDays(2),
     applicationCreatedAt: OffsetDateTime? = OffsetDateTime.now(),
     franchiseCode: String = "Franchise123"
 ) = RegisterCheckMatch(

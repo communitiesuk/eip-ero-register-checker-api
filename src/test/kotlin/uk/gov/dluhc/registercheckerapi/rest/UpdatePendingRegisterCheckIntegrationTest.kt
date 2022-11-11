@@ -2,14 +2,12 @@ package uk.gov.dluhc.registercheckerapi.rest
 
 import com.amazonaws.services.sqs.model.Message
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest
-import mu.KotlinLogging
-import org.apache.commons.lang3.time.StopWatch
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.core.ConditionTimeoutException
 import org.awaitility.kotlin.await
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
+import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.http.MediaType.APPLICATION_JSON
 import reactor.core.publisher.Mono
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
@@ -33,8 +31,6 @@ import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-
-private val logger = KotlinLogging.logger {}
 
 private const val REQUEST_HEADER_NAME = "client-cert-serial"
 private const val CERT_SERIAL_NUMBER_VALUE = "543212222"
@@ -558,9 +554,17 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["2022-09-13T21:03:03.7788394+05:30", "1986-05-01T02:42:44.348Z"])
-    fun `should return created given a post request with an exact match found`(
-        createdAtFromRequest: String
+    @CsvSource(
+        value = [
+            "2022-09-13T21:03:03.7788394+05:30, '', EXACT_MATCH, EXACT_MATCH",
+            "1986-05-01T02:42:44.348Z, Pending, PENDING_DETERMINATION, PENDING_DETERMINATION"
+        ]
+    )
+    fun `should return created given a post request with one match found`(
+        createdAtFromRequest: String,
+        franchiseCodeFromRequest: String,
+        expectedRegisterCheckResult: RegisterCheckResult,
+        expectedCheckStatus: CheckStatus,
     ) {
         // Given
         val requestId = UUID.randomUUID()
@@ -581,7 +585,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
         val matchResultSentAt = OffsetDateTime.parse(createdAtFromRequest)
         val matchCount = 1
-        val matches = listOf(buildRegisterCheckMatchRequest(franchiseCode = "pending"))
+        val matches = listOf(buildRegisterCheckMatchRequest(franchiseCode = franchiseCodeFromRequest))
         val expectedRegisterCheckMatchEntityList = listOf(
             buildRegisterCheckMatchEntityFromRegisterCheckMatchApi(matches[0])
         )
@@ -589,7 +593,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             sourceType = RegisterCheckSourceType.VOTER_CARD,
             sourceReference = savedPendingRegisterCheckEntity.sourceReference,
             sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
-            registerCheckResult = RegisterCheckResult.PENDING_DETERMINATION,
+            registerCheckResult = expectedRegisterCheckResult,
             matches = matches.map { buildRegisterCheckMatchFromMatchApiModel(it) }
         )
 
@@ -620,7 +624,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .assertThat(actualRegisterCheckJpaEntity)
             .ignoringIdFields()
             .ignoringDateFields()
-            .hasStatus(CheckStatus.PENDING_DETERMINATION) // todo check exact match as well
+            .hasStatus(expectedCheckStatus)
             .hasMatchResultSentAt(matchResultSentAt.toInstant())
             .hasMatchCount(matchCount)
             .hasRegisterCheckMatches(expectedRegisterCheckMatchEntityList)
@@ -630,7 +634,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
         assertRequestIsAudited(actualRegisterResultData, requestId, createdAtFromRequest, gssCodeFromEroApi, matchCount)
 
-        // assertMessageSubmittedToSqs(expectedMessageContentSentToVca)
+        assertMessageSubmittedToSqs(expectedMessageContentSentToVca)
     }
 
     @Test
@@ -687,72 +691,12 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         assertRequestIsAudited(actualRegisterResultData, requestId, createdAtFromRequest, gssCodeFromEroApi, matchCount)
     }
 
-    @Test
-    fun `should return no match given post request with pending franchiseCode`() {
-        // Given
-        val requestId = UUID.randomUUID()
-        val eroIdFromIerApi = "camden-city-council"
-        val gssCodeFromEroApi = getRandomGssCode()
-        val createdAtFromRequest = "2022-09-13T21:03:03.7788394+05:30"
-
-        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
-        wireMockService.stubEroManagementGetEro(eroIdFromIerApi, gssCodeFromEroApi)
-
-        registerCheckRepository.save(
-            buildRegisterCheck(
-                correlationId = requestId,
-                gssCode = gssCodeFromEroApi,
-                status = CheckStatus.PENDING
-            )
-        )
-        registerCheckRepository.save(buildRegisterCheck(correlationId = UUID.randomUUID()))
-
-        val matchCount = 1
-        val bodyPayloadAsJson = buildJsonPayload(
-            requestId = requestId.toString(),
-            createdAt = createdAtFromRequest,
-            matchCount = matchCount,
-            gssCode = gssCodeFromEroApi,
-            franchiseCode = "pending"
-        )
-        val matchResultSentAt = OffsetDateTime.parse(createdAtFromRequest)
-
-        // When
-        webTestClient.post()
-            .uri(buildUri(requestId))
-            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
-            .contentType(APPLICATION_JSON)
-            .bodyValue(bodyPayloadAsJson)
-            .exchange()
-            .expectStatus()
-            .isCreated
-
-        // Then
-        val actualRegisterCheckJpaEntity = registerCheckRepository.findByCorrelationId(requestId)
-        RegisterCheckAssert
-            .assertThat(actualRegisterCheckJpaEntity)
-            .ignoringIdFields()
-            .ignoringDateFields()
-            .hasStatus(CheckStatus.PENDING_DETERMINATION)
-            .hasMatchResultSentAt(matchResultSentAt.toInstant())
-            .hasMatchCount(1)
-        wireMockService.verifyIerGetEroIdentifierCalledOnce()
-        wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
-
-        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
-        assertRequestIsAudited(actualRegisterResultData, requestId, createdAtFromRequest, gssCodeFromEroApi, matchCount)
-    }
-
     private fun assertMessageSubmittedToSqs(expectedMessageContent: RegisterCheckResultMessage) {
-        val stopWatch = StopWatch.createStarted()
         await.atMost(5, TimeUnit.SECONDS).untilAsserted {
             val sqsMessages: List<Message> = getLatestSqsMessages()
             assertThat(sqsMessages).anyMatch {
                 assertRegisterCheckResultMessage(it, expectedMessageContent)
             }
-
-            stopWatch.stop()
-            logger.info("completed assertions in $stopWatch")
         }
     }
 
@@ -821,61 +765,6 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         assertThat(persistedRequest.createdAt).isEqualTo(expectedCreatedAt)
         assertThat(persistedRequest.gssCode).isEqualTo(expectedGssCode)
         assertThat(persistedRequest.registerCheckMatchCount).isEqualTo(matchCount)
-    }
-
-    private fun buildJsonPayload(
-        requestId: String,
-        createdAt: String,
-        matchCount: Int,
-        gssCode: String,
-        franchiseCode: String = "",
-    ): String {
-        return """
-            {
-            "requestid": "$requestId",
-            "gssCode": "$gssCode",
-            "createdAt": "$createdAt",
-            "registerCheckMatchCount": $matchCount,
-            "registerCheckMatches": [
-              {
-                "emsElectorId": "150",
-                "fn": "Jason",
-                "mn": "WRM",
-                "ln": "Bins",
-                "dob": "1949-08-04T00:00:00",
-                "regproperty": "Dobbs Hall",
-                "regstreet": "Kling Meadows",
-                "reglocality": "Arnside",
-                "regtown": "Carnforth",
-                "regarea": "Lancs.",
-                "regpostcode": "SW19 5AG",
-                "reguprn": "10034114198",
-                "phone": "",
-                "email": "noone@nowhere.invalid",
-                "registeredStartDate": "2014-06-20T16:52:39",
-                "registeredEndDate": null,
-                "attestationCount": 0,
-                "franchiseCode": "$franchiseCode",
-                "postalVote": {
-                  "postalVoteUntilFurtherNotice": true,
-                  "postalVoteForSingleDate": null,
-                  "postalVoteStartDate": null,
-                  "postalVoteEndDate": null,
-                  "ballotproperty": null,
-                  "ballotstreet": null,
-                  "ballotlocality": null,
-                  "ballottown": null,
-                  "ballotarea": null,
-                  "ballotpostcode": null,
-                  "ballotuprn": null,
-                  "ballotAddressReason": null
-                },
-                "proxyVote": null,
-                "applicationCreatedAt": null
-              }
-            ]
-            }
-        """.trimIndent()
     }
 
     private fun buildJsonPayloadWithNoMatches(

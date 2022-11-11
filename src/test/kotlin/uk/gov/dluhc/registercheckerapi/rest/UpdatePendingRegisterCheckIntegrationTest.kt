@@ -25,7 +25,7 @@ import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.models.Err
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomGssCode
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatchEntityFromRegisterCheckMatchApi
-import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchFromMatchModel
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchFromMatchApiModel
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchRequest
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckResultRequest
 import java.time.OffsetDateTime
@@ -511,7 +511,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             sourceReference = savedPendingRegisterCheckEntity.sourceReference,
             sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
             registerCheckResult = RegisterCheckResult.MULTIPLE_MATCH,
-            matches = matches.map { buildRegisterCheckMatchFromMatchModel(it) }
+            matches = matches.map { buildRegisterCheckMatchFromMatchApiModel(it) }
         )
         val requestBody = buildRegisterCheckResultRequest(
             requestId = requestId,

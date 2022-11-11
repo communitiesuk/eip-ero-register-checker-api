@@ -20,7 +20,7 @@ fun buildRegisterCheckMatchModel(
     registeredEndDate = registeredEndDate,
 )
 
-fun buildRegisterCheckMatchFromMatchModel(match: uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch): RegisterCheckMatch =
+fun buildRegisterCheckMatchFromMatchApiModel(match: uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch): RegisterCheckMatch =
     with(match) {
         buildRegisterCheckMatchModel(
             personalDetail = buildRegisterCheckPersonalDetailFromMatchModel(this),

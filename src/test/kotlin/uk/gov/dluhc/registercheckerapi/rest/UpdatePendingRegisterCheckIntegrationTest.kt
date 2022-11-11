@@ -648,7 +648,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
         wireMockService.stubEroManagementGetEro(eroIdFromIerApi, gssCodeFromEroApi)
 
-        registerCheckRepository.save(
+        val savedPendingRegisterCheckEntity = registerCheckRepository.save(
             buildRegisterCheck(
                 correlationId = requestId,
                 gssCode = gssCodeFromEroApi,
@@ -656,6 +656,14 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             )
         )
         registerCheckRepository.save(buildRegisterCheck(correlationId = UUID.randomUUID()))
+
+        val expectedMessageContentSentToVca = RegisterCheckResultMessage(
+            sourceType = RegisterCheckSourceType.VOTER_CARD,
+            sourceReference = savedPendingRegisterCheckEntity.sourceReference,
+            sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
+            registerCheckResult = RegisterCheckResult.NO_MATCH,
+            matches = emptyList()
+        )
 
         val matchCount = 0
         val bodyPayloadAsJson = buildJsonPayloadWithNoMatches(
@@ -689,6 +697,8 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
         val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
         assertRequestIsAudited(actualRegisterResultData, requestId, createdAtFromRequest, gssCodeFromEroApi, matchCount)
+
+        assertMessageSubmittedToSqs(expectedMessageContentSentToVca)
     }
 
     private fun assertMessageSubmittedToSqs(expectedMessageContent: RegisterCheckResultMessage) {

@@ -559,7 +559,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
     @ParameterizedTest
     @ValueSource(strings = ["2022-09-13T21:03:03.7788394+05:30", "1986-05-01T02:42:44.348Z"])
-    fun `should return created by saving request, updating status given pending register check with exact match`(
+    fun `should return created given a post request with an exact match found`(
         createdAtFromRequest: String
     ) {
         // Given
@@ -570,7 +570,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
         wireMockService.stubEroManagementGetEro(eroIdFromIerApi, gssCodeFromEroApi)
 
-        registerCheckRepository.save(
+        val savedPendingRegisterCheckEntity = registerCheckRepository.save(
             buildRegisterCheck(
                 correlationId = requestId,
                 gssCode = gssCodeFromEroApi,
@@ -579,22 +579,37 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         )
         registerCheckRepository.save(buildRegisterCheck(correlationId = UUID.randomUUID()))
 
-        val matchCount = 1
-        val bodyPayloadAsJson = buildJsonPayload(
-            requestId = requestId.toString(),
-            createdAt = createdAtFromRequest,
-            matchCount = matchCount,
-            gssCode = gssCodeFromEroApi,
-            franchiseCode = "pending",
-        )
         val matchResultSentAt = OffsetDateTime.parse(createdAtFromRequest)
+        val matchCount = 1
+        val matches = listOf(buildRegisterCheckMatchRequest(franchiseCode = "pending"))
+        val expectedRegisterCheckMatchEntityList = listOf(
+            buildRegisterCheckMatchEntityFromRegisterCheckMatchApi(matches[0])
+        )
+        val expectedMessageContentSentToVca = RegisterCheckResultMessage(
+            sourceType = RegisterCheckSourceType.VOTER_CARD,
+            sourceReference = savedPendingRegisterCheckEntity.sourceReference,
+            sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
+            registerCheckResult = RegisterCheckResult.PENDING_DETERMINATION,
+            matches = matches.map { buildRegisterCheckMatchFromMatchApiModel(it) }
+        )
+
+        val requestBody = buildRegisterCheckResultRequest(
+            requestId = requestId,
+            gssCode = gssCodeFromEroApi,
+            createdAt = matchResultSentAt,
+            registerCheckMatchCount = matchCount,
+            registerCheckMatches = matches
+        )
 
         // When
         webTestClient.post()
             .uri(buildUri(requestId))
             .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
             .contentType(APPLICATION_JSON)
-            .bodyValue(bodyPayloadAsJson)
+            .body(
+                Mono.just(requestBody),
+                RegisterCheckResultRequest::class.java
+            )
             .exchange()
             .expectStatus()
             .isCreated
@@ -605,14 +620,17 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .assertThat(actualRegisterCheckJpaEntity)
             .ignoringIdFields()
             .ignoringDateFields()
-            .hasStatus(CheckStatus.PENDING_DETERMINATION)
+            .hasStatus(CheckStatus.PENDING_DETERMINATION) // todo check exact match as well
             .hasMatchResultSentAt(matchResultSentAt.toInstant())
             .hasMatchCount(matchCount)
+            .hasRegisterCheckMatches(expectedRegisterCheckMatchEntityList)
         wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
 
         val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
         assertRequestIsAudited(actualRegisterResultData, requestId, createdAtFromRequest, gssCodeFromEroApi, matchCount)
+
+        // assertMessageSubmittedToSqs(expectedMessageContentSentToVca)
     }
 
     @Test

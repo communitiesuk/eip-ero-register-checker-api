@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils.equalsIgnoreCase
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Named
+import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.dluhc.registercheckerapi.dto.AddressDto
 import uk.gov.dluhc.registercheckerapi.dto.PersonalDetailDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckMatchDto
@@ -13,7 +14,6 @@ import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 import java.time.Instant
-import java.time.ZoneOffset.UTC
 import java.util.UUID
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch as RegisterCheckMatchEntity
 
@@ -27,6 +27,8 @@ import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch as Reg
     ]
 )
 abstract class RegisterCheckResultMapper {
+    @Autowired
+    protected lateinit var instantMapper: InstantMapper
 
     @Mapping(target = "requestId", source = "queryParamRequestId")
     @Mapping(target = "correlationId", source = "apiRequest.requestid")
@@ -74,9 +76,9 @@ abstract class RegisterCheckResultMapper {
             return if (equalsIgnoreCase(franchiseCode.trim(), "PENDING")) {
                 RegisterCheckStatus.PENDING_DETERMINATION
             } else {
+                val registeredStartInstant = instantMapper.fromLocalDateToInstant(registeredStartDate)
+                val registeredEndInstant = instantMapper.fromLocalDateToInstant(registeredEndDate)
                 val now = Instant.now()
-                val registeredStartInstant = registeredStartDate?.atStartOfDay(UTC)?.toInstant()
-                val registeredEndInstant = registeredEndDate?.atStartOfDay(UTC)?.toInstant()
                 if (registeredStartInstant?.isAfter(now) == true) {
                     RegisterCheckStatus.NOT_STARTED
                 } else if (registeredEndInstant?.isBefore(now) == true) {

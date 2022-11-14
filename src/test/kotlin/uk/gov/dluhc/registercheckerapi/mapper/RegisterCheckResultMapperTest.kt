@@ -1,5 +1,6 @@
 package uk.gov.dluhc.registercheckerapi.mapper
 
+import org.apache.commons.lang3.StringUtils.equalsIgnoreCase
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -10,6 +11,7 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.given
 import org.mockito.kotlin.verify
@@ -147,6 +149,9 @@ internal class RegisterCheckResultMapperTest {
             val queryParamRequestId = UUID.randomUUID()
 
             given(instantMapper.toInstant(eq(apiRequest.createdAt))).willReturn(apiRequest.createdAt.toInstant())
+            if (! equalsIgnoreCase("PENDING", franchiseCode)) {
+                given(instantMapper.fromLocalDateToInstant(anyOrNull())).willCallRealMethod()
+            }
 
             // When
             val actual = mapper.fromRegisterCheckResultRequestApiToDto(queryParamRequestId, apiRequest)

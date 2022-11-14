@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import java.time.Instant
+import java.time.LocalDate
+import java.time.Month
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -74,5 +76,37 @@ class InstantMapperTest {
 
         // Then
         assertThat(actual).isNull()
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        value = [
+            "2022, JULY,    1, 2022-07-01T00:00:00.000Z",
+            "1986, JANUARY, 9, 1986-01-09T00:00:00.000Z"
+        ]
+    )
+    fun `should convert LocalDate to Instant`(year: Int, month: Month, dayOfMonth: Int, expectedDateTimeStr: String) {
+        // Given
+        val inputLocalDate: LocalDate? = LocalDate.of(year, month, dayOfMonth)
+        val expectedInstant = OffsetDateTime.parse(expectedDateTimeStr).toInstant()
+
+        // When
+        val actual = instantMapper.fromLocalDateToInstant(inputLocalDate)
+
+        // Then
+        assertThat(actual).isEqualTo(expectedInstant)
+    }
+
+    @Test
+    fun `should convert null LocalDate to null Instant`() {
+        // Given
+        val inputLocalDate: LocalDate? = null
+        val expectedInstant: Instant? = null
+
+        // When
+        val actual = instantMapper.fromLocalDateToInstant(inputLocalDate)
+
+        // Then
+        assertThat(actual).isEqualTo(expectedInstant)
     }
 }

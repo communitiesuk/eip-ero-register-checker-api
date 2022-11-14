@@ -1,5 +1,6 @@
 package uk.gov.dluhc.registercheckerapi.mapper
 
+import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.StringUtils.equalsIgnoreCase
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
@@ -37,6 +38,7 @@ abstract class RegisterCheckResultMapper {
     abstract fun fromDtoToRegisterCheckMatchEntity(registerCheckMatchDto: RegisterCheckMatchDto): RegisterCheckMatchEntity
 
     @Mapping(target = "personalDetail", source = ".")
+    @Mapping(target = "franchiseCode", source = "franchiseCode", qualifiedByName = ["trimAndToUppercase"])
     protected abstract fun fromRegisterCheckMatchApiToDto(registerCheckMatchApi: RegisterCheckMatch): RegisterCheckMatchDto
 
     @Mapping(target = "firstName", source = "fn")
@@ -54,6 +56,9 @@ abstract class RegisterCheckResultMapper {
     @Mapping(target = "area", source = "regarea")
     @Mapping(target = "uprn", source = "reguprn")
     protected abstract fun toAddressDto(registerCheckMatchApi: RegisterCheckMatch): AddressDto
+
+    @Named("trimAndToUppercase")
+    fun trimAndToUppercase(source: String?): String? = StringUtils.toRootUpperCase(StringUtils.trim(source))
 
     @Named("evaluateRegisterCheckStatus")
     protected fun evaluateRegisterCheckStatus(apiRequest: RegisterCheckResultRequest) =

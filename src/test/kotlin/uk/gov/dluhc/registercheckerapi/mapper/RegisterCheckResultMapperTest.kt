@@ -197,11 +197,18 @@ internal class RegisterCheckResultMapperTest {
         fun `should map api to dto`() {
             // Given
             val applicationCreatedAt = OffsetDateTime.now().minusDays(5)
-            val apiRequest = buildRegisterCheckMatchRequest(applicationCreatedAt = applicationCreatedAt)
+            val apiRequest = buildRegisterCheckMatchRequest(
+                applicationCreatedAt = applicationCreatedAt,
+                franchiseCode= "franchise123"
+            )
 
             val expectedApplicationCreatedAt = applicationCreatedAt.toInstant()
             given(instantMapper.toInstant(any())).willReturn(expectedApplicationCreatedAt)
-            val expected = toRegisterCheckMapDtoFromApi(apiRequest, expectedApplicationCreatedAt)
+            val expected = toRegisterCheckMapDtoFromApi(
+                apiRequest,
+                expectedApplicationCreatedAt,
+                franchiseCode= "FRANCHISE123"
+            )
 
             // When
             val actual = mapper.fromRegisterCheckMatchApiToDto(apiRequest)
@@ -276,7 +283,8 @@ internal class RegisterCheckResultMapperTest {
 
     private fun toRegisterCheckMapDtoFromApi(
         rcmApi: RegisterCheckMatch,
-        expectedApplicationCreatedAt: Instant?
+        expectedApplicationCreatedAt: Instant?,
+        franchiseCode: String = rcmApi.franchiseCode
     ): RegisterCheckMatchDto {
         return RegisterCheckMatchDto(
             emsElectorId = rcmApi.emsElectorId,
@@ -301,7 +309,7 @@ internal class RegisterCheckResultMapperTest {
             registeredStartDate = rcmApi.registeredStartDate,
             registeredEndDate = rcmApi.registeredEndDate,
             applicationCreatedAt = expectedApplicationCreatedAt,
-            franchiseCode = rcmApi.franchiseCode,
+            franchiseCode = franchiseCode,
         )
     }
 }

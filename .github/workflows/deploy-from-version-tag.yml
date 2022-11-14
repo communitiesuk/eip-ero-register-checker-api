@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       deploy_environment:
-        description: 'Environment'
+        description: "Environment"
         required: true
         type: choice
         options:
@@ -13,6 +13,7 @@ on:
           - int
           - pvt
           - test
+          - live
 
 jobs:
   deploy:

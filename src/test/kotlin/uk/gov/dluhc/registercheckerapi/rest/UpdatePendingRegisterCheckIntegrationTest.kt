@@ -558,7 +558,9 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     @ParameterizedTest
     @CsvSource(
         value = [
+            // handle date format with timezone offset and empty franchise code
             "2022-09-13T21:03:03.7788394+05:30, '', EXACT_MATCH, EXACT_MATCH",
+            // handle UTC date format and Pending franchise code
             "1986-05-01T02:42:44.348Z, Pending, PENDING_DETERMINATION, PENDING_DETERMINATION"
         ]
     )

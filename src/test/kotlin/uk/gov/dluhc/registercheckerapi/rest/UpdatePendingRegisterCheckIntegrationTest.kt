@@ -2,6 +2,8 @@ package uk.gov.dluhc.registercheckerapi.rest
 
 import com.amazonaws.services.sqs.model.Message
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest
+import org.apache.commons.lang3.StringUtils.toRootUpperCase
+import org.apache.commons.lang3.StringUtils.trim
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.core.ConditionTimeoutException
 import org.awaitility.kotlin.await
@@ -585,7 +587,11 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
         val matchResultSentAt = OffsetDateTime.parse(createdAtFromRequest)
         val matchCount = 1
-        val matches = listOf(buildRegisterCheckMatchRequest(franchiseCode = franchiseCodeFromRequest))
+        val matches = listOf(
+            buildRegisterCheckMatchRequest(
+                franchiseCode = toRootUpperCase(trim(franchiseCodeFromRequest))
+            )
+        )
         val expectedRegisterCheckMatchEntityList = listOf(
             buildRegisterCheckMatchEntityFromRegisterCheckMatchApi(matches[0])
         )

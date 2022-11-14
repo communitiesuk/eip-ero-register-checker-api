@@ -199,7 +199,7 @@ internal class RegisterCheckResultMapperTest {
             val applicationCreatedAt = OffsetDateTime.now().minusDays(5)
             val apiRequest = buildRegisterCheckMatchRequest(
                 applicationCreatedAt = applicationCreatedAt,
-                franchiseCode= "franchise123"
+                franchiseCode = " franchise123 "
             )
 
             val expectedApplicationCreatedAt = applicationCreatedAt.toInstant()
@@ -207,7 +207,7 @@ internal class RegisterCheckResultMapperTest {
             val expected = toRegisterCheckMapDtoFromApi(
                 apiRequest,
                 expectedApplicationCreatedAt,
-                franchiseCode= "FRANCHISE123"
+                franchiseCode = "FRANCHISE123"
             )
 
             // When

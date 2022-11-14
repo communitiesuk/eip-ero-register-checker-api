@@ -83,7 +83,6 @@ jobs:
           ECR_REPOSITORY: register-checker-api-repo
           IMAGE_TAG: ${{ steps.bump-semver.outputs.new_version }}
         run: |
-          ./gradlew bootBuildImage
           IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker tag eip-ero-register-checker-api:latest $IMAGE
           docker push $IMAGE

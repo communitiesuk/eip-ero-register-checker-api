@@ -50,7 +50,7 @@ jobs:
         uses: actions-ecosystem/action-push-tag@v1
         with:
           tag: ${{ steps.bump-semver.outputs.new_version }}
-          message: '${{ github.event.head_commit.message }}'
+          message: "${{ github.event.head_commit.message }}"
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
@@ -60,6 +60,29 @@ jobs:
           IMAGE_TAG: ${{ steps.bump-semver.outputs.new_version }}
         run: |
           ./gradlew bootBuildImage
+          IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker tag eip-ero-register-checker-api:latest $IMAGE
+          docker push $IMAGE
+          echo "::set-output name=image::$IMAGE"
+
+      - name: Configure AWS credentials (live env)
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.LIVE_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.LIVE_AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+
+      - name: Login to Amazon ECR (live env)
+        id: login-ecr-live
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR (live env)
+        id: build-image-live
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr-live.outputs.registry }}
+          ECR_REPOSITORY: register-checker-api-repo
+          IMAGE_TAG: ${{ steps.bump-semver.outputs.new_version }}
+        run: |
           IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker tag eip-ero-register-checker-api:latest $IMAGE
           docker push $IMAGE

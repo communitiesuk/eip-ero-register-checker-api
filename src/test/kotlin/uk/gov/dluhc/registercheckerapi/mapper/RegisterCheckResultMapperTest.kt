@@ -1,5 +1,6 @@
 package uk.gov.dluhc.registercheckerapi.mapper
 
+import org.apache.commons.lang3.StringUtils.equalsIgnoreCase
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -10,6 +11,7 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.given
 import org.mockito.kotlin.verify
@@ -119,11 +121,11 @@ internal class RegisterCheckResultMapperTest {
                 "' ',       -2,  , EXACT_MATCH", // start date is in the past
                 "'   ',     -2, 2, EXACT_MATCH", // start/end dates in past/future means status is EXACT_MATCH
                 "G,         -2, 2, EXACT_MATCH", // franchise code is still not blank nor "PENDING"
-                "PENDING,   -2, 2, NO_MATCH", // franchise code pending with valid dates means status is NO_MATCH
-                "PENDING,     ,  , NO_MATCH", // franchise code pending with null dates means status is NO_MATCH
-                "'',         2, 2, NO_MATCH", // start date in the future means status is NO_MATCH
-                "' ',       -2,-2, NO_MATCH", // end date in the past means status is NO_MATCH
-                "'',         2,-2, NO_MATCH", // start/end dates in future/past means status is NO_MATCH
+                "PENDING,   -2, 2, PENDING_DETERMINATION", // a franchise code of pending with valid dates means status is PENDING_DETERMINATION
+                "PENDING,     ,  , PENDING_DETERMINATION", // a franchise code of pending with null dates means status is PENDING_DETERMINATION
+                "'',         2, 2, NOT_STARTED", // start date in the future means status is NOT_STARTED
+                "' ',       -2,-2, EXPIRED", // end date in the past means status is EXPIRED
+                "'',         2,-2, NOT_STARTED", // start/end dates in future/past means status is NOT_STARTED
             ]
         )
         fun `should map api to dto for a given registerCheckMatchCount when it is 1`(
@@ -147,6 +149,9 @@ internal class RegisterCheckResultMapperTest {
             val queryParamRequestId = UUID.randomUUID()
 
             given(instantMapper.toInstant(eq(apiRequest.createdAt))).willReturn(apiRequest.createdAt.toInstant())
+            if (! equalsIgnoreCase("PENDING", franchiseCode)) {
+                given(instantMapper.fromLocalDateToInstant(anyOrNull())).willCallRealMethod()
+            }
 
             // When
             val actual = mapper.fromRegisterCheckResultRequestApiToDto(queryParamRequestId, apiRequest)
@@ -197,11 +202,18 @@ internal class RegisterCheckResultMapperTest {
         fun `should map api to dto`() {
             // Given
             val applicationCreatedAt = OffsetDateTime.now().minusDays(5)
-            val apiRequest = buildRegisterCheckMatchRequest(applicationCreatedAt = applicationCreatedAt)
+            val apiRequest = buildRegisterCheckMatchRequest(
+                applicationCreatedAt = applicationCreatedAt,
+                franchiseCode = " franchise123 "
+            )
 
             val expectedApplicationCreatedAt = applicationCreatedAt.toInstant()
             given(instantMapper.toInstant(any())).willReturn(expectedApplicationCreatedAt)
-            val expected = toRegisterCheckMapDtoFromApi(apiRequest, expectedApplicationCreatedAt)
+            val expected = toRegisterCheckMapDtoFromApi(
+                apiRequest,
+                expectedApplicationCreatedAt,
+                franchiseCode = "FRANCHISE123"
+            )
 
             // When
             val actual = mapper.fromRegisterCheckMatchApiToDto(apiRequest)
@@ -276,7 +288,8 @@ internal class RegisterCheckResultMapperTest {
 
     private fun toRegisterCheckMapDtoFromApi(
         rcmApi: RegisterCheckMatch,
-        expectedApplicationCreatedAt: Instant?
+        expectedApplicationCreatedAt: Instant?,
+        franchiseCode: String = rcmApi.franchiseCode
     ): RegisterCheckMatchDto {
         return RegisterCheckMatchDto(
             emsElectorId = rcmApi.emsElectorId,
@@ -301,7 +314,7 @@ internal class RegisterCheckResultMapperTest {
             registeredStartDate = rcmApi.registeredStartDate,
             registeredEndDate = rcmApi.registeredEndDate,
             applicationCreatedAt = expectedApplicationCreatedAt,
-            franchiseCode = rcmApi.franchiseCode,
+            franchiseCode = franchiseCode,
         )
     }
 }

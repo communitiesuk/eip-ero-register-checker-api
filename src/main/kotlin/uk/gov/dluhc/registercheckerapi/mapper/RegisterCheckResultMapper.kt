@@ -1,9 +1,11 @@
 package uk.gov.dluhc.registercheckerapi.mapper
 
+import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.StringUtils.equalsIgnoreCase
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Named
+import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.dluhc.registercheckerapi.dto.AddressDto
 import uk.gov.dluhc.registercheckerapi.dto.PersonalDetailDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckMatchDto
@@ -12,7 +14,6 @@ import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 import java.time.Instant
-import java.time.ZoneOffset.UTC
 import java.util.UUID
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch as RegisterCheckMatchEntity
 
@@ -26,6 +27,8 @@ import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch as Reg
     ]
 )
 abstract class RegisterCheckResultMapper {
+    @Autowired
+    protected lateinit var instantMapper: InstantMapper
 
     @Mapping(target = "requestId", source = "queryParamRequestId")
     @Mapping(target = "correlationId", source = "apiRequest.requestid")
@@ -37,6 +40,7 @@ abstract class RegisterCheckResultMapper {
     abstract fun fromDtoToRegisterCheckMatchEntity(registerCheckMatchDto: RegisterCheckMatchDto): RegisterCheckMatchEntity
 
     @Mapping(target = "personalDetail", source = ".")
+    @Mapping(target = "franchiseCode", source = "franchiseCode", qualifiedByName = ["trimAndToUppercase"])
     protected abstract fun fromRegisterCheckMatchApiToDto(registerCheckMatchApi: RegisterCheckMatch): RegisterCheckMatchDto
 
     @Mapping(target = "firstName", source = "fn")
@@ -55,6 +59,9 @@ abstract class RegisterCheckResultMapper {
     @Mapping(target = "uprn", source = "reguprn")
     protected abstract fun toAddressDto(registerCheckMatchApi: RegisterCheckMatch): AddressDto
 
+    @Named("trimAndToUppercase")
+    fun trimAndToUppercase(source: String?): String? = StringUtils.toRootUpperCase(StringUtils.trim(source))
+
     @Named("evaluateRegisterCheckStatus")
     protected fun evaluateRegisterCheckStatus(apiRequest: RegisterCheckResultRequest) =
         when (apiRequest.registerCheckMatchCount) {
@@ -66,16 +73,16 @@ abstract class RegisterCheckResultMapper {
 
     private fun evaluateRegisterCheckStatusWithOneMatch(registerCheckMatch: RegisterCheckMatch): RegisterCheckStatus =
         with(registerCheckMatch) {
-            return if (equalsIgnoreCase(franchiseCode, "PENDING")) {
-                RegisterCheckStatus.NO_MATCH
+            return if (equalsIgnoreCase(franchiseCode.trim(), "PENDING")) {
+                RegisterCheckStatus.PENDING_DETERMINATION
             } else {
+                val registeredStartInstant = instantMapper.fromLocalDateToInstant(registeredStartDate)
+                val registeredEndInstant = instantMapper.fromLocalDateToInstant(registeredEndDate)
                 val now = Instant.now()
-                val registeredStartInstant = registeredStartDate?.atStartOfDay(UTC)?.toInstant()
-                val registeredEndInstant = registeredEndDate?.atStartOfDay(UTC)?.toInstant()
                 if (registeredStartInstant?.isAfter(now) == true) {
-                    RegisterCheckStatus.NO_MATCH
+                    RegisterCheckStatus.NOT_STARTED
                 } else if (registeredEndInstant?.isBefore(now) == true) {
-                    RegisterCheckStatus.NO_MATCH
+                    RegisterCheckStatus.EXPIRED
                 } else {
                     RegisterCheckStatus.EXACT_MATCH
                 }

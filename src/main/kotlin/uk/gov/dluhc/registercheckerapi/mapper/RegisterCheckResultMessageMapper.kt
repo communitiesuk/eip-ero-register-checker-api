@@ -2,10 +2,12 @@ package uk.gov.dluhc.registercheckerapi.mapper
 
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
+import uk.gov.dluhc.registercheckerapi.database.entity.PersonalDetail
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckPersonalDetail
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
+import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckMatch as RegisterCheckMatch_Model
 
 /**
  * Maps [RegisterCheck] to [RegisterCheckResultMessage].
@@ -24,6 +26,8 @@ abstract class RegisterCheckResultMessageMapper {
     @Mapping(target = "matches", source = "registerCheckMatches")
     abstract fun fromRegisterCheckEntityToRegisterCheckResultMessage(entity: RegisterCheck): RegisterCheckResultMessage
 
+    protected abstract fun registerCheckMatchEntityToRegisterCheckPersonalDetailModel(registerCheckMatchEntity: RegisterCheckMatch): RegisterCheckMatch_Model
+
     @Mapping(target = "firstName", source = "personalDetail.firstName")
     @Mapping(target = "middleNames", source = "personalDetail.middleNames")
     @Mapping(target = "surname", source = "personalDetail.surname")
@@ -31,5 +35,5 @@ abstract class RegisterCheckResultMessageMapper {
     @Mapping(target = "email", source = "personalDetail.email")
     @Mapping(target = "phone", source = "personalDetail.phoneNumber")
     @Mapping(target = "address", source = "personalDetail.address")
-    protected abstract fun registerCheckMatchToRegisterCheckPersonalDetail(registerCheckMatchEntity: RegisterCheckMatch): RegisterCheckPersonalDetail
+    protected abstract fun personalDetailEntityToRegisterCheckPersonalDetailModel(personalDetail: PersonalDetail): RegisterCheckPersonalDetail
 }

@@ -21,7 +21,7 @@ data class RegisterCheckMatchDto(
     val registeredStartDate: LocalDate?,
     val registeredEndDate: LocalDate?,
     val applicationCreatedAt: Instant?,
-    val franchiseCode: String?
+    val franchiseCode: String
 )
 
 enum class RegisterCheckStatus {
@@ -29,4 +29,7 @@ enum class RegisterCheckStatus {
     EXACT_MATCH,
     MULTIPLE_MATCH,
     TOO_MANY_MATCHES,
+    PENDING_DETERMINATION,
+    EXPIRED,
+    NOT_STARTED,
 }

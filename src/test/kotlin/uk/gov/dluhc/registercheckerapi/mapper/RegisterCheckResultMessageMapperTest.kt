@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
@@ -16,8 +18,8 @@ import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildPersonalDetailWithOptionalFieldsAsNull
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatch
-import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckAddress
-import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckPersonalDetail
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchModel
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckPersonalDetailFromEntity
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckResultMessage
 
 @ExtendWith(MockitoExtension::class)
@@ -32,43 +34,44 @@ internal class RegisterCheckResultMessageMapperTest {
     @Nested
     inner class FromRegisterCheckEntityToRegisterCheckResultMessage {
 
-        @Test
-        fun `should map entity to message when exact match found`() {
+        @ParameterizedTest
+        @CsvSource(
+            value = [
+                "EXACT_MATCH, EXACT_MATCH",
+                "PENDING_DETERMINATION, PENDING_DETERMINATION",
+                "EXPIRED, EXPIRED",
+                "NOT_STARTED, NOT_STARTED"
+            ]
+        )
+        fun `should map entity to message when one match found`(initialStatus: CheckStatus, expectedStatus: RegisterCheckResult) {
             // Given
-            val registerCheck = buildRegisterCheck(status = CheckStatus.EXACT_MATCH, registerCheckMatches = mutableListOf(buildRegisterCheckMatch()))
-            given(checkStatusMapper.toRegisterCheckStatusResultEnum(any())).willReturn(RegisterCheckResult.EXACT_MATCH)
+            val registerCheckEntity = buildRegisterCheck(status = initialStatus, registerCheckMatches = mutableListOf(buildRegisterCheckMatch()))
+            given(checkStatusMapper.toRegisterCheckStatusResultEnum(any())).willReturn(expectedStatus)
 
-            val expected = buildRegisterCheckResultMessage(
+            val expectedMessage = buildRegisterCheckResultMessage(
                 sourceType = RegisterCheckSourceType.VOTER_CARD,
-                sourceReference = registerCheck.sourceReference,
-                sourceCorrelationId = registerCheck.sourceCorrelationId,
-                registerCheckResult = RegisterCheckResult.EXACT_MATCH,
-                matches = registerCheck.registerCheckMatches.map { registerCheckMatch ->
-                    with(registerCheckMatch.personalDetail) {
-                        buildRegisterCheckPersonalDetail(
-                            firstName = firstName,
-                            middleNames = middleNames,
-                            surname = surname,
-                            dateOfBirth = dateOfBirth,
-                            phone = phoneNumber,
-                            email = email,
-                            address = with(address) {
-                                buildRegisterCheckAddress(
-                                    property = property, street = street, locality = locality, town = town,
-                                    area = area, postcode = postcode, uprn = uprn
-                                )
-                            }
+                sourceReference = registerCheckEntity.sourceReference,
+                sourceCorrelationId = registerCheckEntity.sourceCorrelationId,
+                registerCheckResult = expectedStatus,
+                matches = registerCheckEntity.registerCheckMatches.map { registerCheckMatch ->
+                    with(registerCheckMatch) {
+                        buildRegisterCheckMatchModel(
+                            personalDetail = buildRegisterCheckPersonalDetailFromEntity(personalDetail),
+                            emsElectoralId = emsElectorId,
+                            franchiseCode = franchiseCode ?: "",
+                            registeredStartDate = registeredStartDate,
+                            registeredEndDate = registeredEndDate,
                         )
                     }
                 }
             )
 
             // When
-            val actual = mapper.fromRegisterCheckEntityToRegisterCheckResultMessage(registerCheck)
+            val actual = mapper.fromRegisterCheckEntityToRegisterCheckResultMessage(registerCheckEntity)
 
             // Then
-            assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
-            verify(checkStatusMapper).toRegisterCheckStatusResultEnum(CheckStatus.EXACT_MATCH)
+            assertThat(actual).usingRecursiveComparison().isEqualTo(expectedMessage)
+            verify(checkStatusMapper).toRegisterCheckStatusResultEnum(initialStatus)
         }
 
         @Test
@@ -113,25 +116,13 @@ internal class RegisterCheckResultMessageMapperTest {
                 sourceCorrelationId = registerCheck.sourceCorrelationId,
                 registerCheckResult = RegisterCheckResult.MULTIPLE_MATCH,
                 matches = registerCheck.registerCheckMatches.map { registerCheckMatch ->
-                    with(registerCheckMatch.personalDetail) {
-                        buildRegisterCheckPersonalDetail(
-                            firstName = firstName,
-                            middleNames = null,
-                            surname = surname,
-                            dateOfBirth = null,
-                            phone = null,
-                            email = null,
-                            address = with(address) {
-                                buildRegisterCheckAddress(
-                                    property = null,
-                                    street = street,
-                                    locality = null,
-                                    town = null,
-                                    area = null,
-                                    postcode = postcode,
-                                    uprn = null
-                                )
-                            }
+                    with(registerCheckMatch) {
+                        buildRegisterCheckMatchModel(
+                            personalDetail = buildRegisterCheckPersonalDetailFromEntity(personalDetail),
+                            emsElectoralId = emsElectorId,
+                            franchiseCode = franchiseCode ?: "",
+                            registeredStartDate = registeredStartDate,
+                            registeredEndDate = registeredEndDate,
                         )
                     }
                 }

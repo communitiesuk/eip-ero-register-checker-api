@@ -14,6 +14,7 @@ data class RegisterCheckResultMessage(
 
 enum class RegisterCheckResult {
     EXACT_MATCH,
+    PARTIAL_MATCH,
     NO_MATCH,
     MULTIPLE_MATCH,
     TOO_MANY_MATCHES,

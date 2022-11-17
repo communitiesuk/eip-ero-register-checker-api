@@ -10,7 +10,7 @@ data class RegisterCheckResultDto(
     val gssCode: String,
     val matchResultSentAt: Instant,
     val matchCount: Int,
-    val registerCheckStatus: RegisterCheckStatus,
+    var registerCheckStatus: RegisterCheckStatus? = null,
     val registerCheckMatches: List<RegisterCheckMatchDto>?
 )
 
@@ -27,6 +27,7 @@ data class RegisterCheckMatchDto(
 enum class RegisterCheckStatus {
     NO_MATCH,
     EXACT_MATCH,
+    PARTIAL_MATCH,
     MULTIPLE_MATCH,
     TOO_MANY_MATCHES,
     PENDING_DETERMINATION,

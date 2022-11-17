@@ -22,6 +22,10 @@ internal class CheckStatusMapperTest {
             value = [
                 "NO_MATCH, NO_MATCH",
                 "EXACT_MATCH, EXACT_MATCH",
+                "PARTIAL_MATCH, PARTIAL_MATCH",
+                "PENDING_DETERMINATION, PENDING_DETERMINATION",
+                "EXPIRED, EXPIRED",
+                "NOT_STARTED, NOT_STARTED",
                 "MULTIPLE_MATCH, MULTIPLE_MATCH",
                 "TOO_MANY_MATCHES, TOO_MANY_MATCHES"
             ]
@@ -48,6 +52,10 @@ internal class CheckStatusMapperTest {
             value = [
                 "NO_MATCH, NO_MATCH",
                 "EXACT_MATCH, EXACT_MATCH",
+                "PARTIAL_MATCH, PARTIAL_MATCH",
+                "PENDING_DETERMINATION, PENDING_DETERMINATION",
+                "EXPIRED, EXPIRED",
+                "NOT_STARTED, NOT_STARTED",
                 "MULTIPLE_MATCH, MULTIPLE_MATCH",
                 "TOO_MANY_MATCHES, TOO_MANY_MATCHES"
             ]

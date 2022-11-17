@@ -7,6 +7,7 @@ import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.EXACT_MATCH
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.EXPIRED
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.NOT_STARTED
+import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.PARTIAL_MATCH
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.PENDING_DETERMINATION
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
@@ -36,6 +37,7 @@ class RegisterCheckService(
     private val registerCheckResultMapper: RegisterCheckResultMapper,
     private val registerCheckResultMessageMapper: RegisterCheckResultMessageMapper,
     private val confirmRegisterCheckResultMessageQueue: MessageQueue<RegisterCheckResultMessage>,
+    private val matchStatusResolver: MatchStatusResolver
 ) {
 
     fun getPendingRegisterChecks(certificateSerial: String, pageSize: Int): List<PendingRegisterCheckDto> =
@@ -83,10 +85,12 @@ class RegisterCheckService(
 
     private fun recordCheckResult(registerCheckResultDto: RegisterCheckResultDto, registerCheck: RegisterCheck) {
         with(registerCheckResultDto) {
+            registerCheckStatus = matchStatusResolver.resolveStatus(this, registerCheck)
             val matches = registerCheckMatches?.map(registerCheckResultMapper::fromDtoToRegisterCheckMatchEntity) ?: emptyList()
-            when (registerCheckStatus) {
+            when (registerCheckStatus!!) {
                 RegisterCheckStatus.NO_MATCH -> registerCheck.recordNoMatch(matchResultSentAt)
                 RegisterCheckStatus.EXACT_MATCH -> registerCheck.recordExactMatch(EXACT_MATCH, matchResultSentAt, matches.first())
+                RegisterCheckStatus.PARTIAL_MATCH -> registerCheck.recordExactMatch(PARTIAL_MATCH, matchResultSentAt, matches.first())
                 RegisterCheckStatus.PENDING_DETERMINATION -> registerCheck.recordExactMatch(PENDING_DETERMINATION, matchResultSentAt, matches.first())
                 RegisterCheckStatus.EXPIRED -> registerCheck.recordExactMatch(EXPIRED, matchResultSentAt, matches.first())
                 RegisterCheckStatus.NOT_STARTED -> registerCheck.recordExactMatch(NOT_STARTED, matchResultSentAt, matches.first())
@@ -101,14 +105,14 @@ class RegisterCheckService(
         }
     }
 
+    fun getPendingRegisterCheck(correlationId: UUID): RegisterCheck =
+        registerCheckRepository.findByCorrelationId(correlationId)
+            ?: throw PendingRegisterCheckNotFoundException(correlationId)
+                .also { logger.warn { it.message } }
+
     private fun validateGssCodeMatch(certificateSerial: String, requestGssCode: String) {
         if (requestGssCode !in retrieveGssCodeService.getGssCodeFromCertificateSerial(certificateSerial))
             throw GssCodeMismatchException(certificateSerial, requestGssCode)
                 .also { logger.warn { it.message } }
     }
-
-    private fun getPendingRegisterCheck(correlationId: UUID): RegisterCheck =
-        registerCheckRepository.findByCorrelationId(correlationId)
-            ?: throw PendingRegisterCheckNotFoundException(correlationId)
-                .also { logger.warn { it.message } }
 }

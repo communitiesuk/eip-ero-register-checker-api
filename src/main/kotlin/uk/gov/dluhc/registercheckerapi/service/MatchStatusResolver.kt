@@ -55,6 +55,10 @@ class MatchStatusResolver {
     private fun isPartialMatch(personalDetailDto: PersonalDetailDto, personalDetailEntity: PersonalDetail): Boolean =
         !equalsIgnoreCase(personalDetailDto.firstName.trim(), personalDetailEntity.firstName.trim()) ||
             !equalsIgnoreCase(personalDetailDto.surname.trim(), personalDetailEntity.surname.trim()) ||
-            !equalsIgnoreCase(personalDetailDto.address.postcode.trim(), personalDetailEntity.address.postcode.trim()) ||
+            sanitizePostcode(personalDetailDto.address.postcode) != sanitizePostcode(personalDetailEntity.address.postcode) ||
             personalDetailDto.dateOfBirth != personalDetailEntity.dateOfBirth
+
+    private fun sanitizePostcode(postcode: String): String {
+        return postcode.trim().uppercase().replace(Regex("[ ]+"), "")
+    }
 }

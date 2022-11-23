@@ -2,7 +2,6 @@ title: Age Ranges
 type: string
 description: Age Ranges
 enum:
-  - under-18
-  - between-18-and-75
-  - over-75
-  - unknown
+  - under-16
+  - between-16-and-17
+  - 18-and-over

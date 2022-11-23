@@ -1,0 +1,7 @@
+title: Alternative format
+type: string
+description: Alternative information formats for users with accessibility needs
+enum:
+  - braille
+  - large-print
+  - easy-read

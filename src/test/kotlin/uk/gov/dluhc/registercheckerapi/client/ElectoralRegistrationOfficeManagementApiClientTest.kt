@@ -18,8 +18,8 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import uk.gov.dluhc.eromanagementapi.models.ElectoralRegistrationOfficeResponse
-import uk.gov.dluhc.eromanagementapi.models.LocalAuthorityResponse
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomEroId
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildElectoralRegistrationOfficeResponse
 
 internal class ElectoralRegistrationOfficeManagementApiClientTest {
 
@@ -46,20 +46,7 @@ internal class ElectoralRegistrationOfficeManagementApiClientTest {
         // Given
         val eroId = getRandomEroId()
 
-        val expectedEro = ElectoralRegistrationOfficeResponse(
-            eroId,
-            "Test ERO",
-            listOf(
-                LocalAuthorityResponse(
-                    gssCode = "E123456789",
-                    name = "Local Authority 1"
-                ),
-                LocalAuthorityResponse(
-                    gssCode = "E987654321",
-                    name = "Local Authority 2"
-                ),
-            )
-        )
+        val expectedEro = buildElectoralRegistrationOfficeResponse(eroId = eroId)
         given(clientResponse.bodyToMono(ElectoralRegistrationOfficeResponse::class.java)).willReturn(
             Mono.just(expectedEro)
         )

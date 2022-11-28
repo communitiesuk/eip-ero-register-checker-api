@@ -1,5 +1,6 @@
 package uk.gov.dluhc.registercheckerapi.testsupport
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder.responseDefinition
 import com.github.tomakehurst.wiremock.client.WireMock.get
@@ -9,14 +10,20 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
 import com.github.tomakehurst.wiremock.matching.StringValuePattern
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildElectoralRegistrationOfficeResponse
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildLocalAuthorityResponse
 
 private const val IER_ERO_GET_URL = "/ier-ero/.*"
 private const val ERO_MANAGEMENT_ERO_GET_URL = "/ero-management-api/eros/.*"
 
 @Service
 class WiremockService(private val wireMockServer: WireMockServer) {
+
+    @Autowired
+    private lateinit var objectMapper: ObjectMapper
 
     fun resetAllStubsAndMappings() {
         wireMockServer.resetAll()
@@ -73,24 +80,20 @@ class WiremockService(private val wireMockServer: WireMockServer) {
         stubIerApiGetEroIdentifierThrowsException(certificateSerial, 404)
 
     fun stubEroManagementGetEro(eroId: String = "1234", gssCode1: String = "E12345678", gssCode2: String = "E98765432") {
+        val eroResponse = buildElectoralRegistrationOfficeResponse(
+            eroId = eroId,
+            localAuthorities = mutableListOf(
+                buildLocalAuthorityResponse(gssCode = gssCode1),
+                buildLocalAuthorityResponse(gssCode = gssCode2)
+            )
+        )
         wireMockServer.stubFor(
             get(urlPathEqualTo("/ero-management-api/eros/$eroId"))
                 .willReturn(
                     responseDefinition()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody(
-                            """
-                                {
-                                    "id": "$eroId",
-                                    "name": "Test ERO",
-                                    "localAuthorities": [
-                                        { "gssCode": "$gssCode1", "name": "Local Authority 1" },                        
-                                        { "gssCode": "$gssCode2", "name": "Local Authority 2" }                        
-                                    ]
-                                }
-                            """.trimIndent()
-                        )
+                        .withBody(objectMapper.writeValueAsString(eroResponse))
                 )
         )
     }

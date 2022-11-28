@@ -3,7 +3,7 @@ security:
   - bearerAuth: []
 info:
   title: EROManagementAPIs
-  version: '1.1.0'
+  version: '1.2.0'
   description: API for viewing and managing ERO Users and ERO Details.
   contact:
     name: Krister Bone
@@ -745,29 +745,148 @@ components:
       type: object
       description: Response for a single Local Authority
       example:
-        gssCode: E06000001
-        name: Hartlepool
+        gssCode: 'W06000001'
+        name: 'Isle of Anglesey County Council'
+        contactDetailsEnglish:
+          {
+            phoneNumber: "01248 752548",
+            website: "http://www.anglesey.gov.uk/council-and-democracy/councillors-democracy-and-elections/electoral-register-elections-and-voting-/",
+            email: "shxcs@ynysmon.gov.uk",
+            address: {
+              street: "Isle of Anglesey County Council",
+              property: "Council offices",
+              town: "Llangefni",
+              area: "Anglesey",
+              postcode: "LL77 7TW",
+            }
+          }
+        contactDetailsWelsh:
+          {
+            phoneNumber: "(01248) 750057",
+            website: "https://www.ynysmon.llyw.cymru/cy/Cyngor/Pleidleisio-ac-etholiadau/Cofrestru-etholiadol/Cofrestru-i-bleidleisio.aspx",
+            email: "shxcs@ynysmon.gov.uk",
+            address: {
+              street: "Cyngor Sir Ynys Môn",
+              property: "Swyddfa’r Cyndor",
+              town: "Llangefni",
+              area: "Ynys Môn",
+              postcode: "LL77 7TW",
+            }
+          }
       properties:
         gssCode:
           type: string
         name:
           type: string
+        contactDetailsEnglish:
+          $ref: '#/components/schemas/ContactDetails'
+        contactDetailsWelsh:
+          $ref: '#/components/schemas/ContactDetails'
+      required:
+        - gssCode
+        - name
+        - contactDetailsEnglish
+    ContactDetails:
+      title: ContactDetails
+      type: object
+      description: Contact details for an ERO
+      properties:
+        website:
+          type: string
+          example: "https://ero-address.com"
+        phone:
+          type: string
+          example: 01234 567890
+        email:
+          type: string
+          example: fred.blogs@some-domain.co.uk
+        address:
+          $ref: '#/components/schemas/Address'
+      required:
+        - website
+        - phone
+        - email
+        - address
+    Address:
+      title: Address
+      description: Address format used throughout gov.uk voter services.
+      type: object
+      x-examples:
+        Minimum data:
+          street: Street 1
+          postcode: PC1 2FB
+        Normal Address:
+          street: East Lodge
+          property: Balruddery
+          locality: Invergowrie
+          town: Dundee
+          area: Angus
+          postcode: DD25LF
+          uprn: '117095813'
+      properties:
+        street:
+          type: string
+          maxLength: 255
+        property:
+          type: string
+          maxLength: 255
+        locality:
+          type: string
+          maxLength: 255
+        town:
+          type: string
+          maxLength: 255
+        area:
+          type: string
+          maxLength: 255
+        postcode:
+          type: string
+          maxLength: 10
+        uprn:
+          type: string
+          description: Unique Property Reference Number consisting of up to 12 digits in length
+          pattern: '^\d{1,12}$'
+      required:
+        - street
+        - postcode
     ElectoralRegistrationOfficeResponse:
       title: ElectoralRegistrationOfficeResponse
       type: object
       description: Response for a single Electoral Registration Office
       example:
-        id: 'south-oxfordshire-district-council-vale-of-white-horse-district-council'
-        name: 'South Oxfordshire District Council'
+        id: 'isle-of-anglesey-council'
+        name: 'Isle of Anglesey Council'
         localAuthorities: [
           {
-            gssCode: 'E07000180',
-            name: 'Vale of White Horse District Council'
-          },
-          {
-            gssCode: 'E07000179',
-            name: 'South Oxfordshire District Council'
-          },
+            gssCode: 'W06000001',
+            name: 'Isle of Anglesey County Council',
+            contactDetailsEnglish:
+              {
+                phoneNumber: "01248 752548",
+                website: "http://www.anglesey.gov.uk/council-and-democracy/councillors-democracy-and-elections/electoral-register-elections-and-voting-/",
+                email: "shxcs@ynysmon.gov.uk",
+                address: {
+                  street: "Isle of Anglesey County Council",
+                  property: "Council offices",
+                  town: "Llangefni",
+                  area: "Anglesey",
+                  postcode: "LL77 7TW",
+                }
+              },
+            contactDetailsWelsh:
+              {
+                phoneNumber: "(01248) 750057",
+                website: "https://www.ynysmon.llyw.cymru/cy/Cyngor/Pleidleisio-ac-etholiadau/Cofrestru-etholiadol/Cofrestru-i-bleidleisio.aspx",
+                email: "shxcs@ynysmon.gov.uk",
+                address: {
+                  street: "Cyngor Sir Ynys Môn",
+                  property: "Swyddfa’r Cyndor",
+                  town: "Llangefni",
+                  area: "Ynys Môn",
+                  postcode: "LL77 7TW",
+                }
+              }
+          }
         ]
         roles: [
           "vc-admin",
@@ -791,6 +910,7 @@ components:
         - id
         - name
         - localAuthorities
+        - contactDetailsEnglish
     ElectoralRegistrationOfficesResponse:
       title: ElectoralRegistrationOfficesResponse
       type: object

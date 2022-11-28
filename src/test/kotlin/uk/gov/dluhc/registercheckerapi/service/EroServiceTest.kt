@@ -10,12 +10,12 @@ import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.mockito.kotlin.verify
-import uk.gov.dluhc.eromanagementapi.models.ElectoralRegistrationOfficeResponse
-import uk.gov.dluhc.eromanagementapi.models.LocalAuthorityResponse
 import uk.gov.dluhc.registercheckerapi.client.ElectoralRegistrationOfficeGeneralException
 import uk.gov.dluhc.registercheckerapi.client.ElectoralRegistrationOfficeManagementApiClient
 import uk.gov.dluhc.registercheckerapi.client.ElectoralRegistrationOfficeNotFoundException
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomEroId
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildElectoralRegistrationOfficeResponse
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildLocalAuthorityResponse
 
 @ExtendWith(MockitoExtension::class)
 internal class EroServiceTest {
@@ -30,23 +30,15 @@ internal class EroServiceTest {
     fun `should lookup and return gssCodes`() {
         // Given
         val eroId = getRandomEroId()
-
-        given(electoralRegistrationOfficeManagementApiClient.getElectoralRegistrationOffice(any())).willReturn(
-            ElectoralRegistrationOfficeResponse(
-                eroId,
-                "Test ERO",
-                listOf(
-                    LocalAuthorityResponse(
-                        gssCode = "E12345678",
-                        name = "Local Authority 1"
-                    ),
-                    LocalAuthorityResponse(
-                        gssCode = "E98765432",
-                        name = "Local Authority 2"
-                    ),
-                )
+        val expectedEro = buildElectoralRegistrationOfficeResponse(
+            eroId = eroId,
+            localAuthorities = mutableListOf(
+                buildLocalAuthorityResponse(gssCode = "E12345678"),
+                buildLocalAuthorityResponse(gssCode = "E98765432"),
             )
         )
+        given(electoralRegistrationOfficeManagementApiClient.getElectoralRegistrationOffice(any()))
+            .willReturn(expectedEro)
 
         val expectedGssCodes = listOf("E12345678", "E98765432")
 

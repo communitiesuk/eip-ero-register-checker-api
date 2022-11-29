@@ -1,0 +1,17 @@
+title: CardIssuingPreferences
+type: object
+properties:
+  cannotPostToAddress:
+    type: boolean
+    default: false
+  problemReason:
+    type: string
+    maxLength: 500
+  addressType:
+    type: string
+    enum:
+      - registered
+      - overseas
+required:
+  - cannotPostToAddress
+  - addressType

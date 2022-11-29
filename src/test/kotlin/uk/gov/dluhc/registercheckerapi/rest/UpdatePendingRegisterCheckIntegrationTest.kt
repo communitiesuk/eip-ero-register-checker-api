@@ -604,6 +604,8 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
                 fn = savedPendingRegisterCheckEntity.personalDetail.firstName,
                 ln = savedPendingRegisterCheckEntity.personalDetail.surname,
                 dob = savedPendingRegisterCheckEntity.personalDetail.dateOfBirth,
+                regproperty = savedPendingRegisterCheckEntity.personalDetail.address.property,
+                regstreet = savedPendingRegisterCheckEntity.personalDetail.address.street,
                 regpostcode = postcodeFromRequest
             )
         )

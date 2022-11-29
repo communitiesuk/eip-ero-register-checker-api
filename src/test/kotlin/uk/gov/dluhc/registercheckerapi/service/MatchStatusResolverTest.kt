@@ -42,10 +42,10 @@ internal class MatchStatusResolverTest {
     fun `should resolve status given match count not 1`(matchCount: Int, expectedStatus: RegisterCheckStatus) {
         // Given
         val registerCheckResultDto = buildRegisterCheckResultDto(matchCount = matchCount)
-        val registerCheck = buildRegisterCheck()
+        val registerCheckEntity = buildRegisterCheck()
 
         // When
-        val status = matchStatusResolver.resolveStatus(registerCheckResultDto, registerCheck)
+        val status = matchStatusResolver.resolveStatus(registerCheckResultDto, registerCheckEntity)
 
         // Then
         assertThat(status).isEqualTo(expectedStatus)
@@ -86,12 +86,14 @@ internal class MatchStatusResolverTest {
             )
         )
         val personalDetailDto = registerCheckResultDto.registerCheckMatches!!.first().personalDetail
-        val registerCheck = buildRegisterCheck(
+        val registerCheckEntity = buildRegisterCheck(
             personalDetail = buildPersonalDetail(
                 firstName = personalDetailDto.firstName,
                 surname = personalDetailDto.surname,
                 dateOfBirth = personalDetailDto.dateOfBirth,
                 address = buildAddress(
+                    uprn = personalDetailDto.address.uprn,
+                    property = personalDetailDto.address.property,
                     street = personalDetailDto.address.street,
                     postcode = personalDetailDto.address.postcode,
                 )
@@ -99,7 +101,7 @@ internal class MatchStatusResolverTest {
         )
 
         // When
-        val status = matchStatusResolver.resolveStatus(registerCheckResultDto, registerCheck)
+        val status = matchStatusResolver.resolveStatus(registerCheckResultDto, registerCheckEntity)
 
         // Then
         assertThat(status).isEqualTo(expectedStatus)
@@ -107,18 +109,17 @@ internal class MatchStatusResolverTest {
 
     @ParameterizedTest
     @MethodSource("personalDetails")
-    fun `should map api to dto given 1 match and partially matching details`(
+    fun `should map api to dto given 1 match and partially matching personal details`(
         matchFirstName: String,
         applicationFirstName: String,
         matchSurname: String,
         applicationSurname: String,
         matchDateOfBirth: LocalDate?,
         applicationDateOfBirth: LocalDate?,
-        matchPostcode: String,
-        applicationPostcode: String,
         expectedStatus: RegisterCheckStatus
     ) {
         // Given
+        val addressDto = buildAddressDto()
         val registerCheckResultDto = buildRegisterCheckResultDto(
             matchCount = 1,
             registerCheckMatches = listOf(
@@ -127,26 +128,123 @@ internal class MatchStatusResolverTest {
                         firstName = matchFirstName,
                         surname = matchSurname,
                         dateOfBirth = matchDateOfBirth,
-                        address = buildAddressDto(
-                            postcode = matchPostcode
-                        )
+                        address = addressDto
                     )
                 )
             )
         )
-        val registerCheck = buildRegisterCheck(
+        val registerCheckEntity = buildRegisterCheck(
             personalDetail = buildPersonalDetail(
                 firstName = applicationFirstName,
                 surname = applicationSurname,
                 dateOfBirth = applicationDateOfBirth,
+                // use matching address details (not the focus of this method)
                 address = buildAddress(
+                    uprn = addressDto.uprn,
+                    property = addressDto.property,
+                    street = addressDto.street,
+                    postcode = addressDto.postcode
+                )
+            )
+        )
+
+        // When
+        val status = matchStatusResolver.resolveStatus(registerCheckResultDto, registerCheckEntity)
+
+        // Then
+        assertThat(status).isEqualTo(expectedStatus)
+    }
+
+    @ParameterizedTest
+    @MethodSource("addressDetails")
+    fun `should map api to dto given 1 match and partially matching address details`(
+        matchUprn: String?,
+        applicationUprn: String?,
+        matchProperty: String?,
+        applicationProperty: String?,
+        matchStreet: String,
+        applicationStreet: String,
+        matchPostcode: String,
+        applicationPostcode: String,
+        expectedStatus: RegisterCheckStatus
+    ) {
+        // Given
+        val personalDetailDto = buildPersonalDetailDto(
+            address = buildAddressDto(
+                uprn = matchUprn,
+                property = matchProperty,
+                street = matchStreet,
+                postcode = matchPostcode
+            )
+        )
+        val registerCheckResultDto = buildRegisterCheckResultDto(
+            matchCount = 1,
+            registerCheckMatches = listOf(
+                buildRegisterCheckMatchDto(personalDetail = personalDetailDto)
+            )
+        )
+        val registerCheckEntity = buildRegisterCheck(
+            // use matching personal details (focussing on address in this test)
+            personalDetail = buildPersonalDetail(
+                firstName = personalDetailDto.firstName,
+                surname = personalDetailDto.surname,
+                dateOfBirth = personalDetailDto.dateOfBirth,
+                address = buildAddress(
+                    uprn = applicationUprn,
+                    property = applicationProperty,
+                    street = applicationStreet,
                     postcode = applicationPostcode
                 )
             )
         )
 
         // When
-        val status = matchStatusResolver.resolveStatus(registerCheckResultDto, registerCheck)
+        val status = matchStatusResolver.resolveStatus(registerCheckResultDto, registerCheckEntity)
+
+        // Then
+        assertThat(status).isEqualTo(expectedStatus)
+    }
+
+    @ParameterizedTest
+    @MethodSource("sanitizedFields")
+    fun `should map api to dto given 1 match and partially matching sanitized fields`(
+        matchSurname: String,
+        applicationSurname: String,
+        matchPostcode: String,
+        applicationPostcode: String,
+        expectedStatus: RegisterCheckStatus
+    ) {
+        // Given
+        val addressDto = buildAddressDto(
+            postcode = matchPostcode
+        )
+        val personalDetailDto = buildPersonalDetailDto(
+            surname = matchSurname,
+            address = addressDto
+        )
+        val registerCheckResultDto = buildRegisterCheckResultDto(
+            matchCount = 1,
+            registerCheckMatches = listOf(
+                buildRegisterCheckMatchDto(personalDetail = personalDetailDto)
+            )
+        )
+        val registerCheckEntity = buildRegisterCheck(
+            // use matching personal details (focussing on address in this test)
+            personalDetail = buildPersonalDetail(
+                firstName = personalDetailDto.firstName,
+                surname = applicationSurname,
+                dateOfBirth = personalDetailDto.dateOfBirth,
+                address = buildAddress(
+                    uprn = addressDto.uprn,
+                    property = addressDto.property,
+                    street = addressDto.street,
+                    postcode = applicationPostcode
+                )
+            )
+        )
+
+        // When
+        val status = matchStatusResolver.resolveStatus(registerCheckResultDto, registerCheckEntity)
 
         // Then
         assertThat(status).isEqualTo(expectedStatus)
@@ -155,17 +253,48 @@ internal class MatchStatusResolverTest {
     companion object {
         @JvmStatic
         private fun personalDetails(): Stream<Arguments> {
+            val firstName = "David"
+            val surname = "Jones"
             val dateOfBirth = LocalDate.of(1999, 11, 12)
             val anotherDateOfBirth = LocalDate.of(1970, 3, 1)
             return Stream.of(
-                Arguments.of("Mike", "Mike", "Jones", "Jones", dateOfBirth, dateOfBirth, "L1 1AB", "L1 1AB", EXACT_MATCH),
-                Arguments.of("Mike", "Mike", "Jones", "Jones", null, null, "L1 1AB", "L1 1AB", EXACT_MATCH),
-                Arguments.of("Mike", "Matt", "Jones", "Jones", dateOfBirth, dateOfBirth, "L1 1AB", "L1 1AB", PARTIAL_MATCH),
-                Arguments.of("Mike", "Mike", "Jones", "Smith", dateOfBirth, dateOfBirth, "L1 1AB", "L1 1AB", PARTIAL_MATCH),
-                Arguments.of("Mike", "Mike", "Jones", "Jones", dateOfBirth, anotherDateOfBirth, "L1 1AB", "L1 1AB", PARTIAL_MATCH),
-                Arguments.of("Mike", "Mike", "Jones", "Jones", null, dateOfBirth, "L1 1AB", "L1 1AB", PARTIAL_MATCH),
-                Arguments.of("Mike", "Mike", "Jones", "Jones", dateOfBirth, null, "L1 1AB", "L1 1AB", PARTIAL_MATCH),
-                Arguments.of("Mike", "Mike", "Jones", "Jones", dateOfBirth, dateOfBirth, "L1 1AB", "L2 2AB", PARTIAL_MATCH)
+                Arguments.of(firstName, firstName.uppercase(), surname, surname, dateOfBirth, dateOfBirth, EXACT_MATCH),
+                Arguments.of(firstName, firstName, surname, surname.uppercase(), null, null, EXACT_MATCH),
+                Arguments.of(firstName, "Fred", surname, surname, dateOfBirth, dateOfBirth, PARTIAL_MATCH),
+                Arguments.of(firstName, firstName, surname, "Smith", dateOfBirth, dateOfBirth, PARTIAL_MATCH),
+                Arguments.of(firstName, firstName, surname, surname, dateOfBirth, anotherDateOfBirth, PARTIAL_MATCH),
+                Arguments.of(firstName, firstName, surname, surname, null, dateOfBirth, PARTIAL_MATCH)
+            )
+        }
+
+        @JvmStatic
+        private fun addressDetails(): Stream<Arguments> {
+            val uprn = "200003393492"
+            val property = "The House"
+            val street = "1 The Street"
+            val postcode = "L1 1AB"
+            return Stream.of(
+                Arguments.of(uprn, uprn, property, property, street, street, postcode, postcode, EXACT_MATCH),
+                Arguments.of(null, null, property, property.uppercase(), street, street, postcode, postcode, EXACT_MATCH),
+                Arguments.of(null, null, property, property, street, street.uppercase(), postcode, postcode, EXACT_MATCH),
+                Arguments.of(uprn, null, null, null, street, street, postcode, postcode.lowercase(), EXACT_MATCH),
+                Arguments.of(null, null, property, "The Flat", street, street, postcode, postcode, PARTIAL_MATCH),
+                Arguments.of(null, null, property, null, street, street, postcode, postcode, PARTIAL_MATCH),
+                Arguments.of(null, null, property, property, street, "2 The Lane", postcode, postcode, PARTIAL_MATCH),
+                Arguments.of(null, null, property, property, street, street, postcode, "L2 2AB", PARTIAL_MATCH)
+            )
+        }
+
+        @JvmStatic
+        private fun sanitizedFields(): Stream<Arguments> {
+            val surname = "O'Brien"
+            val postcode = "L1 1AB"
+            return Stream.of(
+                Arguments.of(surname, surname.uppercase(), postcode, postcode, EXACT_MATCH),
+                Arguments.of(surname, "OBRIEN", postcode, postcode, EXACT_MATCH),
+                Arguments.of("Jones-Smith", "JONES SMITH", postcode, postcode, EXACT_MATCH),
+                Arguments.of(surname, surname, postcode, postcode.lowercase(), EXACT_MATCH),
+                Arguments.of(surname, surname, postcode, "l11ab", EXACT_MATCH)
             )
         }
     }

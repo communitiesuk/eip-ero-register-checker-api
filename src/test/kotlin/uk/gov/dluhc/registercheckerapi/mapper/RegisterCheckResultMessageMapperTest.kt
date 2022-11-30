@@ -38,7 +38,7 @@ internal class RegisterCheckResultMessageMapperTest {
         @CsvSource(
             value = [
                 "EXACT_MATCH, EXACT_MATCH",
-                "EXACT_MATCH, EXACT_MATCH",
+                "NO_MATCH, NO_MATCH",
                 "PARTIAL_MATCH, PARTIAL_MATCH",
                 "PENDING_DETERMINATION, PENDING_DETERMINATION",
                 "EXPIRED, EXPIRED",

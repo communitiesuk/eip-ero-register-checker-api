@@ -76,6 +76,9 @@ internal class RegisterCheckServiceTest {
     @Mock
     private lateinit var confirmRegisterCheckResultMessageQueue: MessageQueue<RegisterCheckResultMessage>
 
+    @Mock
+    private lateinit var matchStatusResolver: MatchStatusResolver
+
     @InjectMocks
     private lateinit var registerCheckService: RegisterCheckService
 
@@ -397,6 +400,7 @@ internal class RegisterCheckServiceTest {
                 given(registerCheckResultMapper.fromDtoToRegisterCheckMatchEntity(it)).willReturn(buildRegisterCheckMatch())
             }
             given(registerCheckResultMessageMapper.fromRegisterCheckEntityToRegisterCheckResultMessage(any())).willReturn(expectedMessage)
+            given(matchStatusResolver.resolveStatus(any(), any())).willReturn(registerCheckStatus)
 
             // When
             registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto)
@@ -405,6 +409,7 @@ internal class RegisterCheckServiceTest {
             verify(registerCheckRepository).findByCorrelationId(requestId)
             verify(registerCheckResultMessageMapper).fromRegisterCheckEntityToRegisterCheckResultMessage(savedPendingRegisterCheckEntity)
             verify(confirmRegisterCheckResultMessageQueue).submit(expectedMessage)
+            verify(matchStatusResolver).resolveStatus(registerCheckResultDto, savedPendingRegisterCheckEntity)
             registerCheckMatchDtoList.forEach { verify(registerCheckResultMapper).fromDtoToRegisterCheckMatchEntity(it) }
             verify(retrieveGssCodeService).getGssCodeFromCertificateSerial(certificateSerial)
         }

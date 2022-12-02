@@ -1,17 +1,13 @@
 package uk.gov.dluhc.registercheckerapi.mapper
 
-import org.apache.commons.lang3.StringUtils.equalsIgnoreCase
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.given
 import org.mockito.kotlin.verify
@@ -19,7 +15,6 @@ import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.verifyNoMoreInteractions
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckMatchDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
-import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildAddressDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPersonalDetailDto
@@ -29,7 +24,6 @@ import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegister
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchRequest
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckResultRequest
 import java.time.Instant
-import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -55,27 +49,8 @@ internal class RegisterCheckResultMapperTest {
     @Nested
     inner class FromRegisterCheckResultRequestApiToDto {
 
-        @ParameterizedTest
-        @CsvSource(
-            value = [
-                "0,   NO_MATCH",
-                "2,   MULTIPLE_MATCH",
-                "3,   MULTIPLE_MATCH",
-                "4,   MULTIPLE_MATCH",
-                "5,   MULTIPLE_MATCH",
-                "6,   MULTIPLE_MATCH",
-                "7,   MULTIPLE_MATCH",
-                "8,   MULTIPLE_MATCH",
-                "9,   MULTIPLE_MATCH",
-                "10,  MULTIPLE_MATCH",
-                "11,  TOO_MANY_MATCHES",
-                "100, TOO_MANY_MATCHES",
-            ]
-        )
-        fun `should map api to dto for a given registerCheckMatchCount when it is not 1`(
-            givenRegisterCheckMatchCount: Int,
-            expectedRegisterCheckStatus: RegisterCheckStatus
-        ) {
+        @Test
+        fun `should map api to dto`() {
             // Given
             val queryParamRequestId = UUID.randomUUID()
             val createdAt = OffsetDateTime.now()
@@ -83,7 +58,7 @@ internal class RegisterCheckResultMapperTest {
             val apiRequest = buildRegisterCheckResultRequest(
                 createdAt = createdAt,
                 applicationCreatedAt = applicationCreatedAt,
-                registerCheckMatchCount = givenRegisterCheckMatchCount
+                registerCheckMatchCount = 1
             )
             val expectedMatchSentAt = createdAt.toInstant()
             val expectedApplicationCreatedAt = applicationCreatedAt.toInstant()
@@ -97,7 +72,6 @@ internal class RegisterCheckResultMapperTest {
                 gssCode = apiRequest.gssCode,
                 matchResultSentAt = expectedMatchSentAt,
                 matchCount = apiRequest.registerCheckMatchCount,
-                registerCheckStatus = expectedRegisterCheckStatus,
                 registerCheckMatches = apiRequest.registerCheckMatches?.map {
                     toRegisterCheckMapDtoFromApi(it, expectedApplicationCreatedAt)
                 }
@@ -108,56 +82,8 @@ internal class RegisterCheckResultMapperTest {
 
             // Then
             assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
-            assertThat(actual.registerCheckStatus).isEqualTo(expectedRegisterCheckStatus)
             verify(instantMapper).toInstant(createdAt)
             verify(instantMapper).toInstant(applicationCreatedAt)
-        }
-
-        @ParameterizedTest
-        @CsvSource(
-            value = [
-                "'',          ,  , EXACT_MATCH", // no franchise code nor start nor end date
-                "' ',         , 2, EXACT_MATCH", // end date is in the future
-                "' ',       -2,  , EXACT_MATCH", // start date is in the past
-                "'   ',     -2, 2, EXACT_MATCH", // start/end dates in past/future means status is EXACT_MATCH
-                "G,         -2, 2, EXACT_MATCH", // franchise code is still not blank nor "PENDING"
-                "PENDING,   -2, 2, PENDING_DETERMINATION", // a franchise code of pending with valid dates means status is PENDING_DETERMINATION
-                "PENDING,     ,  , PENDING_DETERMINATION", // a franchise code of pending with null dates means status is PENDING_DETERMINATION
-                "'',         2, 2, NOT_STARTED", // start date in the future means status is NOT_STARTED
-                "' ',       -2,-2, EXPIRED", // end date in the past means status is EXPIRED
-                "'',         2,-2, NOT_STARTED", // start/end dates in future/past means status is NOT_STARTED
-            ]
-        )
-        fun `should map api to dto for a given registerCheckMatchCount when it is 1`(
-            franchiseCode: String,
-            relativeRegisteredStartDate: Long?,
-            relativeRegisteredEndDate: Long?,
-            expectedStatus: RegisterCheckStatus
-        ) {
-            // Given
-            val registeredStartDate = relativeRegisteredStartDate?.let { LocalDate.now().plusDays(it) }
-            val registeredEndDate = relativeRegisteredEndDate?.let { LocalDate.now().plusDays(it) }
-            val apiRequest = buildRegisterCheckResultRequest(
-                registerCheckMatches = listOf(
-                    buildRegisterCheckMatchRequest(
-                        franchiseCode = franchiseCode,
-                        registeredStartDate = registeredStartDate,
-                        registeredEndDate = registeredEndDate,
-                    )
-                )
-            )
-            val queryParamRequestId = UUID.randomUUID()
-
-            given(instantMapper.toInstant(eq(apiRequest.createdAt))).willReturn(apiRequest.createdAt.toInstant())
-            if (! equalsIgnoreCase("PENDING", franchiseCode)) {
-                given(instantMapper.fromLocalDateToInstant(anyOrNull())).willCallRealMethod()
-            }
-
-            // When
-            val actual = mapper.fromRegisterCheckResultRequestApiToDto(queryParamRequestId, apiRequest)
-
-            // Then
-            assertThat(actual.registerCheckStatus).isEqualTo(expectedStatus)
         }
 
         @Test
@@ -181,7 +107,7 @@ internal class RegisterCheckResultMapperTest {
                 gssCode = apiRequest.gssCode,
                 matchResultSentAt = expectedMatchSentAt,
                 matchCount = apiRequest.registerCheckMatchCount,
-                registerCheckStatus = RegisterCheckStatus.NO_MATCH,
+                registerCheckStatus = null,
                 registerCheckMatches = null
             )
 
@@ -190,7 +116,6 @@ internal class RegisterCheckResultMapperTest {
 
             // Then
             assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
-            assertThat(actual.registerCheckStatus).isEqualTo(RegisterCheckStatus.NO_MATCH)
             verify(instantMapper).toInstant(createdAt)
         }
     }

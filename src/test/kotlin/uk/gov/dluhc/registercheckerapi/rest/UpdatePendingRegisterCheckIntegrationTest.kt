@@ -23,6 +23,8 @@ import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.entity.RegisterCheckAssert
 import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.models.ErrorResponseAssert.Companion.assertThat
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomGssCode
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildAddress
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildPersonalDetail
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatchEntityFromRegisterCheckMatchApi
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchFromMatchApiModel
@@ -559,14 +561,18 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     @CsvSource(
         value = [
             // handle date format with timezone offset and empty franchise code
-            "2022-09-13T21:03:03.7788394+05:30, '', EXACT_MATCH, EXACT_MATCH",
+            "2022-09-13T21:03:03.7788394+05:30, '', BS1 1AB, BS1 1AB, EXACT_MATCH, EXACT_MATCH",
             // handle UTC date format and Pending franchise code
-            "1986-05-01T02:42:44.348Z, Pending, PENDING_DETERMINATION, PENDING_DETERMINATION"
+            "1986-05-01T02:42:44.348Z, Pending,  BS1 1AB, BS1 1AB, PENDING_DETERMINATION, PENDING_DETERMINATION",
+            // handle partial match
+            "2022-11-17T21:33:03.7788394+00:00, '', BS1 1AB, BS2 2CD, PARTIAL_MATCH, PARTIAL_MATCH"
         ]
     )
     fun `should return created given a post request with one match found`(
         createdAtFromRequest: String,
         franchiseCodeFromRequest: String,
+        postcodeFromRequest: String,
+        applicationPostcode: String,
         expectedRegisterCheckResult: RegisterCheckResult,
         expectedCheckStatus: CheckStatus,
     ) {
@@ -582,7 +588,10 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             buildRegisterCheck(
                 correlationId = requestId,
                 gssCode = gssCodeFromEroApi,
-                status = CheckStatus.PENDING
+                status = CheckStatus.PENDING,
+                personalDetail = buildPersonalDetail(
+                    address = buildAddress(postcode = applicationPostcode)
+                )
             )
         )
         registerCheckRepository.save(buildRegisterCheck(correlationId = UUID.randomUUID()))
@@ -591,7 +600,13 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         val matchCount = 1
         val matches = listOf(
             buildRegisterCheckMatchRequest(
-                franchiseCode = toRootUpperCase(trim(franchiseCodeFromRequest))
+                franchiseCode = toRootUpperCase(trim(franchiseCodeFromRequest)),
+                fn = savedPendingRegisterCheckEntity.personalDetail.firstName,
+                ln = savedPendingRegisterCheckEntity.personalDetail.surname,
+                dob = savedPendingRegisterCheckEntity.personalDetail.dateOfBirth,
+                regproperty = savedPendingRegisterCheckEntity.personalDetail.address.property,
+                regstreet = savedPendingRegisterCheckEntity.personalDetail.address.street,
+                regpostcode = postcodeFromRequest
             )
         )
         val expectedRegisterCheckMatchEntityList = listOf(

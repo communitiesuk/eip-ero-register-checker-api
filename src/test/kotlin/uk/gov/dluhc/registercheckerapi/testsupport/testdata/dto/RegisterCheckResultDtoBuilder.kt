@@ -30,8 +30,8 @@ fun buildRegisterCheckMatchDto(
     emsElectorId: String = "EMS123456789",
     attestationCount: Int = 0,
     personalDetail: PersonalDetailDto = buildPersonalDetailDto(),
-    registeredStartDate: LocalDate? = LocalDate.now(),
-    registeredEndDate: LocalDate? = LocalDate.now(),
+    registeredStartDate: LocalDate? = LocalDate.now().minusDays(1),
+    registeredEndDate: LocalDate? = LocalDate.now().plusDays(1),
     applicationCreatedAt: Instant? = Instant.now(),
     franchiseCode: String = "Franchise123"
 ) = RegisterCheckMatchDto(

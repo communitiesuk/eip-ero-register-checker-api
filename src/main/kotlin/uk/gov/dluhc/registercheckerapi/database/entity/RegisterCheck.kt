@@ -144,6 +144,7 @@ enum class CheckStatus {
     PENDING,
     NO_MATCH,
     EXACT_MATCH,
+    PARTIAL_MATCH, // A single result from the EMS that differs slightly from our elector's details (e.g. different first name)
     MULTIPLE_MATCH,
     TOO_MANY_MATCHES,
     PENDING_DETERMINATION, // Franchise codes indicate the electors voting eligibility is still pending a decision

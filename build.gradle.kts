@@ -7,14 +7,14 @@ import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 plugins {
     id("org.springframework.boot") version "2.7.7"
     id("io.spring.dependency-management") version "1.1.0"
-    kotlin("jvm") version "1.7.20"
-    kotlin("kapt") version "1.7.20"
-    kotlin("plugin.spring") version "1.7.0"
-    kotlin("plugin.jpa") version "1.7.20"
-    kotlin("plugin.allopen") version "1.7.20"
-    id("org.jlleitschuh.gradle.ktlint") version "10.3.0"
-    id("org.jlleitschuh.gradle.ktlint-idea") version "10.3.0"
-    id("org.openapi.generator") version "6.2.0"
+    kotlin("jvm") version "1.7.21"
+    kotlin("kapt") version "1.7.21"
+    kotlin("plugin.spring") version "1.7.21"
+    kotlin("plugin.jpa") version "1.7.21"
+    kotlin("plugin.allopen") version "1.7.21"
+    id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
+    id("org.jlleitschuh.gradle.ktlint-idea") version "11.0.0"
+    id("org.openapi.generator") version "6.2.1"
     id("org.owasp.dependencycheck") version "7.4.3"
 }
 
@@ -50,16 +50,16 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-    implementation("io.github.microutils:kotlin-logging-jvm:3.0.2")
+    implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
     implementation("org.apache.commons:commons-lang3:3.12.0")
-    implementation("org.apache.httpcomponents:httpclient:4.5.13")
+    implementation("org.apache.httpcomponents:httpclient:4.5.14")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     kapt("org.mapstruct:mapstruct-processor:1.5.3.Final")
 
     // api
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springdoc:springdoc-openapi-ui:1.6.12")
+    implementation("org.springdoc:springdoc-openapi-ui:1.6.14")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
     // webclient
@@ -72,7 +72,7 @@ dependencies {
     // jpa/liquibase
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.liquibase:liquibase-core")
-    implementation("com.vladmihalcea:hibernate-types-55:2.20.0")
+    implementation("com.vladmihalcea:hibernate-types-55:2.21.1")
 
     // mysql
     runtimeOnly("mysql:mysql-connector-java")
@@ -92,13 +92,13 @@ dependencies {
     // tests
     testImplementation("software.amazon.awssdk:sqs") // required to send messages to a queue, which we only need to do in test at the moment
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
-    testImplementation("com.github.tomakehurst:wiremock-jre8:2.34.0")
-    testImplementation("net.datafaker:datafaker:1.6.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
+    testImplementation("com.github.tomakehurst:wiremock-jre8:2.35.0")
+    testImplementation("net.datafaker:datafaker:1.7.0")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.17.5")
-    testImplementation("org.testcontainers:testcontainers:1.17.5")
-    testImplementation("org.testcontainers:mysql:1.17.5")
+    testImplementation("org.testcontainers:junit-jupiter:1.17.6")
+    testImplementation("org.testcontainers:testcontainers:1.17.6")
+    testImplementation("org.testcontainers:mysql:1.17.6")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 }
 
@@ -163,6 +163,12 @@ tasks.create("api-generate EROManagementApi model", GenerateTask::class) {
     enabled = true
     inputSpec.set("$projectDir/src/main/resources/openapi/external/EROManagementAPIs.yaml")
     packageName.set("uk.gov.dluhc.eromanagementapi")
+}
+
+tasks.create("api-generate rca-sqs-messaging model", GenerateTask::class) {
+    enabled = true
+    inputSpec.set("$projectDir/src/main/resources/openapi/sqs/rca-sqs-messaging.yaml")
+    packageName.set("uk.gov.dluhc.registercheckerapi.messaging")
 }
 
 // Add the generated code to the source sets

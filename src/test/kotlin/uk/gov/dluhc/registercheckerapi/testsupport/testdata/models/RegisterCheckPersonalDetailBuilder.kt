@@ -1,6 +1,5 @@
 package uk.gov.dluhc.registercheckerapi.testsupport.testdata.models
 
-import net.datafaker.Address
 import org.apache.commons.lang3.RandomStringUtils
 import uk.gov.dluhc.registercheckerapi.database.entity.PersonalDetail
 import uk.gov.dluhc.registercheckerapi.dto.AddressDto
@@ -9,6 +8,7 @@ import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckAddress
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckPersonalDetail
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.DataFaker
 import java.time.LocalDate
+import net.datafaker.providers.base.Address as AddressFaker
 import uk.gov.dluhc.registercheckerapi.database.entity.Address as Address_Entity
 
 fun buildRegisterCheckPersonalDetail(
@@ -69,7 +69,7 @@ fun buildRegisterCheckPersonalDetailFromEntity(personalDetailEntity: PersonalDet
     }
 
 private fun buildRegisterCheckAddress(
-    fakeAddress: Address = DataFaker.faker.address(),
+    fakeAddress: AddressFaker = DataFaker.faker.address(),
     property: String? = fakeAddress.buildingNumber(),
     street: String = fakeAddress.streetName(),
     locality: String? = fakeAddress.streetName(),

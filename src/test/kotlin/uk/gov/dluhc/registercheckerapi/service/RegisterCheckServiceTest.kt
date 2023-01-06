@@ -387,7 +387,7 @@ internal class RegisterCheckServiceTest {
             )
             val savedPendingRegisterCheckEntity = buildRegisterCheck(correlationId = requestId, status = PENDING)
             val expectedMessage = RegisterCheckResultMessage(
-                sourceType = RegisterCheckSourceType.VOTER_CARD,
+                sourceType = RegisterCheckSourceType.VOTER_MINUS_CARD,
                 sourceReference = savedPendingRegisterCheckEntity.sourceReference,
                 sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
                 registerCheckResult = registerCheckResult,

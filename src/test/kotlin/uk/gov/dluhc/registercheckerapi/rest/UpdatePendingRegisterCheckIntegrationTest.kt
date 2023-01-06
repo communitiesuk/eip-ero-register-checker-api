@@ -507,7 +507,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             buildRegisterCheckMatchEntityFromRegisterCheckMatchApi(matches[1])
         )
         val expectedMessageContent = RegisterCheckResultMessage(
-            sourceType = RegisterCheckSourceType.VOTER_CARD,
+            sourceType = RegisterCheckSourceType.VOTER_MINUS_CARD,
             sourceReference = savedPendingRegisterCheckEntity.sourceReference,
             sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
             registerCheckResult = RegisterCheckResult.MULTIPLE_MATCH,
@@ -613,7 +613,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             buildRegisterCheckMatchEntityFromRegisterCheckMatchApi(matches[0])
         )
         val expectedMessageContentSentToVca = RegisterCheckResultMessage(
-            sourceType = RegisterCheckSourceType.VOTER_CARD,
+            sourceType = RegisterCheckSourceType.VOTER_MINUS_CARD,
             sourceReference = savedPendingRegisterCheckEntity.sourceReference,
             sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
             registerCheckResult = expectedRegisterCheckResult,
@@ -681,7 +681,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         registerCheckRepository.save(buildRegisterCheck(correlationId = UUID.randomUUID()))
 
         val expectedMessageContentSentToVca = RegisterCheckResultMessage(
-            sourceType = RegisterCheckSourceType.VOTER_CARD,
+            sourceType = RegisterCheckSourceType.VOTER_MINUS_CARD,
             sourceReference = savedPendingRegisterCheckEntity.sourceReference,
             sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
             registerCheckResult = RegisterCheckResult.NO_MATCH,

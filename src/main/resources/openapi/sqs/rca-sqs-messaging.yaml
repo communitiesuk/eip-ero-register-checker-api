@@ -1,11 +1,11 @@
 openapi: 3.0.0
 info:
   title: Register Checker SQS Message Types
-  version: '0.0.1'
+  version: '1.0.0'
   description: |-
     Register Checker SQS Message Types
     
-    Whilst this is an openAPI spec, it does not define being used to define REST APIs, nor is it intended to.
+    This is an openAPI spec, that defines the structure of data passed over SQS messaging.
     
     The `paths` elements are being used to document (at a high level) the SQS queues and the request bodies that are expected
     to be published to them. **There is no intent to generate or implement SQS queues or listener classes from this document.**
@@ -55,7 +55,7 @@ components:
           example: c73bcdcc-2669-4bf6-81d3-e4ae73fb11fd
         requestedBy:
           type: string
-          description: Identifier of the user or system that requested the check
+          description: Identifier of the user that requested the check or `system` if the check was automatically requested.
           example: system
         gssCode:
           type: string

@@ -18,7 +18,8 @@ import uk.gov.dluhc.registercheckerapi.models.SourceSystem
 @Mapper(
     uses = [
         InstantMapper::class,
-        PersonalDetailMapper::class
+        PersonalDetailMapper::class,
+        SourceTypeMapper::class,
     ]
 )
 abstract class PendingRegisterCheckMapper {

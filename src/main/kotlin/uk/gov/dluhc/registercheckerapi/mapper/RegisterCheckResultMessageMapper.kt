@@ -14,7 +14,8 @@ import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckMatch as Re
  */
 @Mapper(
     uses = [
-        CheckStatusMapper::class
+        CheckStatusMapper::class,
+        SourceTypeMapper::class,
     ]
 )
 abstract class RegisterCheckResultMessageMapper {

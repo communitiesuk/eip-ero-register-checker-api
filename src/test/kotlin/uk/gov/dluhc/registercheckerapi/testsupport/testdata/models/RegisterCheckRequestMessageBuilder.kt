@@ -6,7 +6,7 @@ import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType
 import java.util.UUID
 
 fun buildInitiateRegisterCheckMessage(
-    sourceType: RegisterCheckSourceType = RegisterCheckSourceType.VOTER_CARD,
+    sourceType: RegisterCheckSourceType = RegisterCheckSourceType.VOTER_MINUS_CARD,
     sourceReference: String = "VPIOKNHPBP",
     sourceCorrelationId: UUID = UUID.randomUUID(),
     requestedBy: String = "system",

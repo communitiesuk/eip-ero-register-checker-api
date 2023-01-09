@@ -1,0 +1,176 @@
+openapi: 3.0.0
+info:
+  title: Register Checker SQS Message Types
+  version: '1.0.0'
+  description: |-
+    Register Checker SQS Message Types
+    
+    This is an openAPI spec, that defines the structure of data passed over SQS messaging.
+    
+    The `paths` elements are being used to document (at a high level) the SQS queues and the request bodies that are expected
+    to be published to them. **There is no intent to generate or implement SQS queues or listener classes from this document.**
+    
+    The `paths` element is only being used in order to maintain the structure of the openApi spec, as `paths` are required 
+    elements.
+#
+# --------------------------------------------------------------------------------
+#
+
+paths:
+  #
+  # --------------------------------------------------------------------------------
+  # SQS Queues start here
+  # --------------------------------------------------------------------------------
+  #
+  '/initiate-applicant-register-check':
+    post:
+      tags:
+        - SQS Queues
+      requestBody:
+        $ref: '#/components/requestBodies/InitiateRegisterCheckMessage'
+      responses:
+        '204':
+          description: No response content.
+
+components:
+  #
+  # Schema and Enum Definitions
+  # --------------------------------------------------------------------------------
+  schemas:
+    InitiateRegisterCheckMessage:
+      title: InitiateRegisterCheckMessage
+      type: object
+      description: SQS Message for initiating an applicant's register check.
+      properties:
+        sourceType:
+          $ref: '#/components/schemas/RegisterCheckSourceType'
+        sourceReference:
+          type: string
+          description: Reference in the source of the application this message relates. e.g. `VoterCardApplication.applicationId`
+          example: 1f0f76a9a66f438b9bb33070
+        sourceCorrelationId:
+          type: string
+          format: uuid
+          description: The id to allow the response from rca to be associated with the correct register status e.g. `VoterCardApplicationRegisterStatus.id`
+          example: c73bcdcc-2669-4bf6-81d3-e4ae73fb11fd
+        requestedBy:
+          type: string
+          description: Identifier of the user that requested the check or `system` if the check was automatically requested.
+          example: system
+        gssCode:
+          type: string
+          description: The relevant GSS code for the local authority.
+          example: 'E09000007'
+        personalDetail:
+          $ref: '#/components/schemas/RegisterCheckPersonalDetail'
+      required:
+        - sourceType
+        - sourceReference
+        - sourceCorrelationId
+        - requestedBy
+        - gssCode
+        - personalDetail
+
+    RegisterCheckPersonalDetail:
+      title: RegisterCheckPersonalDetail
+      type: object
+      description: Personal details for an applicant
+      properties:
+        firstName:
+          type: string
+          description: The applicant's first name
+          example: Fred
+        middleNames:
+          type: string
+          description: The applicant's middle name(s)
+          example: John
+        surname:
+          type: string
+          description: The applicant's surname
+          example: Blogs
+        dateOfBirth:
+          type: string
+          format: date
+          description: The applicant's date of birth in ISO-8601. Null if not known
+          example: '1981-07-27'
+        phone:
+          description: The applicant's phone number
+          type: string
+          example: 01234 567890
+        email:
+          description: The applicant's email address
+          type: string
+          example: fred.blogs@some-domain.co.uk
+        address:
+          $ref: '#/components/schemas/RegisterCheckAddress'
+      required:
+        - firstName
+        - surname
+        - address
+    RegisterCheckAddress:
+      title: RegisterCheckAddress
+      description: Address to perform a register check on
+      type: object
+      x-examples:
+        Minimum data:
+          street: Street 1
+          postcode: PC1 2FB
+        Normal Address:
+          street: East Lodge
+          property: Balruddery
+          locality: Invergowrie
+          town: Dundee
+          area: Angus
+          postcode: DD25LF
+      properties:
+        street:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: Charles Lane
+        property:
+          type: string
+          maxLength: 255
+        locality:
+          type: string
+          maxLength: 255
+        town:
+          type: string
+          maxLength: 255
+          example: London
+        area:
+          type: string
+          maxLength: 255
+        postcode:
+          type: string
+          minLength: 1
+          maxLength: 10
+          example: PE3 6SB
+        uprn:
+          type: string
+          pattern: '^\d{1,12}$'
+          maxLength: 12
+      required:
+        - street
+        - postcode
+
+    RegisterCheckSourceType:
+      title: RegisterCheckSourceType
+      type: string
+      enum:
+        - voter-card
+
+  #
+  # Response Body Definitions
+  # --------------------------------------------------------------------------------
+  responses: { }
+
+  #
+  # Request Body Definitions
+  # --------------------------------------------------------------------------------
+  requestBodies:
+    InitiateRegisterCheckMessage:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InitiateRegisterCheckMessage'

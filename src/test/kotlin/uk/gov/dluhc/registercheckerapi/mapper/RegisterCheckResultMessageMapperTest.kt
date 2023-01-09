@@ -12,7 +12,9 @@ import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
+import uk.gov.dluhc.registercheckerapi.database.entity.SourceType
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildPersonalDetailWithOptionalFieldsAsNull
@@ -27,6 +29,9 @@ internal class RegisterCheckResultMessageMapperTest {
 
     @Mock
     private lateinit var checkStatusMapper: CheckStatusMapper
+
+    @Mock
+    private lateinit var sourceTypeMapper: SourceTypeMapper
 
     @InjectMocks
     private val mapper = RegisterCheckResultMessageMapperImpl()
@@ -49,9 +54,10 @@ internal class RegisterCheckResultMessageMapperTest {
             // Given
             val registerCheckEntity = buildRegisterCheck(status = initialStatus, registerCheckMatches = mutableListOf(buildRegisterCheckMatch()))
             given(checkStatusMapper.toRegisterCheckStatusResultEnum(any())).willReturn(expectedStatus)
+            given(sourceTypeMapper.fromEntityToSqsEnum(any())).willReturn(RegisterCheckSourceType.VOTER_MINUS_CARD)
 
             val expectedMessage = buildRegisterCheckResultMessage(
-                sourceType = RegisterCheckSourceType.VOTER_CARD,
+                sourceType = RegisterCheckSourceType.VOTER_MINUS_CARD,
                 sourceReference = registerCheckEntity.sourceReference,
                 sourceCorrelationId = registerCheckEntity.sourceCorrelationId,
                 registerCheckResult = expectedStatus,
@@ -74,6 +80,8 @@ internal class RegisterCheckResultMessageMapperTest {
             // Then
             assertThat(actual).usingRecursiveComparison().isEqualTo(expectedMessage)
             verify(checkStatusMapper).toRegisterCheckStatusResultEnum(initialStatus)
+            verify(sourceTypeMapper).fromEntityToSqsEnum(SourceType.VOTER_CARD)
+            verifyNoMoreInteractions(sourceTypeMapper)
         }
 
         @Test
@@ -81,9 +89,10 @@ internal class RegisterCheckResultMessageMapperTest {
             // Given
             val registerCheck = buildRegisterCheck(status = CheckStatus.NO_MATCH, registerCheckMatches = mutableListOf())
             given(checkStatusMapper.toRegisterCheckStatusResultEnum(any())).willReturn(RegisterCheckResult.NO_MATCH)
+            given(sourceTypeMapper.fromEntityToSqsEnum(any())).willReturn(RegisterCheckSourceType.VOTER_MINUS_CARD)
 
             val expected = buildRegisterCheckResultMessage(
-                sourceType = RegisterCheckSourceType.VOTER_CARD,
+                sourceType = RegisterCheckSourceType.VOTER_MINUS_CARD,
                 sourceReference = registerCheck.sourceReference,
                 sourceCorrelationId = registerCheck.sourceCorrelationId,
                 registerCheckResult = RegisterCheckResult.NO_MATCH,
@@ -98,6 +107,8 @@ internal class RegisterCheckResultMessageMapperTest {
             assertThat(actual.matches).isNotNull
             assertThat(actual.matches).isEmpty()
             verify(checkStatusMapper).toRegisterCheckStatusResultEnum(CheckStatus.NO_MATCH)
+            verify(sourceTypeMapper).fromEntityToSqsEnum(SourceType.VOTER_CARD)
+            verifyNoMoreInteractions(sourceTypeMapper)
         }
 
         @Test
@@ -111,9 +122,10 @@ internal class RegisterCheckResultMessageMapperTest {
                 )
             )
             given(checkStatusMapper.toRegisterCheckStatusResultEnum(any())).willReturn(RegisterCheckResult.MULTIPLE_MATCH)
+            given(sourceTypeMapper.fromEntityToSqsEnum(any())).willReturn(RegisterCheckSourceType.VOTER_MINUS_CARD)
 
             val expected = buildRegisterCheckResultMessage(
-                sourceType = RegisterCheckSourceType.VOTER_CARD,
+                sourceType = RegisterCheckSourceType.VOTER_MINUS_CARD,
                 sourceReference = registerCheck.sourceReference,
                 sourceCorrelationId = registerCheck.sourceCorrelationId,
                 registerCheckResult = RegisterCheckResult.MULTIPLE_MATCH,
@@ -137,6 +149,8 @@ internal class RegisterCheckResultMessageMapperTest {
             assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
             assertThat(actual.matches).hasSize(2)
             verify(checkStatusMapper).toRegisterCheckStatusResultEnum(CheckStatus.MULTIPLE_MATCH)
+            verify(sourceTypeMapper).fromEntityToSqsEnum(SourceType.VOTER_CARD)
+            verifyNoMoreInteractions(sourceTypeMapper)
         }
     }
 }

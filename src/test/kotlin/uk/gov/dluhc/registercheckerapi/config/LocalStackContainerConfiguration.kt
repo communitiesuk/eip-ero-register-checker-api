@@ -83,23 +83,22 @@ class LocalStackContainerConfiguration {
         applicationContext: ConfigurableApplicationContext,
         @Value("\${sqs.initiate-applicant-register-check-queue-name}") initiateApplicantRegisterCheckQueueName: String,
         @Value("\${sqs.confirm-applicant-register-check-result-queue-name}") confirmRegisterCheckResultMessageQueueName: String,
+        @Value("\${sqs.remove-applicant-register-check-data-queue-name}") removeRegisterCheckDataMessageQueueName: String,
         objectMapper: ObjectMapper
     ): LocalStackContainerSettings {
-        val queueUrlInitiateApplicantRegisterCheck =
-            localStackContainer.createSqsQueue(initiateApplicantRegisterCheckQueueName, objectMapper)
-        val queueUrlConfirmRegisterCheckResult =
-            localStackContainer.createSqsQueue(confirmRegisterCheckResultMessageQueueName, objectMapper)
+        val queueUrlInitiateApplicantRegisterCheck = localStackContainer.createSqsQueue(initiateApplicantRegisterCheckQueueName, objectMapper)
+        val queueUrlConfirmRegisterCheckResult = localStackContainer.createSqsQueue(confirmRegisterCheckResultMessageQueueName, objectMapper)
+        val queueUrlRemoveRegisterCheckData = localStackContainer.createSqsQueue(removeRegisterCheckDataMessageQueueName, objectMapper)
 
         val apiUrl = "http://${localStackContainer.host}:${localStackContainer.getMappedPort(DEFAULT_PORT)}"
 
-        TestPropertyValues.of(
-            "cloud.aws.sqs.endpoint=$apiUrl",
-        ).applyTo(applicationContext)
+        TestPropertyValues.of("cloud.aws.sqs.endpoint=$apiUrl").applyTo(applicationContext)
 
         return LocalStackContainerSettings(
             apiUrl = apiUrl,
             queueUrlInitiateApplicantRegisterCheck = queueUrlInitiateApplicantRegisterCheck,
             queueUrlConfirmRegisterCheckResult = queueUrlConfirmRegisterCheckResult,
+            queueUrlRemoveRegisterCheckData = queueUrlRemoveRegisterCheckData,
         )
     }
 

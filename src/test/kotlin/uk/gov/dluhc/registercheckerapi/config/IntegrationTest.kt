@@ -49,6 +49,9 @@ internal abstract class IntegrationTest {
     @Value("\${sqs.initiate-applicant-register-check-queue-name}")
     protected lateinit var initiateApplicantRegisterCheckQueueName: String
 
+    @Value("\${sqs.remove-applicant-register-check-data-queue-name}")
+    protected lateinit var removeApplicantRegisterCheckDataQueueName: String
+
     companion object {
         val mysqlContainerConfiguration: MySQLContainerConfiguration = MySQLContainerConfiguration.getInstance()
     }

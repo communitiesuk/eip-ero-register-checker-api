@@ -16,7 +16,6 @@ import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.dto.AddressDto
 import uk.gov.dluhc.registercheckerapi.dto.PendingRegisterCheckDto
 import uk.gov.dluhc.registercheckerapi.dto.PersonalDetailDto
-import uk.gov.dluhc.registercheckerapi.dto.SourceType
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType
 import uk.gov.dluhc.registercheckerapi.models.PendingRegisterCheck
 import uk.gov.dluhc.registercheckerapi.models.SourceSystem
@@ -50,7 +49,7 @@ internal class PendingRegisterCheckMapperTest {
     fun `should map model to dto`() {
         // Given
         val message = buildInitiateRegisterCheckMessage()
-        given(sourceTypeMapper.fromSqsToDtoEnum(any())).willReturn(SourceType.VOTER_CARD)
+        given(sourceTypeMapper.fromSqsToDtoEnum(any())).willReturn(DtoSourceType.VOTER_CARD)
 
         val expected = PendingRegisterCheckDto(
             correlationId = UUID.randomUUID(),
@@ -132,7 +131,7 @@ internal class PendingRegisterCheckMapperTest {
         val registerCheckEntity = buildRegisterCheck()
         val expectedPersonalDetailDto = buildPersonalDetailDto()
         given(personalDetailMapper.personalDetailEntityToPersonalDetailDto(any())).willReturn(expectedPersonalDetailDto)
-        given(sourceTypeMapper.fromEntityToDtoEnum(any())).willReturn(SourceType.VOTER_CARD)
+        given(sourceTypeMapper.fromEntityToDtoEnum(any())).willReturn(DtoSourceType.VOTER_CARD)
 
         val expected = PendingRegisterCheckDto(
             correlationId = registerCheckEntity.correlationId,
@@ -151,7 +150,7 @@ internal class PendingRegisterCheckMapperTest {
         // Then
         assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
         verify(personalDetailMapper).personalDetailEntityToPersonalDetailDto(registerCheckEntity.personalDetail)
-        verify(sourceTypeMapper).fromEntityToDtoEnum(uk.gov.dluhc.registercheckerapi.database.entity.SourceType.VOTER_CARD)
+        verify(sourceTypeMapper).fromEntityToDtoEnum(EntitySourceType.VOTER_CARD)
         verifyNoMoreInteractions(personalDetailMapper, sourceTypeMapper)
         verifyNoInteractions(instantMapper)
     }
@@ -162,6 +161,7 @@ internal class PendingRegisterCheckMapperTest {
         val createdAt = Instant.now()
         val pendingRegisterCheckDto = buildPendingRegisterCheckDto(createdAt = createdAt)
         given(instantMapper.toOffsetDateTime(any())).willReturn(createdAt.atOffset(ZoneOffset.UTC))
+        given(sourceTypeMapper.sourceTypeDtoToSourceSystem(any())).willReturn(SourceSystem.EROP)
 
         val expected = PendingRegisterCheck(
             requestid = pendingRegisterCheckDto.correlationId,
@@ -190,6 +190,7 @@ internal class PendingRegisterCheckMapperTest {
         // Then
         assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
         verify(instantMapper).toOffsetDateTime(createdAt)
+        verify(sourceTypeMapper).sourceTypeDtoToSourceSystem(DtoSourceType.VOTER_CARD)
         verifyNoInteractions(personalDetailMapper)
     }
 
@@ -202,6 +203,7 @@ internal class PendingRegisterCheckMapperTest {
             createdBy = "joe.bloggs@gmail.com"
         )
         given(instantMapper.toOffsetDateTime(any())).willReturn(createdAt.atOffset(ZoneOffset.UTC))
+        given(sourceTypeMapper.sourceTypeDtoToSourceSystem(any())).willReturn(SourceSystem.EROP)
 
         val expected = PendingRegisterCheck(
             requestid = pendingRegisterCheckDto.correlationId,
@@ -230,6 +232,7 @@ internal class PendingRegisterCheckMapperTest {
         // Then
         assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
         verify(instantMapper).toOffsetDateTime(createdAt)
+        verify(sourceTypeMapper).sourceTypeDtoToSourceSystem(DtoSourceType.VOTER_CARD)
         verifyNoInteractions(personalDetailMapper)
     }
 }

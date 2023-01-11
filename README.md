@@ -38,16 +38,17 @@ Requests are assumed pre-authenticated which carry a header defined by property 
 
 ### External Environment Variables
 The following environment variables must be set in order to run the application:
-* `AWS_ACCESS_KEY_ID` - the AWS access key ID
-* `AWS_SECRET_ACCESS_KEY` - the AWS secret access key
-* `AWS_REGION` - the AWS region
-- `REQUEST_HEADER_CLIENT_CERT_SERIAL` is the name of header required in request
-- `API_ERO_MANAGEMENT_URL` - the base URL of the [ERO Management REST API service](https://github.com/cabinetoffice/eip-ero-management-api).
-- `API_IER_BASE_URL` - the base URL of the external IER REST API service.
-- `API_IER_STS_ASSUME_ROLE` - the IAM role in IER's AWS subscription that should be assumed in order to invoke IER REST API services.
-- `SQS_EMS_CIDR_UPDATE_QUEUE_NAME` is the name of the queue for EMS CIDR update notifications from IER
-- `SQS_INITIATE_APPLICANT_REGISTER_CHECK_QUEUE_NAME` - the queue name for requesting an automated check to determine if the applicant is on the electoral register
-- `SQS_CONFIRM_APPLICANT_REGISTER_CHECK_RESULT_QUEUE_NAME` - the queue name for responding with the result of the register check
+1. `AWS_ACCESS_KEY_ID` - the AWS access key ID
+2. `AWS_SECRET_ACCESS_KEY` - the AWS secret access key
+3. `AWS_REGION` - the AWS region
+4. `REQUEST_HEADER_CLIENT_CERT_SERIAL` is the name of header required in request
+5. `API_ERO_MANAGEMENT_URL` - the base URL of the [ERO Management REST API service](https://github.com/cabinetoffice/eip-ero-management-api).
+6. `API_IER_BASE_URL` - the base URL of the external IER REST API service.
+7. `API_IER_STS_ASSUME_ROLE` - the IAM role in IER's AWS subscription that should be assumed in order to invoke IER REST API services.
+8. `SQS_EMS_CIDR_UPDATE_QUEUE_NAME` is the name of the queue for EMS CIDR update notifications from IER
+9. `SQS_INITIATE_APPLICANT_REGISTER_CHECK_QUEUE_NAME` - the queue name for requesting an automated check to determine if the applicant is on the electoral register
+10. `SQS_CONFIRM_APPLICANT_REGISTER_CHECK_RESULT_QUEUE_NAME` - the queue name for responding with the result of the register check
+11. `SQS_REMOVE_APPLICANT_REGISTER_CHECK_DATA_QUEUE_NAME` - the queue name for removing an applicant's register check data
 
 #### MYSQL Configuration
 The application requires the following environment variables to connect to Mysql:

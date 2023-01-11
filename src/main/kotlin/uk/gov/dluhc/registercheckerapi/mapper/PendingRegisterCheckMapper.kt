@@ -3,13 +3,10 @@ package uk.gov.dluhc.registercheckerapi.mapper
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Named
-import org.mapstruct.ValueMapping
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.dto.PendingRegisterCheckDto
-import uk.gov.dluhc.registercheckerapi.dto.SourceType
 import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckMessage
 import uk.gov.dluhc.registercheckerapi.models.PendingRegisterCheck
-import uk.gov.dluhc.registercheckerapi.models.SourceSystem
 
 /**
  * Maps incoming [InitiateRegisterCheckMessage] to [PendingRegisterCheckDto]. Maps the entity class [RegisterCheck]
@@ -18,7 +15,8 @@ import uk.gov.dluhc.registercheckerapi.models.SourceSystem
 @Mapper(
     uses = [
         InstantMapper::class,
-        PersonalDetailMapper::class
+        PersonalDetailMapper::class,
+        SourceTypeMapper::class,
     ]
 )
 abstract class PendingRegisterCheckMapper {
@@ -52,9 +50,6 @@ abstract class PendingRegisterCheckMapper {
     @Mapping(target = "regarea", source = "personalDetail.address.area")
     @Mapping(target = "reguprn", source = "personalDetail.address.uprn")
     abstract fun pendingRegisterCheckDtoToPendingRegisterCheckModel(pendingRegisterCheckDto: PendingRegisterCheckDto): PendingRegisterCheck
-
-    @ValueMapping(source = "VOTER_CARD", target = "EROP")
-    protected abstract fun sourceTypeToSourceSystem(sourceType: SourceType): SourceSystem
 
     @Named("createdByToActingStaffId")
     protected fun createdByToActingStaffId(createdBy: String): String {

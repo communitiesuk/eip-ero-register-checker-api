@@ -26,7 +26,7 @@ import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegister
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildInitiateRegisterCheckMessage
 import java.time.Instant
 import java.time.ZoneOffset
-import java.util.UUID
+import java.util.UUID.randomUUID
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType as EntitySourceType
 import uk.gov.dluhc.registercheckerapi.dto.SourceType as DtoSourceType
 
@@ -52,7 +52,7 @@ internal class PendingRegisterCheckMapperTest {
         given(sourceTypeMapper.fromSqsToDtoEnum(any())).willReturn(DtoSourceType.VOTER_CARD)
 
         val expected = PendingRegisterCheckDto(
-            correlationId = UUID.randomUUID(),
+            correlationId = randomUUID(),
             sourceType = DtoSourceType.VOTER_CARD,
             sourceReference = message.sourceReference,
             sourceCorrelationId = message.sourceCorrelationId,
@@ -97,11 +97,13 @@ internal class PendingRegisterCheckMapperTest {
         // Given
         val pendingRegisterCheckDto = buildPendingRegisterCheckDto()
         val expectedPersonalDetailEntity = buildPersonalDetail()
+        val expectedSourceType = EntitySourceType.VOTER_CARD
         given(personalDetailMapper.personalDetailDtoToPersonalDetailEntity(any())).willReturn(expectedPersonalDetailEntity)
+        given(sourceTypeMapper.fromDtoToEntityEnum(any())).willReturn(expectedSourceType)
 
         val expected = RegisterCheck(
             correlationId = pendingRegisterCheckDto.correlationId,
-            sourceType = EntitySourceType.VOTER_CARD,
+            sourceType = expectedSourceType,
             sourceReference = pendingRegisterCheckDto.sourceReference,
             sourceCorrelationId = pendingRegisterCheckDto.sourceCorrelationId,
             createdBy = pendingRegisterCheckDto.createdBy,
@@ -121,6 +123,7 @@ internal class PendingRegisterCheckMapperTest {
         assertThat(actual.status).isEqualTo(CheckStatus.PENDING)
         assertThat(actual.dateCreated).isNull()
         verify(personalDetailMapper).personalDetailDtoToPersonalDetailEntity(pendingRegisterCheckDto.personalDetail)
+        verify(sourceTypeMapper).fromDtoToEntityEnum(DtoSourceType.VOTER_CARD)
         verifyNoMoreInteractions(personalDetailMapper)
         verifyNoInteractions(instantMapper)
     }

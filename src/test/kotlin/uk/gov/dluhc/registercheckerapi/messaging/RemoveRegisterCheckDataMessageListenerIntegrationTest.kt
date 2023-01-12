@@ -6,9 +6,13 @@ import org.testcontainers.shaded.org.awaitility.Awaitility
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
+import uk.gov.dluhc.registercheckerapi.database.entity.SourceType
+import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType.VOTER_MINUS_CARD
 import uk.gov.dluhc.registercheckerapi.messaging.models.RemoveRegisterCheckDataMessage
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildRemoveRegisterCheckDataMessage
 import java.util.UUID
+import java.util.UUID.randomUUID
 import java.util.concurrent.TimeUnit
 import javax.persistence.criteria.CriteriaBuilder
 import javax.persistence.criteria.CriteriaQuery
@@ -19,14 +23,23 @@ internal class RemoveRegisterCheckDataMessageListenerIntegrationTest : Integrati
     @Test
     fun `should process message received on queue`() {
         // Given
-        val message = buildRemoveRegisterCheckDataMessage()
-        val payload = objectMapper.writeValueAsString(message)
+        val sourceReference = randomUUID().toString()
+        val sourceType = SourceType.VOTER_CARD
+
+        val registerCheck1 = buildRegisterCheck(sourceReference = sourceReference, sourceType = sourceType)
+        val registerCheck2 = buildRegisterCheck(sourceReference = sourceReference, sourceType = sourceType)
+        registerCheckRepository.saveAll(listOf(registerCheck1, registerCheck2))
+
+        val message = buildRemoveRegisterCheckDataMessage(
+            sourceType = VOTER_MINUS_CARD,
+            sourceReference = sourceReference
+        )
 
         // When
         sqsClient.sendMessage(
             SendMessageRequest.builder()
                 .queueUrl(removeApplicantRegisterCheckDataQueueName)
-                .messageBody(payload)
+                .messageBody(objectMapper.writeValueAsString(message))
                 .build()
         )
 
@@ -34,7 +47,6 @@ internal class RemoveRegisterCheckDataMessageListenerIntegrationTest : Integrati
         Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted {
             val registerCheckJpaEntity = getActualRegisterCheckJpaEntity(message)
             Assertions.assertThat(registerCheckJpaEntity).isEmpty()
-            // TODO more assertions in subsequent subtasks, as currently empty entity will be returned everytime
         }
     }
 

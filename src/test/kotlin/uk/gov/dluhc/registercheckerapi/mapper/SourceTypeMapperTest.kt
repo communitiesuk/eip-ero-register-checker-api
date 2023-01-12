@@ -70,6 +70,25 @@ class SourceTypeMapperTest {
         Assertions.assertThat(actual).isEqualTo(expected)
     }
 
+    @ParameterizedTest
+    @CsvSource(
+        value = [
+            "VOTER_CARD, VOTER_CARD",
+        ]
+    )
+    fun `should map DTO Source Type enum to Entity Source Type`(
+        sourceType: SourceTypeDtoEnum,
+        expected: SourceTypeEntityEnum
+    ) {
+        // Given
+
+        // When
+        val actual = mapper.fromDtoToEntityEnum(sourceType)
+
+        // Then
+        Assertions.assertThat(actual).isEqualTo(expected)
+    }
+
     @Test
     fun `should map DTO Source Type enum to Source system`() {
         // Given

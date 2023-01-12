@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Register Checker SQS Message Types
-  version: '1.0.1'
+  version: '1.0.2'
   description: |-
     Register Checker SQS Message Types
     
@@ -57,14 +57,9 @@ components:
           type: string
           description: Reference of the application in the corresponding source system that the message relates to. e.g. `VoterCardApplication.applicationId`
           example: 1f0f76a9a66f438b9bb33070
-        gssCode:
-          type: string
-          description: The relevant GSS code for the local authority.
-          example: 'E09000007'
       required:
         - sourceType
         - sourceReference
-        - gssCode
 
     InitiateRegisterCheckMessage:
       title: InitiateRegisterCheckMessage
@@ -73,6 +68,10 @@ components:
       allOf:
         - $ref: '#/components/schemas/BaseRegisterCheckMessage'
       properties:
+        gssCode:
+          type: string
+          description: The relevant GSS code for the local authority.
+          example: 'E09000007'
         sourceCorrelationId:
           type: string
           format: uuid
@@ -85,6 +84,7 @@ components:
         personalDetail:
           $ref: '#/components/schemas/RegisterCheckPersonalDetail'
       required:
+        - gssCode
         - sourceCorrelationId
         - requestedBy
         - personalDetail

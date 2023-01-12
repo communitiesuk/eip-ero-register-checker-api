@@ -25,8 +25,8 @@ class RemoveRegisterCheckDataMessageListener(
         with(payload) {
             logger.info {
                 "RemoveRegisterCheckDataMessage received with " +
-                    "sourceType: $sourceType and " +
-                    "sourceReference: $sourceReference"
+                    "sourceType: [$sourceType] and " +
+                    "sourceReference: [$sourceReference]"
             }
             registerCheckRemovalService.removeRegisterCheckData(mapper.toRemovalDto(this))
         }

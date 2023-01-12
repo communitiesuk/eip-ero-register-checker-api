@@ -10,8 +10,8 @@ import uk.gov.dluhc.registercheckerapi.database.entity.SourceType
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType.VOTER_MINUS_CARD
 import uk.gov.dluhc.registercheckerapi.messaging.models.RemoveRegisterCheckDataMessage
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckResultData
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildRemoveRegisterCheckDataMessage
-import java.util.UUID
 import java.util.UUID.randomUUID
 import java.util.concurrent.TimeUnit
 import javax.persistence.criteria.CriteriaBuilder
@@ -30,6 +30,14 @@ internal class RemoveRegisterCheckDataMessageListenerIntegrationTest : Integrati
         val registerCheck2 = buildRegisterCheck(sourceReference = sourceReference, sourceType = sourceType)
         registerCheckRepository.saveAll(listOf(registerCheck1, registerCheck2))
 
+        val correlationId1 = registerCheck1.correlationId
+        val correlationId2 = registerCheck2.correlationId
+
+        val registerCheckResultData1a = buildRegisterCheckResultData(correlationId = correlationId1)
+        val registerCheckResultData1b = buildRegisterCheckResultData(correlationId = correlationId1)
+        val registerCheckResultData2 = buildRegisterCheckResultData(correlationId = correlationId2)
+        registerCheckResultDataRepository.saveAll(listOf(registerCheckResultData1a, registerCheckResultData1b, registerCheckResultData2))
+
         val message = buildRemoveRegisterCheckDataMessage(
             sourceType = VOTER_MINUS_CARD,
             sourceReference = sourceReference
@@ -45,13 +53,14 @@ internal class RemoveRegisterCheckDataMessageListenerIntegrationTest : Integrati
 
         // Then
         Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted {
-            val registerCheckJpaEntity = getActualRegisterCheckJpaEntity(message)
-            Assertions.assertThat(registerCheckJpaEntity).isEmpty()
+            Assertions.assertThat(getActualRegisterCheckJpaEntity(message)).isEmpty()
+            Assertions.assertThat(registerCheckResultDataRepository.findByCorrelationId(correlationId1)).isNull()
+            Assertions.assertThat(registerCheckResultDataRepository.findByCorrelationId(correlationId2)).isNull()
         }
     }
 
     private fun getActualRegisterCheckJpaEntity(message: RemoveRegisterCheckDataMessage): List<RegisterCheck> =
         registerCheckRepository.findAll { root: Root<RegisterCheck>, _: CriteriaQuery<*>, cb: CriteriaBuilder ->
-            cb.equal(root.get<UUID>("sourceReference"), message.sourceReference)
+            cb.equal(root.get<String>("sourceReference"), message.sourceReference)
         }
 }

@@ -5,9 +5,8 @@ import org.junit.jupiter.api.Test
 import org.testcontainers.shaded.org.awaitility.Awaitility.await
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
-import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
+import uk.gov.dluhc.registercheckerapi.database.entity.SourceType
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType.VOTER_MINUS_CARD
-import uk.gov.dluhc.registercheckerapi.messaging.models.RemoveRegisterCheckDataMessage
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomGssCode
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckResultData
@@ -15,9 +14,6 @@ import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildRemov
 import java.util.UUID.fromString
 import java.util.UUID.randomUUID
 import java.util.concurrent.TimeUnit
-import javax.persistence.criteria.CriteriaBuilder
-import javax.persistence.criteria.CriteriaQuery
-import javax.persistence.criteria.Root
 
 internal class RemoveRegisterCheckDataMessageListenerIntegrationTest : IntegrationTest() {
 
@@ -45,11 +41,8 @@ internal class RemoveRegisterCheckDataMessageListenerIntegrationTest : Integrati
         val registerCheckResultDataForOtherGssCode = buildRegisterCheckResultData(correlationId = registerCheckWithOtherGssCode.correlationId)
         registerCheckResultDataRepository.saveAll(
             listOf(
-                registerCheckResultData1a,
-                registerCheckResultData1b,
-                registerCheckResultData2,
-                registerCheckResultDataForOtherSourceRef,
-                registerCheckResultDataForOtherGssCode
+                registerCheckResultData1a, registerCheckResultData1b, registerCheckResultData2,
+                registerCheckResultDataForOtherSourceRef, registerCheckResultDataForOtherGssCode
             )
         )
 
@@ -69,18 +62,9 @@ internal class RemoveRegisterCheckDataMessageListenerIntegrationTest : Integrati
 
         // Then
         await().atMost(5, TimeUnit.SECONDS).untilAsserted {
-            assertThat(getActualRegisterCheckJpaEntity(message)).isEmpty()
-            assertThat(registerCheckResultDataRepository.findByCorrelationIdIn(setOf(correlationIdForCheck1))).isEmpty()
-            assertThat(registerCheckResultDataRepository.findByCorrelationIdIn(setOf(correlationIdForCheck2))).isEmpty()
+            assertThat(registerCheckRepository.findBySourceTypeAndSourceReferenceAndGssCode(SourceType.VOTER_CARD, sourceReference, gssCode)).isEmpty()
+            assertThat(registerCheckResultDataRepository.findByCorrelationIdIn(setOf(correlationIdForCheck1, correlationIdForCheck2))).isEmpty()
             assertThat(registerCheckResultDataRepository.findByCorrelationIdIn(setOf(correlationIdForOtherSourceRef, correlationIdForOtherGssCode))).isNotEmpty.hasSize(2)
         }
-    }
-
-    private fun getActualRegisterCheckJpaEntity(message: RemoveRegisterCheckDataMessage): List<RegisterCheck> {
-        val criteriaBuilder = { root: Root<RegisterCheck?>, _: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder ->
-            criteriaBuilder.equal(root.get<String>("sourceReference"), message.sourceReference)
-            criteriaBuilder.and(criteriaBuilder.equal(root.get<String>("gssCode"), message.gssCode))
-        }
-        return registerCheckRepository.findAll(criteriaBuilder)
     }
 }

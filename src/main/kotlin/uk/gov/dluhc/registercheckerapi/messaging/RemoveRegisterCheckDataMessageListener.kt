@@ -26,7 +26,8 @@ class RemoveRegisterCheckDataMessageListener(
             logger.info {
                 "RemoveRegisterCheckDataMessage received with " +
                     "sourceType: [$sourceType] and " +
-                    "sourceReference: [$sourceReference]"
+                    "sourceReference: [$sourceReference] and " +
+                    "gssCode: [$gssCode]"
             }
             registerCheckRemovalService.removeRegisterCheckData(mapper.toRemovalDto(this))
         }

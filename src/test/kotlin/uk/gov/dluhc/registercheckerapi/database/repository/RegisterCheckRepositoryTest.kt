@@ -10,6 +10,7 @@ import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.VOTER_CARD
+import uk.gov.dluhc.registercheckerapi.testsupport.getRandomGssCode
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatch
 import java.time.Instant
@@ -238,18 +239,21 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
     }
 
     @Nested
-    inner class FindBySourceTypeAndSourceReference {
+    inner class FindBySourceTypeAndSourceReferenceAndGssCode {
         @Test
-        fun `should get register check by sourceType and sourceReference`() {
+        fun `should get register check by sourceType and sourceReference and gssCode`() {
             // Given
             val sourceReference = randomUUID().toString()
-            val matchingRegisterCheck1 = buildRegisterCheck(sourceReference = sourceReference)
-            val matchingRegisterCheck2 = buildRegisterCheck(sourceReference = sourceReference)
-            val unMatchedRegisterCheck = buildRegisterCheck()
-            registerCheckRepository.saveAll(listOf(matchingRegisterCheck1, matchingRegisterCheck2, unMatchedRegisterCheck))
+            val gssCode = getRandomGssCode()
+            val matchingRegisterCheck1 = buildRegisterCheck(sourceReference = sourceReference, gssCode = gssCode)
+            val matchingRegisterCheck2 = buildRegisterCheck(sourceReference = sourceReference, gssCode = gssCode)
+            val unMatchedRegisterCheck1 = buildRegisterCheck(gssCode = getRandomGssCode())
+            val unMatchedRegisterCheck2 = buildRegisterCheck(sourceReference = randomUUID().toString())
+            val unMatchedRegisterCheck3 = buildRegisterCheck()
+            registerCheckRepository.saveAll(listOf(matchingRegisterCheck1, matchingRegisterCheck2, unMatchedRegisterCheck1, unMatchedRegisterCheck2, unMatchedRegisterCheck3))
 
             // When
-            val actual = registerCheckRepository.findBySourceTypeAndSourceReference(VOTER_CARD, sourceReference)
+            val actual = registerCheckRepository.findBySourceTypeAndSourceReferenceAndGssCode(VOTER_CARD, sourceReference, gssCode)
 
             // Then
             assertThat(actual)
@@ -262,16 +266,19 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         }
 
         @Test
-        fun `should not get register check for an unknown sourceType and sourceReference`() {
+        fun `should not get register check for an unknown sourceType and sourceReference and gssCode`() {
             // Given
             val sourceReference = randomUUID().toString()
+            val gssCode = getRandomGssCode()
             val anotherSourceReference = randomUUID().toString()
-            val unmatchedRegisterCheck1 = buildRegisterCheck(sourceReference = anotherSourceReference)
-            val unmatchedRegisterCheck2 = buildRegisterCheck()
-            registerCheckRepository.saveAll(listOf(unmatchedRegisterCheck1, unmatchedRegisterCheck2))
+            val anotherGssCode = getRandomGssCode()
+            val unmatchedRegisterCheck1 = buildRegisterCheck(sourceReference = anotherSourceReference, gssCode = gssCode)
+            val unmatchedRegisterCheck2 = buildRegisterCheck(sourceReference = sourceReference, gssCode = anotherGssCode)
+            val unmatchedRegisterCheck3 = buildRegisterCheck()
+            registerCheckRepository.saveAll(listOf(unmatchedRegisterCheck1, unmatchedRegisterCheck2, unmatchedRegisterCheck3))
 
             // When
-            val actual = registerCheckRepository.findBySourceTypeAndSourceReference(VOTER_CARD, sourceReference)
+            val actual = registerCheckRepository.findBySourceTypeAndSourceReferenceAndGssCode(VOTER_CARD, sourceReference, gssCode)
 
             // Then
             assertThat(actual).isNotNull.isEmpty()

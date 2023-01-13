@@ -1,5 +1,6 @@
 package uk.gov.dluhc.registercheckerapi.mapper
 
+import org.mapstruct.InheritInverseConfiguration
 import org.mapstruct.Mapper
 import org.mapstruct.ValueMapping
 import uk.gov.dluhc.registercheckerapi.dto.SourceType
@@ -18,6 +19,9 @@ interface SourceTypeMapper {
     fun fromEntityToSqsEnum(entitySourceType: SourceTypeEntityEnum): SourceTypeSqsEnum
 
     fun fromEntityToDtoEnum(entitySourceType: SourceTypeEntityEnum): SourceTypeDtoEnum
+
+    @InheritInverseConfiguration
+    fun fromDtoToEntityEnum(dtoSourceType: SourceTypeDtoEnum): SourceTypeEntityEnum
 
     @ValueMapping(target = "EROP", source = "VOTER_CARD")
     fun sourceTypeDtoToSourceSystem(sourceType: SourceType): SourceSystem

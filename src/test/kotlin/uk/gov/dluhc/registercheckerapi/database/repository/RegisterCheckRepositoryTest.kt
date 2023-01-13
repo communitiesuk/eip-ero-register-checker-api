@@ -9,12 +9,29 @@ import org.junit.jupiter.params.provider.ValueSource
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch
+import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.VOTER_CARD
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatch
 import java.time.Instant
-import java.util.UUID
+import java.util.UUID.randomUUID
 
 internal class RegisterCheckRepositoryTest : IntegrationTest() {
+
+    companion object {
+        private val ID_FIELDS = arrayOf(
+            "id",
+            "personalDetail.id",
+            "personalDetail.address.id",
+            "correlationId",
+        )
+        private val DATE_FIELDS = arrayOf(
+            "dateCreated",
+            "personalDetail.dateCreated",
+            "personalDetail.address.dateCreated",
+            "updatedAt",
+            "applicationCreatedAt",
+        )
+    }
 
     @Nested
     inner class FindByGssCodes {
@@ -103,7 +120,7 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             registerCheckRepository.saveAll(listOf(registerCheck1, registerCheck2))
 
             // When
-            val actual = registerCheckRepository.findByCorrelationId(UUID.randomUUID())
+            val actual = registerCheckRepository.findByCorrelationId(randomUUID())
 
             // Then
             assertThat(actual).isNull()
@@ -217,6 +234,47 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
                 assertThat(registerCheckMatch.personalDetail.address).isNotNull
             }
             assertThat(actual.matchResultSentAt).isNotNull
+        }
+    }
+
+    @Nested
+    inner class FindBySourceTypeAndSourceReference {
+        @Test
+        fun `should get register check by sourceType and sourceReference`() {
+            // Given
+            val sourceReference = randomUUID().toString()
+            val matchingRegisterCheck1 = buildRegisterCheck(sourceReference = sourceReference)
+            val matchingRegisterCheck2 = buildRegisterCheck(sourceReference = sourceReference)
+            val unMatchedRegisterCheck = buildRegisterCheck()
+            registerCheckRepository.saveAll(listOf(matchingRegisterCheck1, matchingRegisterCheck2, unMatchedRegisterCheck))
+
+            // When
+            val actual = registerCheckRepository.findBySourceTypeAndSourceReference(VOTER_CARD, sourceReference)
+
+            // Then
+            assertThat(actual)
+                .isNotNull
+                .hasSize(2)
+                .usingRecursiveComparison()
+                .ignoringCollectionOrder()
+                .ignoringFields(*ID_FIELDS, *DATE_FIELDS)
+                .isEqualTo(listOf(matchingRegisterCheck1, matchingRegisterCheck2))
+        }
+
+        @Test
+        fun `should not get register check for an unknown sourceType and sourceReference`() {
+            // Given
+            val sourceReference = randomUUID().toString()
+            val anotherSourceReference = randomUUID().toString()
+            val unmatchedRegisterCheck1 = buildRegisterCheck(sourceReference = anotherSourceReference)
+            val unmatchedRegisterCheck2 = buildRegisterCheck()
+            registerCheckRepository.saveAll(listOf(unmatchedRegisterCheck1, unmatchedRegisterCheck2))
+
+            // When
+            val actual = registerCheckRepository.findBySourceTypeAndSourceReference(VOTER_CARD, sourceReference)
+
+            // Then
+            assertThat(actual).isNotNull.isEmpty()
         }
     }
 }

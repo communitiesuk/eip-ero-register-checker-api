@@ -36,7 +36,6 @@ internal class RegisterCheckRemovalMapperTest {
         // Then
         assertThat(actual.sourceType).isEqualTo(VOTER_CARD)
         assertThat(actual.sourceReference).isEqualTo(message.sourceReference)
-        assertThat(actual.gssCode).isEqualTo(message.gssCode)
         verify(sourceTypeMapper).fromSqsToDtoEnum(RegisterCheckSourceType.VOTER_MINUS_CARD)
         verifyNoMoreInteractions(sourceTypeMapper)
     }

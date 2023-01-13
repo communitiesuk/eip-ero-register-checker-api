@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.stereotype.Repository
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
+import uk.gov.dluhc.registercheckerapi.database.entity.SourceType
 import java.util.UUID
 
 @Repository
@@ -13,4 +14,6 @@ interface RegisterCheckRepository :
     JpaSpecificationExecutor<RegisterCheck> {
 
     fun findByCorrelationId(correlationId: UUID): RegisterCheck?
+
+    fun findBySourceTypeAndSourceReference(sourceType: SourceType, sourceReference: String): List<RegisterCheck>
 }

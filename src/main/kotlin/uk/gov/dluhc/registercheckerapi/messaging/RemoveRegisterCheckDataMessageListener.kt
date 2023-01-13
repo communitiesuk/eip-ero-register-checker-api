@@ -25,11 +25,10 @@ class RemoveRegisterCheckDataMessageListener(
         with(payload) {
             logger.info {
                 "RemoveRegisterCheckDataMessage received with " +
-                    "sourceType: $sourceType and " +
-                    "sourceReference: $sourceReference and " +
-                    "gssCode: $gssCode"
+                    "sourceType: [$sourceType] and " +
+                    "sourceReference: [$sourceReference]"
             }
-            registerCheckRemovalService.remove(mapper.toRemovalDto(this))
+            registerCheckRemovalService.removeRegisterCheckData(mapper.toRemovalDto(this))
         }
     }
 }

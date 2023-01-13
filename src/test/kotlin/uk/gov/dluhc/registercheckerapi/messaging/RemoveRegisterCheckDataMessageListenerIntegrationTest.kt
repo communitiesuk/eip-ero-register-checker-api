@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import org.testcontainers.shaded.org.awaitility.Awaitility.await
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
-import uk.gov.dluhc.registercheckerapi.database.entity.SourceType
+import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.VOTER_CARD
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType.VOTER_MINUS_CARD
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomGssCode
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
@@ -62,8 +62,11 @@ internal class RemoveRegisterCheckDataMessageListenerIntegrationTest : Integrati
 
         // Then
         await().atMost(5, TimeUnit.SECONDS).untilAsserted {
-            assertThat(registerCheckRepository.findBySourceReferenceAndSourceTypeAndGssCode(sourceReference, SourceType.VOTER_CARD, gssCode)).isEmpty()
+            assertThat(registerCheckRepository.findBySourceReferenceAndSourceTypeAndGssCode(sourceReference, VOTER_CARD, gssCode)).isEmpty()
             assertThat(registerCheckResultDataRepository.findByCorrelationIdIn(setOf(correlationIdForCheck1, correlationIdForCheck2))).isEmpty()
+
+            assertThat(registerCheckRepository.findByCorrelationId(correlationIdForOtherSourceRef)).isNotNull
+            assertThat(registerCheckRepository.findByCorrelationId(correlationIdForOtherGssCode)).isNotNull
             assertThat(registerCheckResultDataRepository.findByCorrelationIdIn(setOf(correlationIdForOtherSourceRef, correlationIdForOtherGssCode))).isNotEmpty.hasSize(2)
         }
     }

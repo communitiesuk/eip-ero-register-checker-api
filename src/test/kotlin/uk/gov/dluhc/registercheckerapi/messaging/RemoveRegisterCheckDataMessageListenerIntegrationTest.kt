@@ -54,8 +54,7 @@ internal class RemoveRegisterCheckDataMessageListenerIntegrationTest : Integrati
         // Then
         Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted {
             Assertions.assertThat(getActualRegisterCheckJpaEntity(message)).isEmpty()
-            Assertions.assertThat(registerCheckResultDataRepository.findByCorrelationId(correlationId1)).isNull()
-            Assertions.assertThat(registerCheckResultDataRepository.findByCorrelationId(correlationId2)).isNull()
+            Assertions.assertThat(registerCheckResultDataRepository.findByCorrelationIdIn(setOf(correlationId1, correlationId2))).isEmpty()
         }
     }
 

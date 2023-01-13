@@ -81,7 +81,7 @@ internal class RegisterCheckRemovalServiceTest {
             verify(sourceTypeMapper).fromDtoToEntityEnum(SourceTypeDtoEnum.VOTER_CARD)
             verify(registerCheckRepository).findBySourceTypeAndSourceReference(entitySourceType, dto.sourceReference)
             verify(registerCheckRepository).deleteAll(matchedRecordsList)
-            verify(registerCheckResultDataRepository).findByCorrelationIdIn(listOf(registerCheck1.correlationId, registerCheck2.correlationId))
+            verify(registerCheckResultDataRepository).findByCorrelationIdIn(setOf(registerCheck1.correlationId, registerCheck2.correlationId))
             verify(registerCheckResultDataRepository).deleteAll(matchedCheckResultList)
         }
 
@@ -105,7 +105,7 @@ internal class RegisterCheckRemovalServiceTest {
             verify(sourceTypeMapper).fromDtoToEntityEnum(SourceTypeDtoEnum.VOTER_CARD)
             verify(registerCheckRepository).findBySourceTypeAndSourceReference(entitySourceType, dto.sourceReference)
             verify(registerCheckRepository).deleteAll(matchedRecordsList)
-            verify(registerCheckResultDataRepository).findByCorrelationIdIn(listOf(registerCheck1.correlationId, registerCheck2.correlationId))
+            verify(registerCheckResultDataRepository).findByCorrelationIdIn(setOf(registerCheck1.correlationId, registerCheck2.correlationId))
             verify(registerCheckResultDataRepository, never()).deleteAll(any())
         }
     }

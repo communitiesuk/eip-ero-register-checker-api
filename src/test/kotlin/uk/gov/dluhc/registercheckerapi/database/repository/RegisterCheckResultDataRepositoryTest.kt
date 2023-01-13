@@ -16,14 +16,14 @@ internal class RegisterCheckResultDataRepositoryTest : IntegrationTest() {
         registerCheckResultDataRepository.save(registerCheckResultData)
 
         // When
-        val actual = registerCheckResultDataRepository.findByCorrelationId(correlationId)
+        val actual = registerCheckResultDataRepository.findByCorrelationIdIn(setOf(correlationId))
 
         // Then
-        assertThat(actual).isNotNull
-        assertThat(actual?.id).isNotNull
-        assertThat(actual?.correlationId).isEqualTo(correlationId)
-        assertThat(actual?.requestBody?.contains(correlationId.toString())).isTrue
-        assertThat(actual?.dateCreated).isNotNull
+        assertThat(actual).isNotNull.hasSize(1)
+        assertThat(actual[0].id).isNotNull
+        assertThat(actual[0].correlationId).isEqualTo(correlationId)
+        assertThat(actual[0].requestBody?.contains(correlationId.toString())).isTrue
+        assertThat(actual[0].dateCreated).isNotNull
     }
 
     @Test
@@ -37,7 +37,7 @@ internal class RegisterCheckResultDataRepositoryTest : IntegrationTest() {
         registerCheckResultDataRepository.saveAll(listOf(registerCheckResultData1, registerCheckResultData2, anotherRegisterCheckResultData))
 
         // When
-        val actual = registerCheckResultDataRepository.findByCorrelationIdIn(listOf(correlationId1, correlationId2))
+        val actual = registerCheckResultDataRepository.findByCorrelationIdIn(setOf(correlationId1, correlationId2))
 
         // Then
         assertThat(actual).isNotNull.hasSize(2)
@@ -50,7 +50,7 @@ internal class RegisterCheckResultDataRepositoryTest : IntegrationTest() {
         val correlationId2 = randomUUID()
 
         // When
-        val actual = registerCheckResultDataRepository.findByCorrelationIdIn(listOf(correlationId1, correlationId2))
+        val actual = registerCheckResultDataRepository.findByCorrelationIdIn(setOf(correlationId1, correlationId2))
 
         // Then
         assertThat(actual).isNotNull.isEmpty()

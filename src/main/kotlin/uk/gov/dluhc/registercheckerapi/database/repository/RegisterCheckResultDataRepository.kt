@@ -8,7 +8,5 @@ import java.util.UUID
 @Repository
 interface RegisterCheckResultDataRepository : JpaRepository<RegisterCheckResultData, UUID> {
 
-    fun findByCorrelationId(correlationId: UUID): RegisterCheckResultData?
-
-    fun findByCorrelationIdIn(correlationIds: List<UUID>): List<RegisterCheckResultData>
+    fun findByCorrelationIdIn(correlationIds: Set<UUID>): List<RegisterCheckResultData>
 }

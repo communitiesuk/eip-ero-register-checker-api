@@ -22,27 +22,28 @@ class RegisterCheckRemovalService(
         removeRegisterCheck(dto).also { removeRegisterCheckResult(it) }
     }
 
-    private fun removeRegisterCheck(dto: RegisterCheckRemovalDto): List<UUID> {
+    private fun removeRegisterCheck(dto: RegisterCheckRemovalDto): Set<UUID> {
         with(dto) {
-            logger.info("Finding RegisterCheck to delete for sourceType: [$sourceType], sourceReference: [$sourceReference]")
-            val matchingRecords = registerCheckRepository.findBySourceTypeAndSourceReference(
+            logger.info("Finding RegisterCheck to delete for sourceType: [$sourceType], sourceReference: [$sourceReference], gssCode: [$gssCode]")
+            val matchingRecords = registerCheckRepository.findBySourceReferenceAndSourceTypeAndGssCode(
+                sourceReference = sourceReference,
                 sourceType = sourceTypeMapper.fromDtoToEntityEnum(sourceType),
-                sourceReference = sourceReference
+                gssCode = gssCode
             )
             if (CollectionUtils.isEmpty(matchingRecords)) {
-                logger.info("Found no matching RegisterCheck to delete for sourceType: [$sourceType], sourceReference: [$sourceReference]")
+                logger.info("Found no matching RegisterCheck to delete for sourceType: [$sourceType], sourceReference: [$sourceReference], gssCode: [$gssCode]")
             } else {
-                logger.info("Deleting [${matchingRecords.size}] RegisterCheck record(s) for sourceType: [$sourceType], sourceReference: [$sourceReference]")
+                logger.info("Deleting [${matchingRecords.size}] RegisterCheck record(s) for sourceType: [$sourceType], sourceReference: [$sourceReference], gssCode: [$gssCode]")
                 registerCheckRepository.deleteAll(matchingRecords)
             }
-            return matchingRecords.map { it.correlationId }.toList()
+            return matchingRecords.map { it.correlationId }.toSet()
         }
     }
 
-    private fun removeRegisterCheckResult(correlationIds: List<UUID>) {
+    private fun removeRegisterCheckResult(correlationIds: Set<UUID>) {
         if (correlationIds.isNotEmpty()) {
             logger.info("Finding RegisterCheckResult records to delete for correlationIds: $correlationIds")
-            val matchingRecords = registerCheckResultDataRepository.findByCorrelationIdIn(correlationIds.distinct())
+            val matchingRecords = registerCheckResultDataRepository.findByCorrelationIdIn(correlationIds)
 
             if (CollectionUtils.isEmpty(matchingRecords)) {
                 logger.info("Found no matching RegisterCheckResult to delete for correlationIds: $correlationIds")

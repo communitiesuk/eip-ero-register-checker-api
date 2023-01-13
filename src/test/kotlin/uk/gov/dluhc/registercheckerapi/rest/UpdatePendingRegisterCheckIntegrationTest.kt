@@ -547,9 +547,9 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
 
-        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
+        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationIdIn(setOf(requestId))[0]
         assertRequestIsAudited(actualRegisterResultData, requestId, matchResultSentAt.toString(), gssCodeFromEroApi, matchCount)
-        val persistedRequest = objectMapper.readValue(actualRegisterResultData!!.requestBody, RegisterCheckResultRequest::class.java)
+        val persistedRequest = objectMapper.readValue(actualRegisterResultData.requestBody, RegisterCheckResultRequest::class.java)
         assertThat(persistedRequest).usingRecursiveComparison()
             .ignoringFields("registerCheckMatches.applicationCreatedAt")
             .isEqualTo(requestBody)
@@ -654,7 +654,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
 
-        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
+        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationIdIn(setOf((requestId)))[0]
         assertRequestIsAudited(actualRegisterResultData, requestId, createdAtFromRequest, gssCodeFromEroApi, matchCount)
 
         assertMessageSubmittedToSqs(expectedMessageContentSentToVca)
@@ -718,7 +718,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
 
-        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
+        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationIdIn(setOf(requestId))[0]
         assertRequestIsAudited(actualRegisterResultData, requestId, createdAtFromRequest, gssCodeFromEroApi, matchCount)
 
         assertMessageSubmittedToSqs(expectedMessageContentSentToVca)
@@ -770,14 +770,14 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     }
 
     private fun assertRequestIsNotAudited(requestId: UUID) {
-        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
-        assertThat(actualRegisterResultData).isNull()
+        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationIdIn(setOf(requestId))
+        assertThat(actualRegisterResultData).isEmpty()
     }
 
     private fun assertRequestIsAudited(requestId: UUID) {
-        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationId(requestId)
+        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationIdIn(setOf(requestId))[0]
         assertThat(actualRegisterResultData).isNotNull
-        assertThat(actualRegisterResultData!!.id).isNotNull
+        assertThat(actualRegisterResultData.id).isNotNull
         assertThat(actualRegisterResultData.correlationId).isNotNull
         assertThat(actualRegisterResultData.dateCreated).isNotNull
     }

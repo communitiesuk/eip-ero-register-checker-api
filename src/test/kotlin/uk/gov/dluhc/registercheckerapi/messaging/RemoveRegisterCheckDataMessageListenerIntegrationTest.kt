@@ -62,7 +62,7 @@ internal class RemoveRegisterCheckDataMessageListenerIntegrationTest : Integrati
 
         // Then
         await().atMost(5, TimeUnit.SECONDS).untilAsserted {
-            assertThat(registerCheckRepository.findBySourceTypeAndSourceReferenceAndGssCode(SourceType.VOTER_CARD, sourceReference, gssCode)).isEmpty()
+            assertThat(registerCheckRepository.findBySourceReferenceAndSourceTypeAndGssCode(sourceReference, SourceType.VOTER_CARD, gssCode)).isEmpty()
             assertThat(registerCheckResultDataRepository.findByCorrelationIdIn(setOf(correlationIdForCheck1, correlationIdForCheck2))).isEmpty()
             assertThat(registerCheckResultDataRepository.findByCorrelationIdIn(setOf(correlationIdForOtherSourceRef, correlationIdForOtherGssCode))).isNotEmpty.hasSize(2)
         }

@@ -25,9 +25,9 @@ class RegisterCheckRemovalService(
     private fun removeRegisterCheck(dto: RegisterCheckRemovalDto): Set<UUID> {
         with(dto) {
             logger.info("Finding RegisterCheck to delete for sourceType: [$sourceType], sourceReference: [$sourceReference], gssCode: [$gssCode]")
-            val matchingRecords = registerCheckRepository.findBySourceTypeAndSourceReferenceAndGssCode(
-                sourceType = sourceTypeMapper.fromDtoToEntityEnum(sourceType),
+            val matchingRecords = registerCheckRepository.findBySourceReferenceAndSourceTypeAndGssCode(
                 sourceReference = sourceReference,
+                sourceType = sourceTypeMapper.fromDtoToEntityEnum(sourceType),
                 gssCode = gssCode
             )
             if (CollectionUtils.isEmpty(matchingRecords)) {

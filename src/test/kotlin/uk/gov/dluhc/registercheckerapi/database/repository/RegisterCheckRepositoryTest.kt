@@ -239,9 +239,9 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
     }
 
     @Nested
-    inner class FindBySourceTypeAndSourceReferenceAndGssCode {
+    inner class FindBySourceReferenceAndSourceTypeAndGssCode {
         @Test
-        fun `should get register check by sourceType and sourceReference and gssCode`() {
+        fun `should get register check by sourceReference and sourceType and gssCode`() {
             // Given
             val sourceReference = randomUUID().toString()
             val gssCode = getRandomGssCode()
@@ -253,7 +253,7 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             registerCheckRepository.saveAll(listOf(matchingRegisterCheck1, matchingRegisterCheck2, unMatchedRegisterCheck1, unMatchedRegisterCheck2, unMatchedRegisterCheck3))
 
             // When
-            val actual = registerCheckRepository.findBySourceTypeAndSourceReferenceAndGssCode(VOTER_CARD, sourceReference, gssCode)
+            val actual = registerCheckRepository.findBySourceReferenceAndSourceTypeAndGssCode(sourceReference, VOTER_CARD, gssCode)
 
             // Then
             assertThat(actual)
@@ -266,7 +266,7 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         }
 
         @Test
-        fun `should not get register check for an unknown sourceType and sourceReference and gssCode`() {
+        fun `should not get register check for an unknown sourceReference and sourceType and gssCode`() {
             // Given
             val sourceReference = randomUUID().toString()
             val gssCode = getRandomGssCode()
@@ -278,7 +278,7 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             registerCheckRepository.saveAll(listOf(unmatchedRegisterCheck1, unmatchedRegisterCheck2, unmatchedRegisterCheck3))
 
             // When
-            val actual = registerCheckRepository.findBySourceTypeAndSourceReferenceAndGssCode(VOTER_CARD, sourceReference, gssCode)
+            val actual = registerCheckRepository.findBySourceReferenceAndSourceTypeAndGssCode(sourceReference, VOTER_CARD, gssCode)
 
             // Then
             assertThat(actual).isNotNull.isEmpty()

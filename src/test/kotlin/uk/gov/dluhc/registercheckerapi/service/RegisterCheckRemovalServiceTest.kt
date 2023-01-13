@@ -45,14 +45,14 @@ internal class RegisterCheckRemovalServiceTest {
             val entitySourceType = SourceType.VOTER_CARD
 
             given(sourceTypeMapper.fromDtoToEntityEnum(any())).willReturn(entitySourceType)
-            given(registerCheckRepository.findBySourceTypeAndSourceReferenceAndGssCode(any(), any(), any())).willReturn(emptyList())
+            given(registerCheckRepository.findBySourceReferenceAndSourceTypeAndGssCode(any(), any(), any())).willReturn(emptyList())
 
             // When
             registerCheckRemovalService.removeRegisterCheckData(dto)
 
             // Then
             verify(sourceTypeMapper).fromDtoToEntityEnum(SourceTypeDtoEnum.VOTER_CARD)
-            verify(registerCheckRepository).findBySourceTypeAndSourceReferenceAndGssCode(entitySourceType, dto.sourceReference, dto.gssCode)
+            verify(registerCheckRepository).findBySourceReferenceAndSourceTypeAndGssCode(dto.sourceReference, entitySourceType, dto.gssCode)
             verify(registerCheckRepository, never()).deleteAll(any())
             verifyNoInteractions(registerCheckResultDataRepository)
         }
@@ -71,7 +71,7 @@ internal class RegisterCheckRemovalServiceTest {
             val matchedCheckResultList = listOf(registerCheckResult1, registerCheckResult2)
 
             given(sourceTypeMapper.fromDtoToEntityEnum(any())).willReturn(entitySourceType)
-            given(registerCheckRepository.findBySourceTypeAndSourceReferenceAndGssCode(any(), any(), any())).willReturn(matchedRecordsList)
+            given(registerCheckRepository.findBySourceReferenceAndSourceTypeAndGssCode(any(), any(), any())).willReturn(matchedRecordsList)
             given(registerCheckResultDataRepository.findByCorrelationIdIn(any())).willReturn(matchedCheckResultList)
 
             // When
@@ -79,7 +79,7 @@ internal class RegisterCheckRemovalServiceTest {
 
             // Then
             verify(sourceTypeMapper).fromDtoToEntityEnum(SourceTypeDtoEnum.VOTER_CARD)
-            verify(registerCheckRepository).findBySourceTypeAndSourceReferenceAndGssCode(entitySourceType, dto.sourceReference, dto.gssCode)
+            verify(registerCheckRepository).findBySourceReferenceAndSourceTypeAndGssCode(dto.sourceReference, entitySourceType, dto.gssCode)
             verify(registerCheckRepository).deleteAll(matchedRecordsList)
             verify(registerCheckResultDataRepository).findByCorrelationIdIn(setOf(registerCheck1.correlationId, registerCheck2.correlationId))
             verify(registerCheckResultDataRepository).deleteAll(matchedCheckResultList)
@@ -95,7 +95,7 @@ internal class RegisterCheckRemovalServiceTest {
             val matchedRecordsList = listOf(registerCheck1, registerCheck2)
 
             given(sourceTypeMapper.fromDtoToEntityEnum(any())).willReturn(entitySourceType)
-            given(registerCheckRepository.findBySourceTypeAndSourceReferenceAndGssCode(any(), any(), any())).willReturn(matchedRecordsList)
+            given(registerCheckRepository.findBySourceReferenceAndSourceTypeAndGssCode(any(), any(), any())).willReturn(matchedRecordsList)
             given(registerCheckResultDataRepository.findByCorrelationIdIn(any())).willReturn(emptyList())
 
             // When
@@ -103,7 +103,7 @@ internal class RegisterCheckRemovalServiceTest {
 
             // Then
             verify(sourceTypeMapper).fromDtoToEntityEnum(SourceTypeDtoEnum.VOTER_CARD)
-            verify(registerCheckRepository).findBySourceTypeAndSourceReferenceAndGssCode(entitySourceType, dto.sourceReference, dto.gssCode)
+            verify(registerCheckRepository).findBySourceReferenceAndSourceTypeAndGssCode(dto.sourceReference, entitySourceType, dto.gssCode)
             verify(registerCheckRepository).deleteAll(matchedRecordsList)
             verify(registerCheckResultDataRepository).findByCorrelationIdIn(setOf(registerCheck1.correlationId, registerCheck2.correlationId))
             verify(registerCheckResultDataRepository, never()).deleteAll(any())

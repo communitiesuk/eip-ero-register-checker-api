@@ -14,5 +14,6 @@
     <include relativeToChangelogFile="true" file="ddl/0006_register_check_match.xml"/>
     <include relativeToChangelogFile="true" file="ddl/0007_register_check_result_data.xml"/>
     <include relativeToChangelogFile="true" file="ddl/0008_alter_register_check_match.xml"/>
+    <include relativeToChangelogFile="true" file="ddl/0009_alter_register_check.xml"/>
 
 </databaseChangeLog>

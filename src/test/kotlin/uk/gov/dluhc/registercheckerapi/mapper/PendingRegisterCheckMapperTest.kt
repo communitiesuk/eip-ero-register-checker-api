@@ -23,7 +23,7 @@ import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPendingRegi
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPersonalDetailDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildPersonalDetail
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
-import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildInitiateRegisterCheckMessage
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildInitiateRegisterCheckMessage
 import java.time.Instant
 import java.time.ZoneOffset
 import java.util.UUID.randomUUID

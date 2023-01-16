@@ -13,7 +13,7 @@ import org.springframework.messaging.handler.annotation.support.HeadersMethodArg
 import org.springframework.messaging.handler.annotation.support.PayloadMethodArgumentResolver
 import org.springframework.validation.Validator
 import uk.gov.dluhc.registercheckerapi.messaging.MessageQueue
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
+import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckResultMessage
 
 @Configuration
 class MessagingConfiguration {

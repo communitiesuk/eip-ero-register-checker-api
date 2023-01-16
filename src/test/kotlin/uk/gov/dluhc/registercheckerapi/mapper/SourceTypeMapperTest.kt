@@ -4,11 +4,11 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType
 import uk.gov.dluhc.registercheckerapi.models.SourceSystem
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType as SourceTypeEntityEnum
 import uk.gov.dluhc.registercheckerapi.dto.SourceType as SourceTypeDtoEnum
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType as SourceTypeSqsEnum
+import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType as SourceTypeRcaSqsEnum
+import uk.gov.dluhc.votercardapplicationsapi.messaging.models.SourceType as SourceTypeVcaSqsEnum
 
 class SourceTypeMapperTest {
     private val mapper = SourceTypeMapperImpl()
@@ -20,7 +20,7 @@ class SourceTypeMapperTest {
         ]
     )
     fun `should map Message Source Type enum to DTO Source Type`(
-        sourceType: RegisterCheckSourceType,
+        sourceType: SourceTypeRcaSqsEnum,
         expected: SourceTypeDtoEnum
     ) {
         // Given
@@ -38,14 +38,14 @@ class SourceTypeMapperTest {
             "VOTER_CARD, VOTER_MINUS_CARD",
         ]
     )
-    fun `should map Entity Source Type to Message Source Type`(
+    fun `should map Entity Source Type to VCA Message Source Type`(
         sourceType: SourceTypeEntityEnum,
-        expected: SourceTypeSqsEnum
+        expected: SourceTypeVcaSqsEnum
     ) {
         // Given
 
         // When
-        val actual = mapper.fromEntityToSqsEnum(sourceType)
+        val actual = mapper.fromEntityToVcaSqsEnum(sourceType)
 
         // Then
         Assertions.assertThat(actual).isEqualTo(expected)

@@ -37,9 +37,6 @@ import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMapper
 import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMessageMapper
 import uk.gov.dluhc.registercheckerapi.messaging.MessageQueue
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomEroId
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomGssCode
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPendingRegisterCheckDto
@@ -47,7 +44,11 @@ import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildRegisterChe
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildRegisterCheckResultDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatch
-import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchFromMatchDto
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildRegisterCheckResultMessage
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildVcaRegisterCheckMatchFromMatchDto
+import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckResult
+import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckResultMessage
+import uk.gov.dluhc.votercardapplicationsapi.messaging.models.SourceType
 import java.time.Instant
 import java.util.UUID
 import java.util.UUID.randomUUID
@@ -356,13 +357,13 @@ internal class RegisterCheckServiceTest {
         @ParameterizedTest
         @CsvSource(
             value = [
-                "0, NO_MATCH, NO_MATCH",
-                "1, EXACT_MATCH, EXACT_MATCH",
-                "1, PENDING_DETERMINATION, PENDING_DETERMINATION",
+                "0, NO_MATCH, NO_MINUS_MATCH",
+                "1, EXACT_MATCH, EXACT_MINUS_MATCH",
+                "1, PENDING_DETERMINATION, PENDING_MINUS_DETERMINATION",
                 "1, EXPIRED, EXPIRED",
-                "1, NOT_STARTED, NOT_STARTED",
-                "10, MULTIPLE_MATCH, MULTIPLE_MATCH",
-                "11, TOO_MANY_MATCHES, TOO_MANY_MATCHES"
+                "1, NOT_STARTED, NOT_MINUS_STARTED",
+                "10, MULTIPLE_MATCH, MULTIPLE_MINUS_MATCH",
+                "11, TOO_MANY_MATCHES, TOO_MINUS_MANY_MINUS_MATCHES"
             ]
         )
         fun `should update pending register check successfully and submit a ConfirmRegisterCheckResult Message`(
@@ -386,12 +387,12 @@ internal class RegisterCheckServiceTest {
                 registerCheckMatches = registerCheckMatchDtoList
             )
             val savedPendingRegisterCheckEntity = buildRegisterCheck(correlationId = requestId, status = PENDING)
-            val expectedMessage = RegisterCheckResultMessage(
-                sourceType = RegisterCheckSourceType.VOTER_MINUS_CARD,
+            val expectedMessage = buildRegisterCheckResultMessage(
+                sourceType = SourceType.VOTER_MINUS_CARD,
                 sourceReference = savedPendingRegisterCheckEntity.sourceReference,
                 sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
                 registerCheckResult = registerCheckResult,
-                matches = registerCheckResultDto.registerCheckMatches!!.map { buildRegisterCheckMatchFromMatchDto(it) }
+                matches = registerCheckResultDto.registerCheckMatches!!.map { buildVcaRegisterCheckMatchFromMatchDto(it) }
             )
 
             given(retrieveGssCodeService.getGssCodeFromCertificateSerial(any())).willReturn(listOf(matchingGssCode, otherGssCode))

@@ -6,7 +6,7 @@ import org.testcontainers.shaded.org.awaitility.Awaitility.await
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.VOTER_CARD
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType.VOTER_MINUS_CARD
+import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType.VOTER_MINUS_CARD
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomGssCode
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckResultData

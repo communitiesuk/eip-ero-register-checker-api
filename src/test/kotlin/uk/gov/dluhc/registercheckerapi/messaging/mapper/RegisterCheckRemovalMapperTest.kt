@@ -12,7 +12,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import uk.gov.dluhc.registercheckerapi.dto.SourceType.VOTER_CARD
 import uk.gov.dluhc.registercheckerapi.mapper.SourceTypeMapper
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType
+import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildRemoveRegisterCheckDataMessage
 
 @ExtendWith(MockitoExtension::class)
@@ -38,7 +38,7 @@ internal class RegisterCheckRemovalMapperTest {
         assertThat(actual.sourceReference).isEqualTo(message.sourceReference)
         assertThat(actual.gssCode).isEqualTo(message.gssCode)
 
-        verify(sourceTypeMapper).fromSqsToDtoEnum(RegisterCheckSourceType.VOTER_MINUS_CARD)
+        verify(sourceTypeMapper).fromSqsToDtoEnum(SourceType.VOTER_MINUS_CARD)
         verifyNoMoreInteractions(sourceTypeMapper)
     }
 }

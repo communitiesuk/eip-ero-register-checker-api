@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Register Checker SQS Message Types
-  version: '1.0.3'
+  version: '1.0.4'
   description: |-
     Register Checker SQS Message Types
     
@@ -52,7 +52,7 @@ components:
       description: Base SQS Message for an applicant's register check.
       properties:
         sourceType:
-          $ref: '#/components/schemas/RegisterCheckSourceType'
+          $ref: '#/components/schemas/SourceType'
         sourceReference:
           type: string
           description: Reference of the application in the corresponding source system that the message relates to. e.g. `VoterCardApplication.applicationId`
@@ -179,8 +179,8 @@ components:
         - street
         - postcode
 
-    RegisterCheckSourceType:
-      title: RegisterCheckSourceType
+    SourceType:
+      title: SourceType
       type: string
       enum:
         - voter-card

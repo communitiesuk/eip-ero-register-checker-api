@@ -5,13 +5,13 @@ import org.apache.commons.lang3.RandomStringUtils
 import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckAddress
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckPersonalDetail
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType
+import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.DataFaker
 import java.time.LocalDate
 import java.util.UUID
 
 fun buildInitiateRegisterCheckMessage(
-    sourceType: RegisterCheckSourceType = RegisterCheckSourceType.VOTER_MINUS_CARD,
+    sourceType: SourceType = SourceType.VOTER_MINUS_CARD,
     sourceReference: String = "VPIOKNHPBP",
     sourceCorrelationId: UUID = UUID.randomUUID(),
     requestedBy: String = "system",

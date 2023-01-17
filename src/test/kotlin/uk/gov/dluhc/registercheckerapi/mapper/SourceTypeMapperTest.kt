@@ -7,7 +7,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.dluhc.registercheckerapi.models.SourceSystem
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType as SourceTypeEntityEnum
 import uk.gov.dluhc.registercheckerapi.dto.SourceType as SourceTypeDtoEnum
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType as SourceTypeRcaSqsEnum
+import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType as SourceTypeRcaSqsEnum
 import uk.gov.dluhc.votercardapplicationsapi.messaging.models.SourceType as SourceTypeVcaSqsEnum
 
 class SourceTypeMapperTest {

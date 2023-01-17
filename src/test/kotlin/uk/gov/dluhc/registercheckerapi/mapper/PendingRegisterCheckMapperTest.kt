@@ -16,7 +16,7 @@ import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.dto.AddressDto
 import uk.gov.dluhc.registercheckerapi.dto.PendingRegisterCheckDto
 import uk.gov.dluhc.registercheckerapi.dto.PersonalDetailDto
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType
+import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType
 import uk.gov.dluhc.registercheckerapi.models.PendingRegisterCheck
 import uk.gov.dluhc.registercheckerapi.models.SourceSystem
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPendingRegisterCheckDto
@@ -87,7 +87,7 @@ internal class PendingRegisterCheckMapperTest {
             .isEqualTo(expected)
         assertThat(actual.correlationId).isNotNull
         assertThat(actual.createdAt).isNull()
-        verify(sourceTypeMapper).fromSqsToDtoEnum(RegisterCheckSourceType.VOTER_MINUS_CARD)
+        verify(sourceTypeMapper).fromSqsToDtoEnum(SourceType.VOTER_MINUS_CARD)
         verifyNoInteractions(instantMapper, personalDetailMapper)
         verifyNoMoreInteractions(sourceTypeMapper)
     }

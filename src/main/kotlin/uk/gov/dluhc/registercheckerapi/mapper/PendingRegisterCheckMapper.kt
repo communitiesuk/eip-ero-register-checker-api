@@ -5,12 +5,10 @@ import org.mapstruct.Mapping
 import org.mapstruct.Named
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.dto.PendingRegisterCheckDto
-import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckMessage
 import uk.gov.dluhc.registercheckerapi.models.PendingRegisterCheck
 
 /**
- * Maps incoming [InitiateRegisterCheckMessage] to [PendingRegisterCheckDto]. Maps the entity class [RegisterCheck]
- * to/from the corresponding [PendingRegisterCheckDto].
+ * Maps the entity class [RegisterCheck] to/from the corresponding [PendingRegisterCheckDto].
  */
 @Mapper(
     uses = [
@@ -20,10 +18,6 @@ import uk.gov.dluhc.registercheckerapi.models.PendingRegisterCheck
     ]
 )
 abstract class PendingRegisterCheckMapper {
-
-    @Mapping(target = "correlationId", expression = "java(java.util.UUID.randomUUID())")
-    @Mapping(target = "createdBy", source = "requestedBy")
-    abstract fun initiateRegisterCheckMessageToPendingRegisterCheckDto(initiateRegisterCheckMessage: InitiateRegisterCheckMessage): PendingRegisterCheckDto
 
     @Mapping(target = "status", constant = "PENDING")
     @Mapping(target = "registerCheckMatches", expression = "java(new java.util.ArrayList())")

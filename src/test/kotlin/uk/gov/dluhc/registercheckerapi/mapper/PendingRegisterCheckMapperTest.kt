@@ -13,20 +13,15 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
-import uk.gov.dluhc.registercheckerapi.dto.AddressDto
 import uk.gov.dluhc.registercheckerapi.dto.PendingRegisterCheckDto
-import uk.gov.dluhc.registercheckerapi.dto.PersonalDetailDto
-import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType
 import uk.gov.dluhc.registercheckerapi.models.PendingRegisterCheck
 import uk.gov.dluhc.registercheckerapi.models.SourceSystem
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPendingRegisterCheckDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPersonalDetailDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildPersonalDetail
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
-import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildInitiateRegisterCheckMessage
 import java.time.Instant
 import java.time.ZoneOffset
-import java.util.UUID.randomUUID
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType as EntitySourceType
 import uk.gov.dluhc.registercheckerapi.dto.SourceType as DtoSourceType
 
@@ -44,53 +39,6 @@ internal class PendingRegisterCheckMapperTest {
 
     @InjectMocks
     private val mapper = PendingRegisterCheckMapperImpl()
-
-    @Test
-    fun `should map model to dto`() {
-        // Given
-        val message = buildInitiateRegisterCheckMessage()
-        given(sourceTypeMapper.fromSqsToDtoEnum(any())).willReturn(DtoSourceType.VOTER_CARD)
-
-        val expected = PendingRegisterCheckDto(
-            correlationId = randomUUID(),
-            sourceType = DtoSourceType.VOTER_CARD,
-            sourceReference = message.sourceReference,
-            sourceCorrelationId = message.sourceCorrelationId,
-            createdBy = "system",
-            gssCode = message.gssCode,
-            personalDetail = PersonalDetailDto(
-                firstName = message.personalDetail.firstName,
-                middleNames = message.personalDetail.middleNames,
-                surname = message.personalDetail.surname,
-                dateOfBirth = message.personalDetail.dateOfBirth,
-                phone = message.personalDetail.phone,
-                email = message.personalDetail.email,
-                address = AddressDto(
-                    property = message.personalDetail.address.property,
-                    street = message.personalDetail.address.street,
-                    locality = message.personalDetail.address.locality,
-                    town = message.personalDetail.address.town,
-                    area = message.personalDetail.address.area,
-                    postcode = message.personalDetail.address.postcode,
-                    uprn = message.personalDetail.address.uprn,
-                )
-            )
-        )
-
-        // When
-        val actual = mapper.initiateRegisterCheckMessageToPendingRegisterCheckDto(message)
-
-        // Then
-        assertThat(actual)
-            .usingRecursiveComparison()
-            .ignoringFields("correlationId")
-            .isEqualTo(expected)
-        assertThat(actual.correlationId).isNotNull
-        assertThat(actual.createdAt).isNull()
-        verify(sourceTypeMapper).fromSqsToDtoEnum(SourceType.VOTER_MINUS_CARD)
-        verifyNoInteractions(instantMapper, personalDetailMapper)
-        verifyNoMoreInteractions(sourceTypeMapper)
-    }
 
     @Test
     fun `should map dto to entity`() {

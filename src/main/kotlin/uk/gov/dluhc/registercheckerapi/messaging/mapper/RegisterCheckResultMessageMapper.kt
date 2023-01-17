@@ -1,10 +1,12 @@
-package uk.gov.dluhc.registercheckerapi.mapper
+package uk.gov.dluhc.registercheckerapi.messaging.mapper
 
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import uk.gov.dluhc.registercheckerapi.database.entity.PersonalDetail
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch
+import uk.gov.dluhc.registercheckerapi.mapper.CheckStatusMapper
+import uk.gov.dluhc.registercheckerapi.mapper.SourceTypeMapper
 import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckPersonalDetail
 import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckResultMessage
 import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckMatch as RegisterCheckMatchSqsModel

@@ -8,7 +8,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
+import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckResult
 
 internal class CheckStatusMapperTest {
 
@@ -45,29 +45,29 @@ internal class CheckStatusMapperTest {
     }
 
     @Nested
-    inner class ToRegisterCheckStatusResultEnum {
+    inner class ToRegisterCheckResultEnum {
 
         @ParameterizedTest
         @CsvSource(
             value = [
-                "NO_MATCH, NO_MATCH",
-                "EXACT_MATCH, EXACT_MATCH",
-                "PARTIAL_MATCH, PARTIAL_MATCH",
-                "PENDING_DETERMINATION, PENDING_DETERMINATION",
+                "NO_MATCH, NO_MINUS_MATCH",
+                "EXACT_MATCH, EXACT_MINUS_MATCH",
+                "PARTIAL_MATCH, PARTIAL_MINUS_MATCH",
+                "PENDING_DETERMINATION, PENDING_MINUS_DETERMINATION",
                 "EXPIRED, EXPIRED",
-                "NOT_STARTED, NOT_STARTED",
-                "MULTIPLE_MATCH, MULTIPLE_MATCH",
-                "TOO_MANY_MATCHES, TOO_MANY_MATCHES"
+                "NOT_STARTED, NOT_MINUS_STARTED",
+                "MULTIPLE_MATCH, MULTIPLE_MINUS_MATCH",
+                "TOO_MANY_MATCHES, TOO_MINUS_MANY_MINUS_MATCHES"
             ]
         )
-        fun `should map entity CheckStatus enum to RegisterCheckResult message enum`(
+        fun `should map entity CheckStatus enum to VCA RegisterCheckResult message enum`(
             checkStatus: CheckStatus,
             expected: RegisterCheckResult
         ) {
             // Given
 
             // When
-            val actual = mapper.toRegisterCheckStatusResultEnum(checkStatus)
+            val actual = mapper.toRegisterCheckResultEnum(checkStatus)
 
             // Then
             assertThat(actual).isEqualTo(expected)
@@ -80,7 +80,7 @@ internal class CheckStatusMapperTest {
 
             // When
             val ex = Assertions.catchThrowableOfType(
-                { mapper.toRegisterCheckStatusResultEnum(source) },
+                { mapper.toRegisterCheckResultEnum(source) },
                 IllegalArgumentException::class.java
             )
 

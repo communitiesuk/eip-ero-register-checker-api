@@ -1,4 +1,4 @@
-package uk.gov.dluhc.registercheckerapi.mapper
+package uk.gov.dluhc.registercheckerapi.messaging.mapper
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
@@ -15,14 +15,16 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType
+import uk.gov.dluhc.registercheckerapi.mapper.CheckStatusMapper
+import uk.gov.dluhc.registercheckerapi.mapper.SourceTypeMapper
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildPersonalDetailWithOptionalFieldsAsNull
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatch
-import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchModel
-import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckPersonalDetailFromEntity
-import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckResultMessage
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildRegisterCheckResultMessage
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildVcaRegisterCheckMatch
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildVcaRegisterCheckPersonalDetailSqsFromEntity
+import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckResult
+import uk.gov.dluhc.votercardapplicationsapi.messaging.models.SourceType as SourceTypeVcaEnum
 
 @ExtendWith(MockitoExtension::class)
 internal class RegisterCheckResultMessageMapperTest {
@@ -42,29 +44,32 @@ internal class RegisterCheckResultMessageMapperTest {
         @ParameterizedTest
         @CsvSource(
             value = [
-                "EXACT_MATCH, EXACT_MATCH",
-                "NO_MATCH, NO_MATCH",
-                "PARTIAL_MATCH, PARTIAL_MATCH",
-                "PENDING_DETERMINATION, PENDING_DETERMINATION",
+                "EXACT_MATCH, EXACT_MINUS_MATCH",
+                "NO_MATCH, NO_MINUS_MATCH",
+                "PARTIAL_MATCH, PARTIAL_MINUS_MATCH",
+                "PENDING_DETERMINATION, PENDING_MINUS_DETERMINATION",
                 "EXPIRED, EXPIRED",
-                "NOT_STARTED, NOT_STARTED"
+                "NOT_STARTED, NOT_MINUS_STARTED"
             ]
         )
-        fun `should map entity to message when one match found`(initialStatus: CheckStatus, expectedStatus: RegisterCheckResult) {
+        fun `should map entity to message when one match found`(
+            initialStatus: CheckStatus,
+            expectedStatus: RegisterCheckResult
+        ) {
             // Given
             val registerCheckEntity = buildRegisterCheck(status = initialStatus, registerCheckMatches = mutableListOf(buildRegisterCheckMatch()))
-            given(checkStatusMapper.toRegisterCheckStatusResultEnum(any())).willReturn(expectedStatus)
-            given(sourceTypeMapper.fromEntityToSqsEnum(any())).willReturn(RegisterCheckSourceType.VOTER_MINUS_CARD)
+            given(checkStatusMapper.toRegisterCheckResultEnum(any())).willReturn(expectedStatus)
+            given(sourceTypeMapper.fromEntityToVcaSqsEnum(any())).willReturn(SourceTypeVcaEnum.VOTER_MINUS_CARD)
 
             val expectedMessage = buildRegisterCheckResultMessage(
-                sourceType = RegisterCheckSourceType.VOTER_MINUS_CARD,
+                sourceType = SourceTypeVcaEnum.VOTER_MINUS_CARD,
                 sourceReference = registerCheckEntity.sourceReference,
                 sourceCorrelationId = registerCheckEntity.sourceCorrelationId,
                 registerCheckResult = expectedStatus,
                 matches = registerCheckEntity.registerCheckMatches.map { registerCheckMatch ->
                     with(registerCheckMatch) {
-                        buildRegisterCheckMatchModel(
-                            personalDetail = buildRegisterCheckPersonalDetailFromEntity(personalDetail),
+                        buildVcaRegisterCheckMatch(
+                            personalDetail = buildVcaRegisterCheckPersonalDetailSqsFromEntity(personalDetail),
                             emsElectoralId = emsElectorId,
                             franchiseCode = franchiseCode ?: "",
                             registeredStartDate = registeredStartDate,
@@ -79,8 +84,8 @@ internal class RegisterCheckResultMessageMapperTest {
 
             // Then
             assertThat(actual).usingRecursiveComparison().isEqualTo(expectedMessage)
-            verify(checkStatusMapper).toRegisterCheckStatusResultEnum(initialStatus)
-            verify(sourceTypeMapper).fromEntityToSqsEnum(SourceType.VOTER_CARD)
+            verify(checkStatusMapper).toRegisterCheckResultEnum(initialStatus)
+            verify(sourceTypeMapper).fromEntityToVcaSqsEnum(SourceType.VOTER_CARD)
             verifyNoMoreInteractions(sourceTypeMapper)
         }
 
@@ -88,14 +93,14 @@ internal class RegisterCheckResultMessageMapperTest {
         fun `should map entity to message when no match`() {
             // Given
             val registerCheck = buildRegisterCheck(status = CheckStatus.NO_MATCH, registerCheckMatches = mutableListOf())
-            given(checkStatusMapper.toRegisterCheckStatusResultEnum(any())).willReturn(RegisterCheckResult.NO_MATCH)
-            given(sourceTypeMapper.fromEntityToSqsEnum(any())).willReturn(RegisterCheckSourceType.VOTER_MINUS_CARD)
+            given(checkStatusMapper.toRegisterCheckResultEnum(any())).willReturn(RegisterCheckResult.NO_MINUS_MATCH)
+            given(sourceTypeMapper.fromEntityToVcaSqsEnum(any())).willReturn(SourceTypeVcaEnum.VOTER_MINUS_CARD)
 
             val expected = buildRegisterCheckResultMessage(
-                sourceType = RegisterCheckSourceType.VOTER_MINUS_CARD,
+                sourceType = SourceTypeVcaEnum.VOTER_MINUS_CARD,
                 sourceReference = registerCheck.sourceReference,
                 sourceCorrelationId = registerCheck.sourceCorrelationId,
-                registerCheckResult = RegisterCheckResult.NO_MATCH,
+                registerCheckResult = RegisterCheckResult.NO_MINUS_MATCH,
                 matches = emptyList()
             )
 
@@ -106,8 +111,8 @@ internal class RegisterCheckResultMessageMapperTest {
             assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
             assertThat(actual.matches).isNotNull
             assertThat(actual.matches).isEmpty()
-            verify(checkStatusMapper).toRegisterCheckStatusResultEnum(CheckStatus.NO_MATCH)
-            verify(sourceTypeMapper).fromEntityToSqsEnum(SourceType.VOTER_CARD)
+            verify(checkStatusMapper).toRegisterCheckResultEnum(CheckStatus.NO_MATCH)
+            verify(sourceTypeMapper).fromEntityToVcaSqsEnum(SourceType.VOTER_CARD)
             verifyNoMoreInteractions(sourceTypeMapper)
         }
 
@@ -121,18 +126,18 @@ internal class RegisterCheckResultMessageMapperTest {
                     buildRegisterCheckMatch(personalDetail = buildPersonalDetailWithOptionalFieldsAsNull())
                 )
             )
-            given(checkStatusMapper.toRegisterCheckStatusResultEnum(any())).willReturn(RegisterCheckResult.MULTIPLE_MATCH)
-            given(sourceTypeMapper.fromEntityToSqsEnum(any())).willReturn(RegisterCheckSourceType.VOTER_MINUS_CARD)
+            given(checkStatusMapper.toRegisterCheckResultEnum(any())).willReturn(RegisterCheckResult.MULTIPLE_MINUS_MATCH)
+            given(sourceTypeMapper.fromEntityToVcaSqsEnum(any())).willReturn(SourceTypeVcaEnum.VOTER_MINUS_CARD)
 
             val expected = buildRegisterCheckResultMessage(
-                sourceType = RegisterCheckSourceType.VOTER_MINUS_CARD,
+                sourceType = SourceTypeVcaEnum.VOTER_MINUS_CARD,
                 sourceReference = registerCheck.sourceReference,
                 sourceCorrelationId = registerCheck.sourceCorrelationId,
-                registerCheckResult = RegisterCheckResult.MULTIPLE_MATCH,
+                registerCheckResult = RegisterCheckResult.MULTIPLE_MINUS_MATCH,
                 matches = registerCheck.registerCheckMatches.map { registerCheckMatch ->
                     with(registerCheckMatch) {
-                        buildRegisterCheckMatchModel(
-                            personalDetail = buildRegisterCheckPersonalDetailFromEntity(personalDetail),
+                        buildVcaRegisterCheckMatch(
+                            personalDetail = buildVcaRegisterCheckPersonalDetailSqsFromEntity(personalDetail),
                             emsElectoralId = emsElectorId,
                             franchiseCode = franchiseCode ?: "",
                             registeredStartDate = registeredStartDate,
@@ -148,8 +153,8 @@ internal class RegisterCheckResultMessageMapperTest {
             // Then
             assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
             assertThat(actual.matches).hasSize(2)
-            verify(checkStatusMapper).toRegisterCheckStatusResultEnum(CheckStatus.MULTIPLE_MATCH)
-            verify(sourceTypeMapper).fromEntityToSqsEnum(SourceType.VOTER_CARD)
+            verify(checkStatusMapper).toRegisterCheckResultEnum(CheckStatus.MULTIPLE_MATCH)
+            verify(sourceTypeMapper).fromEntityToVcaSqsEnum(SourceType.VOTER_CARD)
             verifyNoMoreInteractions(sourceTypeMapper)
         }
     }

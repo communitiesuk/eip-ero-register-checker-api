@@ -1,13 +1,15 @@
-package uk.gov.dluhc.registercheckerapi.mapper
+package uk.gov.dluhc.registercheckerapi.messaging.mapper
 
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import uk.gov.dluhc.registercheckerapi.database.entity.PersonalDetail
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckPersonalDetail
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckMatch as RegisterCheckMatch_Model
+import uk.gov.dluhc.registercheckerapi.mapper.CheckStatusMapper
+import uk.gov.dluhc.registercheckerapi.mapper.SourceTypeMapper
+import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckPersonalDetail
+import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckResultMessage
+import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckMatch as RegisterCheckMatchSqsModel
 
 /**
  * Maps [RegisterCheck] to [RegisterCheckResultMessage].
@@ -27,7 +29,7 @@ abstract class RegisterCheckResultMessageMapper {
     @Mapping(target = "matches", source = "registerCheckMatches")
     abstract fun fromRegisterCheckEntityToRegisterCheckResultMessage(entity: RegisterCheck): RegisterCheckResultMessage
 
-    protected abstract fun registerCheckMatchEntityToRegisterCheckPersonalDetailModel(registerCheckMatchEntity: RegisterCheckMatch): RegisterCheckMatch_Model
+    protected abstract fun registerCheckMatchEntityToRegisterCheckPersonalDetailModel(registerCheckMatchEntity: RegisterCheckMatch): RegisterCheckMatchSqsModel
 
     @Mapping(target = "firstName", source = "personalDetail.firstName")
     @Mapping(target = "middleNames", source = "personalDetail.middleNames")

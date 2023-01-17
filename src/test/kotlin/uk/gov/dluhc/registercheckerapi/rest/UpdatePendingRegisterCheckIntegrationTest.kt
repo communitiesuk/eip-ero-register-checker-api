@@ -15,9 +15,6 @@ import reactor.core.publisher.Mono
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckSourceType
 import uk.gov.dluhc.registercheckerapi.models.ErrorResponse
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.entity.RegisterCheckAssert
@@ -27,9 +24,13 @@ import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildAddress
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildPersonalDetail
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatchEntityFromRegisterCheckMatchApi
-import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchFromMatchApiModel
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildRegisterCheckResultMessage
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildVcaRegisterCheckMatchFromMatchApi
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchRequest
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckResultRequest
+import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckResult
+import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckResultMessage
+import uk.gov.dluhc.votercardapplicationsapi.messaging.models.SourceType
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
@@ -507,11 +508,11 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             buildRegisterCheckMatchEntityFromRegisterCheckMatchApi(matches[1])
         )
         val expectedMessageContent = RegisterCheckResultMessage(
-            sourceType = RegisterCheckSourceType.VOTER_MINUS_CARD,
+            sourceType = SourceType.VOTER_MINUS_CARD,
             sourceReference = savedPendingRegisterCheckEntity.sourceReference,
             sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
-            registerCheckResult = RegisterCheckResult.MULTIPLE_MATCH,
-            matches = matches.map { buildRegisterCheckMatchFromMatchApiModel(it) }
+            registerCheckResult = RegisterCheckResult.MULTIPLE_MINUS_MATCH,
+            matches = matches.map { buildVcaRegisterCheckMatchFromMatchApi(it) }
         )
         val requestBody = buildRegisterCheckResultRequest(
             requestId = requestId,
@@ -561,11 +562,11 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     @CsvSource(
         value = [
             // handle date format with timezone offset and empty franchise code
-            "2022-09-13T21:03:03.7788394+05:30, '', BS1 1AB, BS1 1AB, EXACT_MATCH, EXACT_MATCH",
+            "2022-09-13T21:03:03.7788394+05:30, '', BS1 1AB, BS1 1AB, EXACT_MINUS_MATCH, EXACT_MATCH",
             // handle UTC date format and Pending franchise code
-            "1986-05-01T02:42:44.348Z, Pending,  BS1 1AB, BS1 1AB, PENDING_DETERMINATION, PENDING_DETERMINATION",
+            "1986-05-01T02:42:44.348Z, Pending,  BS1 1AB, BS1 1AB, PENDING_MINUS_DETERMINATION, PENDING_DETERMINATION",
             // handle partial match
-            "2022-11-17T21:33:03.7788394+00:00, '', BS1 1AB, BS2 2CD, PARTIAL_MATCH, PARTIAL_MATCH"
+            "2022-11-17T21:33:03.7788394+00:00, '', BS1 1AB, BS2 2CD, PARTIAL_MINUS_MATCH, PARTIAL_MATCH"
         ]
     )
     fun `should return created given a post request with one match found`(
@@ -612,12 +613,12 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         val expectedRegisterCheckMatchEntityList = listOf(
             buildRegisterCheckMatchEntityFromRegisterCheckMatchApi(matches[0])
         )
-        val expectedMessageContentSentToVca = RegisterCheckResultMessage(
-            sourceType = RegisterCheckSourceType.VOTER_MINUS_CARD,
+        val expectedMessageContentSentToVca = buildRegisterCheckResultMessage(
+            sourceType = SourceType.VOTER_MINUS_CARD,
             sourceReference = savedPendingRegisterCheckEntity.sourceReference,
             sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
             registerCheckResult = expectedRegisterCheckResult,
-            matches = matches.map { buildRegisterCheckMatchFromMatchApiModel(it) }
+            matches = matches.map { buildVcaRegisterCheckMatchFromMatchApi(it) }
         )
 
         val requestBody = buildRegisterCheckResultRequest(
@@ -681,10 +682,10 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         registerCheckRepository.save(buildRegisterCheck(correlationId = UUID.randomUUID()))
 
         val expectedMessageContentSentToVca = RegisterCheckResultMessage(
-            sourceType = RegisterCheckSourceType.VOTER_MINUS_CARD,
+            sourceType = SourceType.VOTER_MINUS_CARD,
             sourceReference = savedPendingRegisterCheckEntity.sourceReference,
             sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
-            registerCheckResult = RegisterCheckResult.NO_MATCH,
+            registerCheckResult = RegisterCheckResult.NO_MINUS_MATCH,
             matches = emptyList()
         )
 

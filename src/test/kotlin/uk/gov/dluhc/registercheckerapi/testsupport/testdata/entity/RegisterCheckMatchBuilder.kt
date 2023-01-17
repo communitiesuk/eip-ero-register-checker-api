@@ -29,28 +29,30 @@ fun buildRegisterCheckMatch(
 
 fun buildRegisterCheckMatchEntityFromRegisterCheckMatchApi(
     registerCheckMatchApi: RegisterCheckMatchApi,
-) = RegisterCheckMatch(
-    emsElectorId = registerCheckMatchApi.emsElectorId,
-    attestationCount = registerCheckMatchApi.attestationCount,
-    personalDetail = buildPersonalDetail(
-        firstName = registerCheckMatchApi.fn,
-        middleNames = registerCheckMatchApi.mn,
-        surname = registerCheckMatchApi.ln,
-        dateOfBirth = registerCheckMatchApi.dob,
-        email = registerCheckMatchApi.email,
-        phoneNumber = registerCheckMatchApi.phone,
-        address = buildAddress(
-            street = registerCheckMatchApi.regstreet,
-            property = registerCheckMatchApi.regproperty,
-            locality = registerCheckMatchApi.reglocality,
-            town = registerCheckMatchApi.regtown,
-            area = registerCheckMatchApi.regarea,
-            postcode = registerCheckMatchApi.regpostcode,
-            uprn = registerCheckMatchApi.reguprn
-        )
-    ),
-    registeredStartDate = registerCheckMatchApi.registeredStartDate,
-    registeredEndDate = registerCheckMatchApi.registeredEndDate,
-    applicationCreatedAt = registerCheckMatchApi.applicationCreatedAt?.toInstant()!!,
-    franchiseCode = registerCheckMatchApi.franchiseCode
-)
+) = with(registerCheckMatchApi) {
+    RegisterCheckMatch(
+        emsElectorId = emsElectorId,
+        attestationCount = attestationCount,
+        personalDetail = buildPersonalDetail(
+            firstName = fn,
+            middleNames = mn,
+            surname = ln,
+            dateOfBirth = dob,
+            email = email,
+            phoneNumber = phone,
+            address = buildAddress(
+                street = regstreet,
+                property = regproperty,
+                locality = reglocality,
+                town = regtown,
+                area = regarea,
+                postcode = regpostcode,
+                uprn = reguprn
+            )
+        ),
+        registeredStartDate = registeredStartDate,
+        registeredEndDate = registeredEndDate,
+        applicationCreatedAt = applicationCreatedAt?.toInstant()!!,
+        franchiseCode = franchiseCode
+    )
+}

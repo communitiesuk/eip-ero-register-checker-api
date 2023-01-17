@@ -21,9 +21,9 @@ import uk.gov.dluhc.registercheckerapi.exception.PendingRegisterCheckNotFoundExc
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckUnexpectedStatusException
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMapper
-import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMessageMapper
 import uk.gov.dluhc.registercheckerapi.messaging.MessageQueue
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
+import uk.gov.dluhc.registercheckerapi.messaging.mapper.RegisterCheckResultMessageMapper
+import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckResultMessage
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}

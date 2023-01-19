@@ -239,46 +239,45 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
     }
 
     @Nested
-    inner class FindBySourceReferenceAndSourceTypeAndGssCode {
+    inner class FindBySourceReferenceAndSourceType {
+
         @Test
-        fun `should get register check by sourceReference and sourceType and gssCode`() {
+        fun `should get register check by sourceReference and sourceType`() {
             // Given
             val sourceReference = randomUUID().toString()
             val gssCode = getRandomGssCode()
             val matchingRegisterCheck1 = buildRegisterCheck(sourceReference = sourceReference, gssCode = gssCode)
             val matchingRegisterCheck2 = buildRegisterCheck(sourceReference = sourceReference, gssCode = gssCode)
-            val unMatchedRegisterCheck1 = buildRegisterCheck(gssCode = getRandomGssCode())
-            val unMatchedRegisterCheck2 = buildRegisterCheck(sourceReference = randomUUID().toString())
-            val unMatchedRegisterCheck3 = buildRegisterCheck()
-            registerCheckRepository.saveAll(listOf(matchingRegisterCheck1, matchingRegisterCheck2, unMatchedRegisterCheck1, unMatchedRegisterCheck2, unMatchedRegisterCheck3))
+            val matchingRegisterCheck3 = buildRegisterCheck(sourceReference = sourceReference, gssCode = getRandomGssCode())
+            val unMatchedRegisterCheck1 = buildRegisterCheck(sourceReference = randomUUID().toString())
+            val unMatchedRegisterCheck2 = buildRegisterCheck()
+            val expectedMatchingResults = 3
+            registerCheckRepository.saveAll(listOf(matchingRegisterCheck1, matchingRegisterCheck2, matchingRegisterCheck3, unMatchedRegisterCheck1, unMatchedRegisterCheck2))
 
             // When
-            val actual = registerCheckRepository.findBySourceReferenceAndSourceTypeAndGssCode(sourceReference, VOTER_CARD, gssCode)
+            val actual = registerCheckRepository.findBySourceReferenceAndSourceType(sourceReference, VOTER_CARD)
 
             // Then
             assertThat(actual)
                 .isNotNull
-                .hasSize(2)
+                .hasSize(expectedMatchingResults)
                 .usingRecursiveComparison()
                 .ignoringCollectionOrder()
                 .ignoringFields(*ID_FIELDS, *DATE_FIELDS)
-                .isEqualTo(listOf(matchingRegisterCheck1, matchingRegisterCheck2))
+                .isEqualTo(listOf(matchingRegisterCheck1, matchingRegisterCheck2, matchingRegisterCheck3))
         }
 
         @Test
-        fun `should not get register check for an unknown sourceReference and sourceType and gssCode`() {
+        fun `should not get register check for an unknown sourceReference and sourceType`() {
             // Given
             val sourceReference = randomUUID().toString()
-            val gssCode = getRandomGssCode()
             val anotherSourceReference = randomUUID().toString()
-            val anotherGssCode = getRandomGssCode()
-            val unmatchedRegisterCheck1 = buildRegisterCheck(sourceReference = anotherSourceReference, gssCode = gssCode)
-            val unmatchedRegisterCheck2 = buildRegisterCheck(sourceReference = sourceReference, gssCode = anotherGssCode)
-            val unmatchedRegisterCheck3 = buildRegisterCheck()
-            registerCheckRepository.saveAll(listOf(unmatchedRegisterCheck1, unmatchedRegisterCheck2, unmatchedRegisterCheck3))
+            val unmatchedRegisterCheck1 = buildRegisterCheck(sourceReference = anotherSourceReference)
+            val unmatchedRegisterCheck2 = buildRegisterCheck()
+            registerCheckRepository.saveAll(listOf(unmatchedRegisterCheck1, unmatchedRegisterCheck2))
 
             // When
-            val actual = registerCheckRepository.findBySourceReferenceAndSourceTypeAndGssCode(sourceReference, VOTER_CARD, gssCode)
+            val actual = registerCheckRepository.findBySourceReferenceAndSourceType(sourceReference, VOTER_CARD)
 
             // Then
             assertThat(actual).isNotNull.isEmpty()

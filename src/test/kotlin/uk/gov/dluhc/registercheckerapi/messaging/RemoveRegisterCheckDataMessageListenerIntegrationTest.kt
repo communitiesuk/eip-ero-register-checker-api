@@ -49,7 +49,6 @@ internal class RemoveRegisterCheckDataMessageListenerIntegrationTest : Integrati
         val message = buildRemoveRegisterCheckDataMessage(
             sourceType = VOTER_MINUS_CARD,
             sourceReference = sourceReference,
-            gssCode = gssCode
         )
 
         // When
@@ -62,12 +61,11 @@ internal class RemoveRegisterCheckDataMessageListenerIntegrationTest : Integrati
 
         // Then
         await().atMost(5, TimeUnit.SECONDS).untilAsserted {
-            assertThat(registerCheckRepository.findBySourceReferenceAndSourceTypeAndGssCode(sourceReference, VOTER_CARD, gssCode)).isEmpty()
-            assertThat(registerCheckResultDataRepository.findByCorrelationIdIn(setOf(correlationIdForCheck1, correlationIdForCheck2))).isEmpty()
+            assertThat(registerCheckRepository.findBySourceReferenceAndSourceType(sourceReference, VOTER_CARD)).isEmpty()
+            assertThat(registerCheckResultDataRepository.findByCorrelationIdIn(setOf(correlationIdForCheck1, correlationIdForCheck2, correlationIdForOtherGssCode))).isEmpty()
 
             assertThat(registerCheckRepository.findByCorrelationId(correlationIdForOtherSourceRef)).isNotNull
-            assertThat(registerCheckRepository.findByCorrelationId(correlationIdForOtherGssCode)).isNotNull
-            assertThat(registerCheckResultDataRepository.findByCorrelationIdIn(setOf(correlationIdForOtherSourceRef, correlationIdForOtherGssCode))).isNotEmpty.hasSize(2)
+            assertThat(registerCheckResultDataRepository.findByCorrelationIdIn(setOf(correlationIdForOtherSourceRef))).isNotEmpty.hasSize(1)
         }
     }
 }

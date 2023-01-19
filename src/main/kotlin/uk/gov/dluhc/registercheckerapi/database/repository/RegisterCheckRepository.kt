@@ -15,5 +15,5 @@ interface RegisterCheckRepository :
 
     fun findByCorrelationId(correlationId: UUID): RegisterCheck?
 
-    fun findBySourceReferenceAndSourceTypeAndGssCode(sourceReference: String, sourceType: SourceType, gssCode: String): List<RegisterCheck>
+    fun findBySourceReferenceAndSourceType(sourceReference: String, sourceType: SourceType): List<RegisterCheck>
 }

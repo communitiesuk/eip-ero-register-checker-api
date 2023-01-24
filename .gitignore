@@ -44,3 +44,4 @@ cypress/screenshots
 ### Others ###
 .DS_Store
 openapi/reference/test
+.envrc

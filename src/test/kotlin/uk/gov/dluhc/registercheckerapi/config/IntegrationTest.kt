@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.cache.CacheManager
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import software.amazon.awssdk.services.sqs.SqsClient
@@ -46,6 +47,9 @@ internal abstract class IntegrationTest {
     @Autowired
     protected lateinit var objectMapper: ObjectMapper
 
+    @Autowired
+    protected lateinit var cacheManager: CacheManager
+
     @Value("\${sqs.initiate-applicant-register-check-queue-name}")
     protected lateinit var initiateApplicantRegisterCheckQueueName: String
 
@@ -65,5 +69,6 @@ internal abstract class IntegrationTest {
     fun clearDatabase() {
         registerCheckResultDataRepository.deleteAll()
         registerCheckRepository.deleteAll()
+        // cacheManager.getCache(IerApiClient.ERO_IDENTIFIER_CACHE_KEY)?.clear()
     }
 }

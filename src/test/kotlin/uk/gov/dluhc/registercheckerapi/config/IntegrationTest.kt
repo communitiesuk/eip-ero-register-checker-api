@@ -70,6 +70,6 @@ internal abstract class IntegrationTest {
     fun clearDatabase() {
         registerCheckResultDataRepository.deleteAll()
         registerCheckRepository.deleteAll()
-        cacheManager.getCache(IerApiClient.ERO_IDENTIFIER_CACHE_KEY)?.clear()
+        cacheManager.getCache(IerApiClient.ERO_CERTIFICATE_MAPPING_CACHE_KEY)?.clear()
     }
 }

@@ -23,7 +23,7 @@ class IerApiClient(
     companion object {
         private const val GET_ERO_URI = "/ero"
         private const val QUERY_PARAM_CERTIFICATE_SERIAL_KEY = "certificateSerial"
-        const val ERO_IDENTIFIER_CACHE_KEY = "eroCertificateMapping"
+        const val ERO_CERTIFICATE_MAPPING_CACHE_KEY = "eroCertificateMapping"
     }
 
     /**
@@ -33,7 +33,7 @@ class IerApiClient(
      * @return a [EROCertificateMapping] containing eroId and certificate serial
      * @throws [IerApiException] concrete implementation if the API returns an error
      */
-    @Cacheable(ERO_IDENTIFIER_CACHE_KEY, key = "#certificateSerial")
+    @Cacheable(ERO_CERTIFICATE_MAPPING_CACHE_KEY, key = "#certificateSerial")
     fun getEroIdentifier(certificateSerial: String): EROCertificateMapping {
         logger.info("Get IER ERO for certificateSerial=[$certificateSerial]")
         try {
@@ -82,8 +82,8 @@ class IerApiClient(
         }
     }
 
-    @Scheduled(cron = "0 0 */1 * * *")
-    fun evictEroIdentifierCache() {
-        cacheManager.getCache(ERO_IDENTIFIER_CACHE_KEY)?.clear()
+    @Scheduled(cron = "\${jobs.evict-certificate-mapping-cache-job.cron}")
+    fun evictEroCertificateMappingCache() {
+        cacheManager.getCache(ERO_CERTIFICATE_MAPPING_CACHE_KEY)?.clear()
     }
 }

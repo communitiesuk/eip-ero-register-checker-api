@@ -11,6 +11,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
 import com.github.tomakehurst.wiremock.matching.StringValuePattern
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.CacheManager
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildElectoralRegistrationOfficeResponse
@@ -24,6 +25,8 @@ class WiremockService(private val wireMockServer: WireMockServer) {
 
     @Autowired
     private lateinit var objectMapper: ObjectMapper
+    @Autowired
+    private lateinit var cacheManager: CacheManager
 
     fun resetAllStubsAndMappings() {
         wireMockServer.resetAll()

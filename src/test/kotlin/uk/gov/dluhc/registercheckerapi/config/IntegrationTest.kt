@@ -11,6 +11,7 @@ import org.springframework.cache.CacheManager
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import software.amazon.awssdk.services.sqs.SqsClient
+import uk.gov.dluhc.registercheckerapi.client.IerApiClient
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckResultDataRepository
 import uk.gov.dluhc.registercheckerapi.testsupport.WiremockService
@@ -69,6 +70,6 @@ internal abstract class IntegrationTest {
     fun clearDatabase() {
         registerCheckResultDataRepository.deleteAll()
         registerCheckRepository.deleteAll()
-        // cacheManager.getCache(IerApiClient.ERO_IDENTIFIER_CACHE_KEY)?.clear()
+        cacheManager.getCache(IerApiClient.ERO_IDENTIFIER_CACHE_KEY)?.clear()
     }
 }

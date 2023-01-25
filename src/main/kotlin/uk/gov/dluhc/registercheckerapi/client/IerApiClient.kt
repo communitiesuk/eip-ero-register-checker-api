@@ -1,29 +1,26 @@
 package uk.gov.dluhc.registercheckerapi.client
 
 import mu.KotlinLogging
-import org.springframework.cache.CacheManager
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpStatus
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
 import uk.gov.dluhc.external.ier.models.EROCertificateMapping
+import uk.gov.dluhc.registercheckerapi.config.ERO_CERTIFICATE_MAPPING_CACHE
 
 private val logger = KotlinLogging.logger {}
 
 @Component
 class IerApiClient(
-    private val ierRestTemplate: RestTemplate,
-    private val cacheManager: CacheManager
+    private val ierRestTemplate: RestTemplate
 ) {
 
     companion object {
         private const val GET_ERO_URI = "/ero"
         private const val QUERY_PARAM_CERTIFICATE_SERIAL_KEY = "certificateSerial"
-        const val ERO_CERTIFICATE_MAPPING_CACHE_KEY = "eroCertificateMapping"
     }
 
     /**
@@ -33,7 +30,7 @@ class IerApiClient(
      * @return a [EROCertificateMapping] containing eroId and certificate serial
      * @throws [IerApiException] concrete implementation if the API returns an error
      */
-    @Cacheable(ERO_CERTIFICATE_MAPPING_CACHE_KEY, key = "#certificateSerial")
+    @Cacheable(ERO_CERTIFICATE_MAPPING_CACHE, key = "#certificateSerial")
     fun getEroIdentifier(certificateSerial: String): EROCertificateMapping {
         logger.info("Get IER ERO for certificateSerial=[$certificateSerial]")
         try {
@@ -80,10 +77,5 @@ class IerApiClient(
         throw IerGeneralException(message).apply {
             logger.error { "Error: [${restClientException.message}]" }
         }
-    }
-
-    @Scheduled(cron = "\${jobs.evict-certificate-mapping-cache-job.cron}")
-    fun evictEroCertificateMappingCache() {
-        cacheManager.getCache(ERO_CERTIFICATE_MAPPING_CACHE_KEY)?.clear()
     }
 }

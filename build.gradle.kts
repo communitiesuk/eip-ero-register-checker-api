@@ -54,6 +54,7 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.12.0")
     implementation("org.apache.httpcomponents:httpclient:4.5.14")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
+    implementation("com.google.guava:guava:31.1-jre")
     kapt("org.mapstruct:mapstruct-processor:1.5.3.Final")
 
     // api

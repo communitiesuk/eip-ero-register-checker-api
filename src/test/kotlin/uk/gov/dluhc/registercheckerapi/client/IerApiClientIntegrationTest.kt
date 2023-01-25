@@ -6,10 +6,13 @@ import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
 import com.github.tomakehurst.wiremock.matching.StringValuePattern
 import org.assertj.core.api.Assertions.assertThat
+import org.awaitility.kotlin.await
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import uk.gov.dluhc.external.ier.models.EROCertificateMapping
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
+import java.time.Duration
 
 /**
 * Note: Negative tests which throws errors/exceptions for [uk.gov.dluhc.registercheckerapi.client.IerApiClient]
@@ -22,6 +25,9 @@ internal class IerApiClientIntegrationTest : IntegrationTest() {
 
     @Autowired
     private lateinit var wireMockServer: WireMockServer
+
+    @Value("\${caching.time-to-live}")
+    private lateinit var timeToLive: Duration
 
     @Test
     fun `should get EROCertificateMapping response for a given certificate serial`() {
@@ -40,6 +46,30 @@ internal class IerApiClientIntegrationTest : IntegrationTest() {
         verifyWiremockGetInvokedFor(certificateSerial)
     }
 
+    @Test
+    fun `should cache and evict cache`() {
+        // Given
+        val certificateSerial = "1234567891"
+        val expectedEroId = "camden-city-council"
+        val expectedEroCertificateMapping =
+            EROCertificateMapping(eroId = expectedEroId, certificateSerial = certificateSerial)
+        wireMockService.stubIerApiGetEroIdentifier(certificateSerial, expectedEroId)
+
+        // When
+        ierApiClient.getEroIdentifier(certificateSerial)
+        val actualEroCertificateMapping = ierApiClient.getEroIdentifier(certificateSerial)
+
+        // Then
+        assertThat(actualEroCertificateMapping).isEqualTo(expectedEroCertificateMapping)
+        verifyWiremockGetInvokedFor(certificateSerial)
+        await.during(timeToLive.minusMillis(500)).atMost(timeToLive).untilAsserted {
+            assertThat(ierApiClient.getEroIdentifier(certificateSerial)).isEqualTo(expectedEroCertificateMapping)
+        }
+        await.atMost(Duration.ofSeconds(1)).untilAsserted {
+            assertThat(ierApiClient.getEroIdentifier(certificateSerial)).isNull()
+        }
+    }
+
     private fun verifyWiremockGetInvokedFor(certificateSerial: String) {
         wireMockServer.verify(
             WireMock.getRequestedFor(urlPathMatching("/ier-ero/ero"))
@@ -55,4 +85,5 @@ internal class IerApiClientIntegrationTest : IntegrationTest() {
                 "SignedHeaders=accept;accept-encoding;host;x-amz-date;x-amz-security-token, " +
                 "Signature=.*"
         )
+
 }

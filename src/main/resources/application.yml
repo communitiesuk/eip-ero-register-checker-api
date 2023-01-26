@@ -31,3 +31,5 @@ sqs:
   initiate-applicant-register-check-queue-name: ${SQS_INITIATE_APPLICANT_REGISTER_CHECK_QUEUE_NAME}
   confirm-applicant-register-check-result-queue-name: ${SQS_CONFIRM_APPLICANT_REGISTER_CHECK_RESULT_QUEUE_NAME}
   remove-applicant-register-check-data-queue-name: ${SQS_REMOVE_APPLICANT_REGISTER_CHECK_DATA_QUEUE_NAME}
+
+caching.time-to-live: PT1H

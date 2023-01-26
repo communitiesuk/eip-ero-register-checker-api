@@ -1,6 +1,7 @@
 package uk.gov.dluhc.registercheckerapi.client
 
 import mu.KotlinLogging
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.client.HttpClientErrorException
@@ -8,6 +9,7 @@ import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
 import uk.gov.dluhc.external.ier.models.EROCertificateMapping
+import uk.gov.dluhc.registercheckerapi.config.ERO_CERTIFICATE_MAPPING_CACHE
 
 private val logger = KotlinLogging.logger {}
 
@@ -28,6 +30,7 @@ class IerApiClient(
      * @return a [EROCertificateMapping] containing eroId and certificate serial
      * @throws [IerApiException] concrete implementation if the API returns an error
      */
+    @Cacheable(ERO_CERTIFICATE_MAPPING_CACHE)
     fun getEroIdentifier(certificateSerial: String): EROCertificateMapping {
         logger.info("Get IER ERO for certificateSerial=[$certificateSerial]")
         try {

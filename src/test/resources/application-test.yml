@@ -35,3 +35,5 @@ sqs:
   initiate-applicant-register-check-queue-name: initiate-applicant-register-check
   confirm-applicant-register-check-result-queue-name: confirm-applicant-register-check-result
   remove-applicant-register-check-data-queue-name: remove-applicant-register-check-data
+
+caching.time-to-live: PT2S

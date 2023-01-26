@@ -30,7 +30,7 @@ class IerApiClient(
      * @return a [EROCertificateMapping] containing eroId and certificate serial
      * @throws [IerApiException] concrete implementation if the API returns an error
      */
-    @Cacheable(ERO_CERTIFICATE_MAPPING_CACHE, key = "#certificateSerial")
+    @Cacheable(ERO_CERTIFICATE_MAPPING_CACHE)
     fun getEroIdentifier(certificateSerial: String): EROCertificateMapping {
         logger.info("Get IER ERO for certificateSerial=[$certificateSerial]")
         try {

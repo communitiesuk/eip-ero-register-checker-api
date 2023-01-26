@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.time.Duration
 
-const val ERO_CERTIFICATE_MAPPING_CACHE = "eroCertificateMapping"
+const val ERO_CERTIFICATE_MAPPING_CACHE = "eroCertificateMappings"
 
 @Configuration
 @EnableCaching

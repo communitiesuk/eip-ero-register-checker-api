@@ -63,10 +63,10 @@ internal class IerApiClientIntegrationTest : IntegrationTest() {
         verifyWiremockGetInvokedFor(certificateSerial)
 
         // Within the TTL, we should retrieve result with expectedEroId and afterwards, with expectedEroId2
-        await.during(Duration.ofMillis(500)).atMost(timeToLive).untilAsserted {
+        await.during(timeToLive.minusMillis(500)).atMost(timeToLive).untilAsserted {
             assertThat(ierApiClient.getEroIdentifier(certificateSerial)).isEqualTo(expectedEroCertificateMapping)
         }
-        await.atMost(Duration.ofSeconds(2)).untilAsserted {
+        await.atMost(Duration.ofSeconds(1)).untilAsserted {
             assertThat(ierApiClient.getEroIdentifier(certificateSerial)).isEqualTo(expectedEroCertificateMapping2)
         }
     }

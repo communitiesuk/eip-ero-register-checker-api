@@ -11,7 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.given
 import org.mockito.kotlin.verify
-import org.springframework.cache.CacheManager
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.client.HttpClientErrorException
@@ -24,9 +23,6 @@ internal class IerApiClientTest {
 
     @Mock
     private lateinit var ierRestTemplate: RestTemplate
-
-    @Mock
-    private lateinit var cacheManager: CacheManager
 
     @InjectMocks
     private lateinit var ierApiClient: IerApiClient

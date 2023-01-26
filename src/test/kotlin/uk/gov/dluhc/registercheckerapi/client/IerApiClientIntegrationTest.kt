@@ -9,7 +9,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import uk.gov.dluhc.external.ier.models.EROCertificateMapping
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import java.time.Duration
@@ -25,9 +24,6 @@ internal class IerApiClientIntegrationTest : IntegrationTest() {
 
     @Autowired
     private lateinit var wireMockServer: WireMockServer
-
-    @Value("\${caching.time-to-live}")
-    private lateinit var timeToLive: Duration
 
     @Test
     fun `should get EROCertificateMapping response for a given certificate serial`() {
@@ -51,22 +47,27 @@ internal class IerApiClientIntegrationTest : IntegrationTest() {
         // Given
         val certificateSerial = "1234567891"
         val expectedEroId = "camden-city-council"
+        val expectedEroId2 = "camden-city-council-2"
         val expectedEroCertificateMapping =
             EROCertificateMapping(eroId = expectedEroId, certificateSerial = certificateSerial)
+        val expectedEroCertificateMapping2 =
+            EROCertificateMapping(eroId = expectedEroId2, certificateSerial = certificateSerial)
         wireMockService.stubIerApiGetEroIdentifier(certificateSerial, expectedEroId)
 
         // When
         ierApiClient.getEroIdentifier(certificateSerial)
-        val actualEroCertificateMapping = ierApiClient.getEroIdentifier(certificateSerial)
+        wireMockService.stubIerApiGetEroIdentifier(certificateSerial, expectedEroId2)
+        ierApiClient.getEroIdentifier(certificateSerial)
 
         // Then
-        assertThat(actualEroCertificateMapping).isEqualTo(expectedEroCertificateMapping)
         verifyWiremockGetInvokedFor(certificateSerial)
-        await.during(timeToLive.minusMillis(500)).atMost(timeToLive).untilAsserted {
+
+        // Within the TTL, we should retrieve result with expectedEroId and afterwards, with expectedEroId2
+        await.during(Duration.ofMillis(500)).atMost(timeToLive).untilAsserted {
             assertThat(ierApiClient.getEroIdentifier(certificateSerial)).isEqualTo(expectedEroCertificateMapping)
         }
-        await.atMost(Duration.ofSeconds(1)).untilAsserted {
-            assertThat(ierApiClient.getEroIdentifier(certificateSerial)).isNull()
+        await.atMost(Duration.ofSeconds(2)).untilAsserted {
+            assertThat(ierApiClient.getEroIdentifier(certificateSerial)).isEqualTo(expectedEroCertificateMapping2)
         }
     }
 
@@ -85,5 +86,4 @@ internal class IerApiClientIntegrationTest : IntegrationTest() {
                 "SignedHeaders=accept;accept-encoding;host;x-amz-date;x-amz-security-token, " +
                 "Signature=.*"
         )
-
 }

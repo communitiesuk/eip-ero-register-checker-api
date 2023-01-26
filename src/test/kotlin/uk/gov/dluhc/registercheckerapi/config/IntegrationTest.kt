@@ -14,6 +14,7 @@ import software.amazon.awssdk.services.sqs.SqsClient
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckResultDataRepository
 import uk.gov.dluhc.registercheckerapi.testsupport.WiremockService
+import java.time.Duration
 
 /**
  * Base class used to bring up the entire Spring ApplicationContext
@@ -55,6 +56,9 @@ internal abstract class IntegrationTest {
 
     @Value("\${sqs.remove-applicant-register-check-data-queue-name}")
     protected lateinit var removeApplicantRegisterCheckDataQueueName: String
+
+    @Value("\${caching.time-to-live}")
+    protected lateinit var timeToLive: Duration
 
     companion object {
         val mysqlContainerConfiguration: MySQLContainerConfiguration = MySQLContainerConfiguration.getInstance()

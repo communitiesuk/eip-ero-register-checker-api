@@ -38,7 +38,7 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 private const val REQUEST_HEADER_NAME = "client-cert-serial"
-private const val CERT_SERIAL_NUMBER_VALUE = "543212222"
+const val CERT_SERIAL_NUMBER_VALUE = "543212222"
 
 internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 

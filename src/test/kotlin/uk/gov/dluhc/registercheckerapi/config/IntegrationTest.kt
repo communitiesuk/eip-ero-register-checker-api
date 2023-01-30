@@ -2,11 +2,13 @@ package uk.gov.dluhc.registercheckerapi.config
 
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.zaxxer.hikari.HikariDataSource
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.cache.CacheManager
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -15,6 +17,7 @@ import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckReposito
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckResultDataRepository
 import uk.gov.dluhc.registercheckerapi.testsupport.WiremockService
 import java.time.Duration
+import javax.sql.DataSource
 
 /**
  * Base class used to bring up the entire Spring ApplicationContext
@@ -50,6 +53,15 @@ internal abstract class IntegrationTest {
 
     @Autowired
     protected lateinit var cacheManager: CacheManager
+
+    @SpyBean(name = "readWriteDataSource")
+    protected lateinit var readWriteDataSource: HikariDataSource
+
+    @SpyBean(name = "readOnlyDataSource")
+    protected lateinit var readOnlyDataSource: HikariDataSource
+
+    @Autowired
+    protected lateinit var dataSources: List<DataSource>
 
     @Value("\${sqs.initiate-applicant-register-check-queue-name}")
     protected lateinit var initiateApplicantRegisterCheckQueueName: String

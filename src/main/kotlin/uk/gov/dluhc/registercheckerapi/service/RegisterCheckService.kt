@@ -40,6 +40,7 @@ class RegisterCheckService(
     private val matchStatusResolver: MatchStatusResolver
 ) {
 
+    @Transactional(readOnly = true)
     fun getPendingRegisterChecks(certificateSerial: String, pageSize: Int): List<PendingRegisterCheckDto> =
         retrieveGssCodeService.getGssCodeFromCertificateSerial(certificateSerial).let {
             registerCheckRepository.findPendingEntriesByGssCodes(it, pageSize)

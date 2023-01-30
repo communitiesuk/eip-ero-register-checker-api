@@ -40,16 +40,14 @@ class LocalStackContainerConfiguration {
      */
     @Bean
     fun localstackContainer(
-        @Value("\${cloud.aws.region.static}") region: String,
-        @Value("\${localstack.api.key}") localStackApiKey: String
+        @Value("\${cloud.aws.region.static}") region: String
     ): GenericContainer<*> {
         return GenericContainer(
             DockerImageName.parse("localstack/localstack:1.1.0")
         ).withEnv(
             mapOf(
                 "SERVICES" to "sqs,sts",
-                "AWS_DEFAULT_REGION" to region,
-                "LOCALSTACK_API_KEY" to localStackApiKey
+                "AWS_DEFAULT_REGION" to region
             )
         ).withExposedPorts(DEFAULT_PORT)
             .apply {

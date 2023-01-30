@@ -20,8 +20,8 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
     companion object {
         private const val GET_PENDING_REGISTER_CHECKS_ENDPOINT = "/registerchecks"
         private const val QUERY_PARAM_PAGE_SIZE = "pageSize"
-        private const val REQUEST_HEADER_NAME = "client-cert-serial"
-        private const val CERT_SERIAL_NUMBER_VALUE = "543219999"
+        const val REQUEST_HEADER_NAME = "client-cert-serial"
+        const val CERT_SERIAL_NUMBER_VALUE = "543219999"
     }
 
     @Test

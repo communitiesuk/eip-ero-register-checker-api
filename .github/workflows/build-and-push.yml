@@ -62,7 +62,7 @@ jobs:
         id: login-ecr-live
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push image to Amazon ECR (live env)
+      - name: Tag and push image to Amazon ECR (live env)
         id: build-image-live
         env:
           ECR_REGISTRY: ${{ steps.login-ecr-live.outputs.registry }}

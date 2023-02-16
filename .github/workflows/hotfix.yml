@@ -22,8 +22,8 @@ jobs:
           MATCHING_TAGS=$(git tag --contains HEAD)
           echo "Matching tags: $MATCHING_TAGS"
           echo "MATCHING_TAGS=$MATCHING_TAGS" >> $GITHUB_ENV
-          
-  build-and-tag:
+
+  tag:
     runs-on: ubuntu-latest
     needs: check-untagged
     if: needs.check-untagged.outputs.untagged == 'true'
@@ -64,46 +64,19 @@ jobs:
           git tag -a "${tag}" -m "${message}"
           git push origin "${tag}"
 
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: print-api-repo
-          IMAGE_TAG: ${{ steps.bump-semver.outputs.new_version }}
-        run: |
-          ./gradlew bootBuildImage
-          IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker tag eip-ero-print-api:latest $IMAGE
-          docker push $IMAGE
-          echo "::set-output name=image::$IMAGE"
-
-      - name: Configure AWS credentials (live env)
-        uses: aws-actions/configure-aws-credentials@v1-node16
-        with:
-          aws-access-key-id: ${{ secrets.LIVE_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.LIVE_AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-2
-
-      - name: Login to Amazon ECR (live env)
-        id: login-ecr-live
-        uses: aws-actions/amazon-ecr-login@v1
-
-      - name: Build, tag, and push image to Amazon ECR (live env)
-        id: build-image-live
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr-live.outputs.registry }}
-          ECR_REPOSITORY: print-api-repo
-          IMAGE_TAG: ${{ steps.bump-semver.outputs.new_version }}
-        run: |
-          IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker tag eip-ero-print-api:latest $IMAGE
-          docker push $IMAGE
-          echo "::set-output name=image::$IMAGE"
+  build-and-push:
+    needs: tag
+    uses: ./.github/workflows/build-and-push.yml
+    with:
+      version: ${{ needs.tag.outputs.version }}
+    secrets: inherit
 
   deploy:
-    needs: build-and-tag
+    needs:
+      - tag
+      - build-and-push
     uses: ./.github/workflows/deploy.yml
     with:
       deploy_environment: test
-      version: ${{ needs.build-and-tag.outputs.version }}
+      version: ${{ needs.tag.outputs.version }}
     secrets: inherit

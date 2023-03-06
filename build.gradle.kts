@@ -15,7 +15,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
     id("org.jlleitschuh.gradle.ktlint-idea") version "11.0.0"
     id("org.openapi.generator") version "6.2.1"
-    id("org.owasp.dependencycheck") version "8.0.2"
+    id("org.owasp.dependencycheck") version "8.1.2"
 }
 
 group = "uk.gov.dluhc"
@@ -216,6 +216,6 @@ dependencyCheck {
     failBuildOnCVSS = 0.toFloat()
     analyzers.assemblyEnabled = false
     analyzers.centralEnabled = true
-    format = HTML
+    format = HTML.name
     suppressionFiles = listOf("owasp.suppressions.xml")
 }

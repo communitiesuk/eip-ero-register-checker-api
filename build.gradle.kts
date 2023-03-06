@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.tasks.KtLintCheckTask
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+import org.owasp.dependencycheck.reporting.ReportGenerator.Format.HTML
 import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 
 plugins {
@@ -215,6 +216,6 @@ dependencyCheck {
     failBuildOnCVSS = 0.toFloat()
     analyzers.assemblyEnabled = false
     analyzers.centralEnabled = true
-    format = "HTML"
+    format = HTML.name
     suppressionFiles = listOf("owasp.suppressions.xml")
 }

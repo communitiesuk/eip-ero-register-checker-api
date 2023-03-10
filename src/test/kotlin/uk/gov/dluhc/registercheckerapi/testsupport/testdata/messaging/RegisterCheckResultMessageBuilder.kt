@@ -2,16 +2,16 @@ package uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging
 
 import net.datafaker.providers.base.Address
 import org.apache.commons.lang3.RandomStringUtils
+import uk.gov.dluhc.applicationsapi.messaging.models.RegisterCheckAddress
+import uk.gov.dluhc.applicationsapi.messaging.models.RegisterCheckMatch
+import uk.gov.dluhc.applicationsapi.messaging.models.RegisterCheckPersonalDetail
+import uk.gov.dluhc.applicationsapi.messaging.models.RegisterCheckResult
+import uk.gov.dluhc.applicationsapi.messaging.models.RegisterCheckResultMessage
+import uk.gov.dluhc.applicationsapi.messaging.models.SourceType
 import uk.gov.dluhc.registercheckerapi.database.entity.PersonalDetail
 import uk.gov.dluhc.registercheckerapi.dto.AddressDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckMatchDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.DataFaker.Companion.faker
-import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckAddress
-import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckMatch
-import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckPersonalDetail
-import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckResult
-import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckResultMessage
-import uk.gov.dluhc.votercardapplicationsapi.messaging.models.SourceType
 import java.time.LocalDate
 import java.util.UUID
 

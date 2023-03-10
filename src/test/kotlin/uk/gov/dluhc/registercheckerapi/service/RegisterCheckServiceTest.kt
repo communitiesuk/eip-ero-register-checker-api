@@ -19,6 +19,9 @@ import org.mockito.kotlin.given
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.verifyNoMoreInteractions
+import uk.gov.dluhc.applicationsapi.messaging.models.RegisterCheckResult
+import uk.gov.dluhc.applicationsapi.messaging.models.RegisterCheckResultMessage
+import uk.gov.dluhc.applicationsapi.messaging.models.SourceType
 import uk.gov.dluhc.registercheckerapi.client.ElectoralRegistrationOfficeGeneralException
 import uk.gov.dluhc.registercheckerapi.client.ElectoralRegistrationOfficeNotFoundException
 import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
@@ -46,9 +49,6 @@ import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegister
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildRegisterCheckResultMessage
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildVcaRegisterCheckMatchFromMatchDto
-import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckResult
-import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckResultMessage
-import uk.gov.dluhc.votercardapplicationsapi.messaging.models.SourceType
 import java.time.Instant
 import java.util.UUID
 import java.util.UUID.randomUUID

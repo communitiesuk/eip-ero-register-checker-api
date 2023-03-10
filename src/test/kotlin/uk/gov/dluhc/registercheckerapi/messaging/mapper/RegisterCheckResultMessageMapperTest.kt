@@ -13,6 +13,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
+import uk.gov.dluhc.applicationsapi.messaging.models.RegisterCheckResult
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType
 import uk.gov.dluhc.registercheckerapi.mapper.CheckStatusMapper
@@ -23,8 +24,7 @@ import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegister
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildRegisterCheckResultMessage
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildVcaRegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildVcaRegisterCheckPersonalDetailSqsFromEntity
-import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckResult
-import uk.gov.dluhc.votercardapplicationsapi.messaging.models.SourceType as SourceTypeVcaEnum
+import uk.gov.dluhc.applicationsapi.messaging.models.SourceType as SourceTypeVcaEnum
 
 @ExtendWith(MockitoExtension::class)
 internal class RegisterCheckResultMessageMapperTest {

@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
+import uk.gov.dluhc.applicationsapi.messaging.models.RegisterCheckResult
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
-import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckResult
 
 internal class CheckStatusMapperTest {
 

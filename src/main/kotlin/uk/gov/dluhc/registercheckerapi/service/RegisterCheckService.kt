@@ -3,6 +3,7 @@ package uk.gov.dluhc.registercheckerapi.service
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.dluhc.applicationsapi.messaging.models.RegisterCheckResultMessage
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.EXACT_MATCH
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.EXPIRED
@@ -23,7 +24,6 @@ import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMapper
 import uk.gov.dluhc.registercheckerapi.messaging.MessageQueue
 import uk.gov.dluhc.registercheckerapi.messaging.mapper.RegisterCheckResultMessageMapper
-import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckResultMessage
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}

@@ -12,6 +12,9 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.http.MediaType.APPLICATION_JSON
 import reactor.core.publisher.Mono
+import uk.gov.dluhc.applicationsapi.messaging.models.RegisterCheckResult
+import uk.gov.dluhc.applicationsapi.messaging.models.RegisterCheckResultMessage
+import uk.gov.dluhc.applicationsapi.messaging.models.SourceType
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
@@ -28,9 +31,6 @@ import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildRegis
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildVcaRegisterCheckMatchFromMatchApi
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchRequest
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckResultRequest
-import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckResult
-import uk.gov.dluhc.votercardapplicationsapi.messaging.models.RegisterCheckResultMessage
-import uk.gov.dluhc.votercardapplicationsapi.messaging.models.SourceType
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit

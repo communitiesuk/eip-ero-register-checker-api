@@ -173,8 +173,8 @@ tasks.create("api-generate rca-sqs-messaging model", GenerateTask::class) {
 
 tasks.create("api-generate vca-api-sqs-messaging-erop.yaml", GenerateTask::class) {
     enabled = true
-    inputSpec.set("$projectDir/src/main/resources/openapi/sqs/vca-api-sqs-messaging-erop.yaml")
-    packageName.set("uk.gov.dluhc.votercardapplicationsapi.messaging")
+    inputSpec.set("$projectDir/src/main/resources/openapi/sqs/applications-api-sqs-messaging-erop.yaml")
+    packageName.set("uk.gov.dluhc.applicationsapi.messaging")
 }
 
 // Add the generated code to the source sets

@@ -5,7 +5,6 @@ import org.mapstruct.Mapper
 import org.mapstruct.ValueMapping
 import uk.gov.dluhc.registercheckerapi.dto.SourceType
 import uk.gov.dluhc.registercheckerapi.models.SourceSystem
-import uk.gov.dluhc.applicationsapi.messaging.models.SourceType as SourceTypeVcaSqsEnum
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType as SourceTypeEntityEnum
 import uk.gov.dluhc.registercheckerapi.dto.SourceType as SourceTypeDtoEnum
 import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType as SourceTypeRcaSqsEnum
@@ -17,7 +16,7 @@ interface SourceTypeMapper {
     fun fromSqsToDtoEnum(sqsSourceType: SourceTypeRcaSqsEnum): SourceTypeDtoEnum
 
     @ValueMapping(target = "VOTER_MINUS_CARD", source = "VOTER_CARD")
-    fun fromEntityToVcaSqsEnum(entitySourceType: SourceTypeEntityEnum): SourceTypeVcaSqsEnum
+    fun fromEntityToVcaSqsEnum(entitySourceType: SourceTypeEntityEnum): SourceTypeRcaSqsEnum
 
     fun fromEntityToDtoEnum(entitySourceType: SourceTypeEntityEnum): SourceTypeDtoEnum
 

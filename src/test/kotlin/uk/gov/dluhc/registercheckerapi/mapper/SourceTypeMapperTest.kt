@@ -5,10 +5,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.dluhc.registercheckerapi.models.SourceSystem
-import uk.gov.dluhc.applicationsapi.messaging.models.SourceType as SourceTypeVcaSqsEnum
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType as SourceTypeEntityEnum
 import uk.gov.dluhc.registercheckerapi.dto.SourceType as SourceTypeDtoEnum
-import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType as SourceTypeRcaSqsEnum
+import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType as SourceTypeSqsEnum
 
 class SourceTypeMapperTest {
     private val mapper = SourceTypeMapperImpl()
@@ -20,7 +19,7 @@ class SourceTypeMapperTest {
         ]
     )
     fun `should map Message Source Type enum to DTO Source Type`(
-        sourceType: SourceTypeRcaSqsEnum,
+        sourceType: SourceTypeSqsEnum,
         expected: SourceTypeDtoEnum
     ) {
         // Given
@@ -40,7 +39,7 @@ class SourceTypeMapperTest {
     )
     fun `should map Entity Source Type to VCA Message Source Type`(
         sourceType: SourceTypeEntityEnum,
-        expected: SourceTypeVcaSqsEnum
+        expected: SourceTypeSqsEnum
     ) {
         // Given
 

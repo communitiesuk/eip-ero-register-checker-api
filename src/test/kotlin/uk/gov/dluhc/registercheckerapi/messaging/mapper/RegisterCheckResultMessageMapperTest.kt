@@ -13,18 +13,18 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
-import uk.gov.dluhc.applicationsapi.messaging.models.RegisterCheckResult
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType
 import uk.gov.dluhc.registercheckerapi.mapper.CheckStatusMapper
 import uk.gov.dluhc.registercheckerapi.mapper.SourceTypeMapper
+import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildPersonalDetailWithOptionalFieldsAsNull
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildRegisterCheckResultMessage
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildVcaRegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildVcaRegisterCheckPersonalDetailSqsFromEntity
-import uk.gov.dluhc.applicationsapi.messaging.models.SourceType as SourceTypeVcaEnum
+import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType as SourceTypeSqsEnum
 
 @ExtendWith(MockitoExtension::class)
 internal class RegisterCheckResultMessageMapperTest {
@@ -59,10 +59,10 @@ internal class RegisterCheckResultMessageMapperTest {
             // Given
             val registerCheckEntity = buildRegisterCheck(status = initialStatus, registerCheckMatches = mutableListOf(buildRegisterCheckMatch()))
             given(checkStatusMapper.toRegisterCheckResultEnum(any())).willReturn(expectedStatus)
-            given(sourceTypeMapper.fromEntityToVcaSqsEnum(any())).willReturn(SourceTypeVcaEnum.VOTER_MINUS_CARD)
+            given(sourceTypeMapper.fromEntityToVcaSqsEnum(any())).willReturn(SourceTypeSqsEnum.VOTER_MINUS_CARD)
 
             val expectedMessage = buildRegisterCheckResultMessage(
-                sourceType = SourceTypeVcaEnum.VOTER_MINUS_CARD,
+                sourceType = SourceTypeSqsEnum.VOTER_MINUS_CARD,
                 sourceReference = registerCheckEntity.sourceReference,
                 sourceCorrelationId = registerCheckEntity.sourceCorrelationId,
                 registerCheckResult = expectedStatus,
@@ -94,10 +94,10 @@ internal class RegisterCheckResultMessageMapperTest {
             // Given
             val registerCheck = buildRegisterCheck(status = CheckStatus.NO_MATCH, registerCheckMatches = mutableListOf())
             given(checkStatusMapper.toRegisterCheckResultEnum(any())).willReturn(RegisterCheckResult.NO_MINUS_MATCH)
-            given(sourceTypeMapper.fromEntityToVcaSqsEnum(any())).willReturn(SourceTypeVcaEnum.VOTER_MINUS_CARD)
+            given(sourceTypeMapper.fromEntityToVcaSqsEnum(any())).willReturn(SourceTypeSqsEnum.VOTER_MINUS_CARD)
 
             val expected = buildRegisterCheckResultMessage(
-                sourceType = SourceTypeVcaEnum.VOTER_MINUS_CARD,
+                sourceType = SourceTypeSqsEnum.VOTER_MINUS_CARD,
                 sourceReference = registerCheck.sourceReference,
                 sourceCorrelationId = registerCheck.sourceCorrelationId,
                 registerCheckResult = RegisterCheckResult.NO_MINUS_MATCH,
@@ -127,10 +127,10 @@ internal class RegisterCheckResultMessageMapperTest {
                 )
             )
             given(checkStatusMapper.toRegisterCheckResultEnum(any())).willReturn(RegisterCheckResult.MULTIPLE_MINUS_MATCH)
-            given(sourceTypeMapper.fromEntityToVcaSqsEnum(any())).willReturn(SourceTypeVcaEnum.VOTER_MINUS_CARD)
+            given(sourceTypeMapper.fromEntityToVcaSqsEnum(any())).willReturn(SourceTypeSqsEnum.VOTER_MINUS_CARD)
 
             val expected = buildRegisterCheckResultMessage(
-                sourceType = SourceTypeVcaEnum.VOTER_MINUS_CARD,
+                sourceType = SourceTypeSqsEnum.VOTER_MINUS_CARD,
                 sourceReference = registerCheck.sourceReference,
                 sourceCorrelationId = registerCheck.sourceCorrelationId,
                 registerCheckResult = RegisterCheckResult.MULTIPLE_MINUS_MATCH,

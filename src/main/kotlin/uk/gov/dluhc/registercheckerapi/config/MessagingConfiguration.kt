@@ -12,8 +12,8 @@ import org.springframework.messaging.converter.MappingJackson2MessageConverter
 import org.springframework.messaging.handler.annotation.support.HeadersMethodArgumentResolver
 import org.springframework.messaging.handler.annotation.support.PayloadMethodArgumentResolver
 import org.springframework.validation.Validator
-import uk.gov.dluhc.applicationsapi.messaging.models.RegisterCheckResultMessage
 import uk.gov.dluhc.registercheckerapi.messaging.MessageQueue
+import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
 
 @Configuration
 class MessagingConfiguration {

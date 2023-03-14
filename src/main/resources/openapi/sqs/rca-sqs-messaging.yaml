@@ -264,6 +264,9 @@ components:
       type: string
       enum:
         - voter-card
+        - postal-vote
+        - proxy-vote
+        - overseas-vote
 
   #
   # Response Body Definitions

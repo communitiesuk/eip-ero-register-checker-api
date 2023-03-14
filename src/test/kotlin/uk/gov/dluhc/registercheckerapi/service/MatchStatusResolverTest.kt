@@ -275,6 +275,8 @@ internal class MatchStatusResolverTest {
             val postcode = "L1 1AB"
             return Stream.of(
                 Arguments.of(uprn, uprn, property, property, street, street, postcode, postcode, EXACT_MATCH),
+                Arguments.of(uprn, uprn, "", property, "", street, "", postcode, EXACT_MATCH),
+                Arguments.of("000$uprn", uprn, "", property, "", street, "", postcode, EXACT_MATCH),
                 Arguments.of(null, null, property, property.uppercase(), street, street, postcode, postcode, EXACT_MATCH),
                 Arguments.of(null, null, property, property, street, street.uppercase(), postcode, postcode, EXACT_MATCH),
                 Arguments.of(uprn, null, null, null, street, street, postcode, postcode.lowercase(), EXACT_MATCH),

@@ -7,7 +7,9 @@ import org.apache.commons.lang3.StringUtils.trim
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.core.ConditionTimeoutException
 import org.awaitility.kotlin.await
+import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.http.MediaType.APPLICATION_JSON
@@ -18,6 +20,10 @@ import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType
+import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.OVERSEAS_VOTE
+import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.POSTAL_VOTE
+import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.PROXY_VOTE
+import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.VOTER_CARD
 import uk.gov.dluhc.registercheckerapi.models.ErrorResponse
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.entity.RegisterCheckAssert
@@ -477,7 +483,10 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
 
         assertRequestIsAudited(requestId)
-        assertMessageNotSubmittedToSqs(savedPendingRegisterCheckEntity.sourceReference)
+        assertMessageNotSubmittedToSqs(
+            queueUrl = localStackContainerSettings.mappedQueueUrlConfirmRegisterCheckResult,
+            sourceReferenceNotExpected = savedPendingRegisterCheckEntity.sourceReference
+        )
     }
 
     @Test
@@ -555,7 +564,10 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .ignoringFields("registerCheckMatches.applicationCreatedAt")
             .isEqualTo(requestBody)
 
-        assertMessageSubmittedToSqs(expectedMessageContent)
+        assertMessageSubmittedToSqs(
+            queueUrl = localStackContainerSettings.mappedQueueUrlConfirmRegisterCheckResult,
+            expectedMessageContent
+        )
     }
 
     @ParameterizedTest
@@ -658,7 +670,10 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationIdIn(setOf((requestId)))[0]
         assertRequestIsAudited(actualRegisterResultData, requestId, createdAtFromRequest, gssCodeFromEroApi, matchCount)
 
-        assertMessageSubmittedToSqs(expectedMessageContentSentToVca)
+        assertMessageSubmittedToSqs(
+            queueUrl = localStackContainerSettings.mappedQueueUrlConfirmRegisterCheckResult,
+            expectedMessageContentSentToVca
+        )
     }
 
     @Test
@@ -722,22 +737,93 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationIdIn(setOf(requestId))[0]
         assertRequestIsAudited(actualRegisterResultData, requestId, createdAtFromRequest, gssCodeFromEroApi, matchCount)
 
-        assertMessageSubmittedToSqs(expectedMessageContentSentToVca)
+        assertMessageSubmittedToSqs(
+            queueUrl = localStackContainerSettings.mappedQueueUrlConfirmRegisterCheckResult,
+            expectedMessageContentSentToVca
+        )
     }
 
-    private fun assertMessageSubmittedToSqs(expectedMessageContent: RegisterCheckResultMessage) {
+    @TestFactory
+    fun `should submit the message to the relevant queue`() = listOf(
+        VOTER_CARD to localStackContainerSettings.mappedQueueUrlConfirmRegisterCheckResult,
+        POSTAL_VOTE to localStackContainerSettings.mappedQueueUrlPostalVoteConfirmRegisterCheckResult,
+        PROXY_VOTE to localStackContainerSettings.mappedQueueUrlProxyVoteConfirmRegisterCheckResult,
+        OVERSEAS_VOTE to localStackContainerSettings.mappedQueueUrlOverseasVoteConfirmRegisterCheckResult
+    ).map { (sourceType, targetQueueUrl) ->
+        DynamicTest.dynamicTest("result for $sourceType should be published to $targetQueueUrl") {
+
+            // Given
+            val requestId = UUID.randomUUID()
+            val eroIdFromIerApi = "camden-city-council"
+            val gssCodeFromEroApi = "E12345678"
+            val anotherGssCodeFromEroApi = "E98764532"
+
+            wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
+            wireMockService.stubEroManagementGetEro(eroIdFromIerApi, gssCodeFromEroApi, anotherGssCodeFromEroApi)
+
+            val savedPendingRegisterCheckEntity = registerCheckRepository.save(
+                buildRegisterCheck(
+                    sourceType = sourceType,
+                    correlationId = requestId,
+                    gssCode = gssCodeFromEroApi,
+                    status = CheckStatus.PENDING
+                )
+            )
+            registerCheckRepository.save(buildRegisterCheck(correlationId = UUID.randomUUID()))
+
+            val matchResultSentAt = OffsetDateTime.now(ZoneOffset.UTC)
+            val matchCount = 2
+            val matches = listOf(buildRegisterCheckMatchRequest(), buildRegisterCheckMatchRequest())
+
+            val expectedMessageContent = RegisterCheckResultMessage(
+                sourceType = sourceTypeMapper.fromEntityToVcaSqsEnum(sourceType),
+                sourceReference = savedPendingRegisterCheckEntity.sourceReference,
+                sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
+                registerCheckResult = RegisterCheckResult.MULTIPLE_MINUS_MATCH,
+                matches = matches.map { buildVcaRegisterCheckMatchFromMatchApi(it) }
+            )
+            val requestBody = buildRegisterCheckResultRequest(
+                requestId = requestId,
+                gssCode = gssCodeFromEroApi,
+                createdAt = matchResultSentAt,
+                registerCheckMatchCount = matchCount,
+                registerCheckMatches = matches
+            )
+
+            // When
+            webTestClient.post()
+                .uri(buildUri(requestId))
+                .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
+                .contentType(APPLICATION_JSON)
+                .body(
+                    Mono.just(requestBody),
+                    RegisterCheckResultRequest::class.java
+                )
+                .exchange()
+                .expectStatus()
+                .isCreated
+
+            // Then
+            assertMessageSubmittedToSqs(
+                queueUrl = targetQueueUrl,
+                expectedMessageContent = expectedMessageContent
+            )
+        }
+    }
+
+    private fun assertMessageSubmittedToSqs(queueUrl: String, expectedMessageContent: RegisterCheckResultMessage) {
         await.atMost(5, TimeUnit.SECONDS).untilAsserted {
-            val sqsMessages: List<Message> = getLatestSqsMessages()
+            val sqsMessages: List<Message> = getLatestSqsMessagesFromQueue(queueUrl)
             assertThat(sqsMessages).anyMatch {
                 assertRegisterCheckResultMessage(it, expectedMessageContent)
             }
         }
     }
 
-    private fun assertMessageNotSubmittedToSqs(sourceReferenceNotExpected: String) {
+    private fun assertMessageNotSubmittedToSqs(queueUrl: String, sourceReferenceNotExpected: String) {
         try {
             await.atMost(5, TimeUnit.SECONDS).until {
-                val sqsMessages: List<Message> = getLatestSqsMessages()
+                val sqsMessages: List<Message> = getLatestSqsMessagesFromQueue(queueUrl)
                 assertThat(sqsMessages).noneMatch {
                     val actualRegisterCheckResultMessage = objectMapper.readValue(it.body, RegisterCheckResultMessage::class.java)
                     actualRegisterCheckResultMessage.sourceReference == sourceReferenceNotExpected
@@ -749,9 +835,9 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         }
     }
 
-    private fun getLatestSqsMessages(): List<Message> {
+    private fun getLatestSqsMessagesFromQueue(queueUrl: String): List<Message> {
         val receiveMessageRequest =
-            ReceiveMessageRequest(localStackContainerSettings.mappedQueueUrlConfirmRegisterCheckResult)
+            ReceiveMessageRequest(queueUrl)
                 .withMaxNumberOfMessages(10)
 
         return amazonSQSAsync.receiveMessage(receiveMessageRequest).messages

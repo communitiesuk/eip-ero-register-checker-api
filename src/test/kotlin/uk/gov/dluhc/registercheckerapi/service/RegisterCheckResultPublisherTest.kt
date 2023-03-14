@@ -7,10 +7,10 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.verify
-import uk.gov.dluhc.applicationsapi.messaging.models.RegisterCheckResult
-import uk.gov.dluhc.applicationsapi.messaging.models.RegisterCheckResultMessage
-import uk.gov.dluhc.applicationsapi.messaging.models.SourceType
 import uk.gov.dluhc.registercheckerapi.messaging.MessageQueue
+import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
+import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
+import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType
 import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)

@@ -17,13 +17,13 @@ import reactor.core.publisher.Mono
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
-import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.OVERSEAS_VOTE
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.POSTAL_VOTE
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.PROXY_VOTE
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.VOTER_CARD
+import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
+import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
+import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType
 import uk.gov.dluhc.registercheckerapi.models.ErrorResponse
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.entity.RegisterCheckAssert

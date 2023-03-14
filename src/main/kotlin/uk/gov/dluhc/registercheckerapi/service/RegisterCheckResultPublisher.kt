@@ -2,14 +2,14 @@ package uk.gov.dluhc.registercheckerapi.service
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
-import uk.gov.dluhc.applicationsapi.messaging.models.RegisterCheckResultMessage
-import uk.gov.dluhc.applicationsapi.messaging.models.SourceType
-import uk.gov.dluhc.applicationsapi.messaging.models.SourceType.OVERSEAS_MINUS_VOTE
-import uk.gov.dluhc.applicationsapi.messaging.models.SourceType.POSTAL_MINUS_VOTE
-import uk.gov.dluhc.applicationsapi.messaging.models.SourceType.PROXY_MINUS_VOTE
-import uk.gov.dluhc.applicationsapi.messaging.models.SourceType.VOTER_MINUS_CARD
 import uk.gov.dluhc.registercheckerapi.messaging.MessagePublisher
 import uk.gov.dluhc.registercheckerapi.messaging.MessageQueue
+import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
+import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType
+import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType.OVERSEAS_MINUS_VOTE
+import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType.POSTAL_MINUS_VOTE
+import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType.PROXY_MINUS_VOTE
+import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType.VOTER_MINUS_CARD
 
 @Service
 class RegisterCheckResultPublisher(

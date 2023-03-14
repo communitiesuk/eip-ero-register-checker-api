@@ -65,7 +65,7 @@ class MatchStatusResolver {
             personalDetailDto.dateOfBirth == personalDetailEntity.dateOfBirth
 
     private fun keyAddressDetailsMatch(addressDto: AddressDto, addressEntity: Address): Boolean =
-        if (addressDto.uprn != null && trimAndEqualsIgnoreCase(addressDto.uprn, addressEntity.uprn)) {
+        if (addressDto.uprn != null && uprnsAreEqual(addressDto.uprn, addressEntity.uprn)) {
             true
         } else {
             trimAndEqualsIgnoreCase(addressDto.property, addressEntity.property) &&
@@ -75,6 +75,9 @@ class MatchStatusResolver {
 
     private fun trimAndEqualsIgnoreCase(str1: String?, str2: String?) =
         equalsIgnoreCase(str1?.trim(), str2?.trim())
+
+    private fun uprnsAreEqual(uprn1: String?, uprn2: String?) =
+        equalsIgnoreCase(uprn1?.trim()?.trimStart('0'), uprn2?.trim()?.trimStart('0'))
 
     private fun sanitizeSurname(surname: String): String =
         surname.uppercase()

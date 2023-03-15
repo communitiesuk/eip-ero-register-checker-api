@@ -53,7 +53,6 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.12.0")
     implementation("org.apache.httpcomponents:httpclient:4.5.14")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
-    implementation("com.google.guava:guava:31.1-jre")
     kapt("org.mapstruct:mapstruct-processor:1.5.3.Final")
 
     // api
@@ -88,6 +87,10 @@ dependencies {
 
     // AWS signer using SDK V2 library is available at https://mvnrepository.com/artifact/io.github.acm19/aws-request-signing-apache-interceptor/2.1.1
     implementation("io.github.acm19:aws-request-signing-apache-interceptor:2.1.1")
+
+    // caching
+    implementation("org.springframework.boot:spring-boot-starter-cache")
+    implementation("com.github.ben-manes.caffeine:caffeine")
 
     // tests
     testImplementation("software.amazon.awssdk:sqs") // required to send messages to a queue, which we only need to do in test at the moment

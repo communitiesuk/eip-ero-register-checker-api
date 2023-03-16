@@ -81,11 +81,17 @@ class LocalStackContainerConfiguration {
         applicationContext: ConfigurableApplicationContext,
         @Value("\${sqs.initiate-applicant-register-check-queue-name}") initiateApplicantRegisterCheckQueueName: String,
         @Value("\${sqs.confirm-applicant-register-check-result-queue-name}") confirmRegisterCheckResultMessageQueueName: String,
+        @Value("\${sqs.postal-vote-confirm-applicant-register-check-result-queue-name}") postalVoteConfirmRegisterCheckResultMessageQueueName: String,
+        @Value("\${sqs.proxy-vote-confirm-applicant-register-check-result-queue-name}") proxyVoteConfirmRegisterCheckResultMessageQueueName: String,
+        @Value("\${sqs.overseas-vote-confirm-applicant-register-check-result-queue-name}") overseasVoteConfirmRegisterCheckResultMessageQueueName: String,
         @Value("\${sqs.remove-applicant-register-check-data-queue-name}") removeRegisterCheckDataMessageQueueName: String,
         objectMapper: ObjectMapper
     ): LocalStackContainerSettings {
         val queueUrlInitiateApplicantRegisterCheck = localStackContainer.createSqsQueue(initiateApplicantRegisterCheckQueueName, objectMapper)
         val queueUrlConfirmRegisterCheckResult = localStackContainer.createSqsQueue(confirmRegisterCheckResultMessageQueueName, objectMapper)
+        val queueUrlPostalVoteConfirmRegisterCheckResult = localStackContainer.createSqsQueue(postalVoteConfirmRegisterCheckResultMessageQueueName, objectMapper)
+        val queueUrlProxyVoteConfirmRegisterCheckResult = localStackContainer.createSqsQueue(proxyVoteConfirmRegisterCheckResultMessageQueueName, objectMapper)
+        val queueUrlOverseasVoteConfirmRegisterCheckResult = localStackContainer.createSqsQueue(overseasVoteConfirmRegisterCheckResultMessageQueueName, objectMapper)
         val queueUrlRemoveRegisterCheckData = localStackContainer.createSqsQueue(removeRegisterCheckDataMessageQueueName, objectMapper)
 
         val apiUrl = "http://${localStackContainer.host}:${localStackContainer.getMappedPort(DEFAULT_PORT)}"
@@ -96,6 +102,9 @@ class LocalStackContainerConfiguration {
             apiUrl = apiUrl,
             queueUrlInitiateApplicantRegisterCheck = queueUrlInitiateApplicantRegisterCheck,
             queueUrlConfirmRegisterCheckResult = queueUrlConfirmRegisterCheckResult,
+            queueUrlPostalVoteConfirmRegisterCheckResult = queueUrlPostalVoteConfirmRegisterCheckResult,
+            queueUrlProxyVoteConfirmRegisterCheckResult = queueUrlProxyVoteConfirmRegisterCheckResult,
+            queueUrlOverseasVoteConfirmRegisterCheckResult = queueUrlOverseasVoteConfirmRegisterCheckResult,
             queueUrlRemoveRegisterCheckData = queueUrlRemoveRegisterCheckData,
         )
     }

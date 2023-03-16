@@ -137,7 +137,10 @@ class RegisterCheck(
 }
 
 enum class SourceType {
-    VOTER_CARD
+    VOTER_CARD,
+    POSTAL_VOTE,
+    PROXY_VOTE,
+    OVERSEAS_VOTE
 }
 
 enum class CheckStatus {

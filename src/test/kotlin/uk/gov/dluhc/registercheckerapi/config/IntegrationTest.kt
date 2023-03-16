@@ -15,6 +15,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import software.amazon.awssdk.services.sqs.SqsClient
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckResultDataRepository
+import uk.gov.dluhc.registercheckerapi.mapper.SourceTypeMapper
 import uk.gov.dluhc.registercheckerapi.testsupport.WiremockService
 import java.time.Duration
 import javax.sql.DataSource
@@ -53,6 +54,9 @@ internal abstract class IntegrationTest {
 
     @Autowired
     protected lateinit var cacheManager: CacheManager
+
+    @Autowired
+    protected lateinit var sourceTypeMapper: SourceTypeMapper
 
     @SpyBean(name = "readWriteDataSource")
     protected lateinit var readWriteDataSource: HikariDataSource

@@ -49,6 +49,9 @@ The following environment variables must be set in order to run the application:
 9. `SQS_INITIATE_APPLICANT_REGISTER_CHECK_QUEUE_NAME` - the queue name for requesting an automated check to determine if the applicant is on the electoral register
 10. `SQS_CONFIRM_APPLICANT_REGISTER_CHECK_RESULT_QUEUE_NAME` - the queue name for responding with the result of the register check
 11. `SQS_REMOVE_APPLICANT_REGISTER_CHECK_DATA_QUEUE_NAME` - the queue name for removing an applicant's register check data
+12. `SQS_POSTAL_VOTE_CONFIRM_APPLICANT_REGISTER_CHECK_RESULT_QUEUE_NAME` - the queue name for responding with the result of the postal vote register check
+13. `SQS_PROXY_VOTE_CONFIRM_APPLICANT_REGISTER_CHECK_RESULT_QUEUE_NAME` - the queue name for responding with the result of the proxy vote register check
+14. `SQS_OVERSEAS_VOTE_CONFIRM_APPLICANT_REGISTER_CHECK_RESULT_QUEUE_NAME` - the queue name for responding with the result of the overseas vote register check
 
 #### MYSQL Configuration
 The application requires the following environment variables to connect to Mysql:

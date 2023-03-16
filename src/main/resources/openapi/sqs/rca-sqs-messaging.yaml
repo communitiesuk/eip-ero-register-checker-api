@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Register Checker SQS Message Types
-  version: '1.1.0'
+  version: '1.1.1'
   description: |-
     Register Checker SQS Message Types
     
@@ -264,6 +264,9 @@ components:
       type: string
       enum:
         - voter-card
+        - postal-vote
+        - proxy-vote
+        - overseas-vote
 
   #
   # Response Body Definitions

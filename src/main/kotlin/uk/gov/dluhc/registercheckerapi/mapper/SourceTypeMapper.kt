@@ -13,9 +13,15 @@ import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType as SourceType
 interface SourceTypeMapper {
 
     @ValueMapping(target = "VOTER_CARD", source = "VOTER_MINUS_CARD")
+    @ValueMapping(target = "POSTAL_VOTE", source = "POSTAL_MINUS_VOTE")
+    @ValueMapping(target = "PROXY_VOTE", source = "PROXY_MINUS_VOTE")
+    @ValueMapping(target = "OVERSEAS_VOTE", source = "OVERSEAS_MINUS_VOTE")
     fun fromSqsToDtoEnum(sqsSourceType: SourceTypeSqsEnum): SourceTypeDtoEnum
 
     @ValueMapping(target = "VOTER_MINUS_CARD", source = "VOTER_CARD")
+    @ValueMapping(target = "POSTAL_MINUS_VOTE", source = "POSTAL_VOTE")
+    @ValueMapping(target = "PROXY_MINUS_VOTE", source = "PROXY_VOTE")
+    @ValueMapping(target = "OVERSEAS_MINUS_VOTE", source = "OVERSEAS_VOTE")
     fun fromEntityToVcaSqsEnum(entitySourceType: SourceTypeEntityEnum): SourceTypeSqsEnum
 
     fun fromEntityToDtoEnum(entitySourceType: SourceTypeEntityEnum): SourceTypeDtoEnum
@@ -24,5 +30,8 @@ interface SourceTypeMapper {
     fun fromDtoToEntityEnum(dtoSourceType: SourceTypeDtoEnum): SourceTypeEntityEnum
 
     @ValueMapping(target = "EROP", source = "VOTER_CARD")
+    @ValueMapping(target = "EROP", source = "POSTAL_VOTE")
+    @ValueMapping(target = "EROP", source = "PROXY_VOTE")
+    @ValueMapping(target = "EROP", source = "OVERSEAS_VOTE")
     fun sourceTypeDtoToSourceSystem(sourceType: SourceType): SourceSystem
 }

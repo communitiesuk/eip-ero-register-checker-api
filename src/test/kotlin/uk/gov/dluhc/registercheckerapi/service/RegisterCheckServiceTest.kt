@@ -36,6 +36,7 @@ import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckUnexpectedStatusEx
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMapper
 import uk.gov.dluhc.registercheckerapi.messaging.MessageQueue
+import uk.gov.dluhc.registercheckerapi.messaging.MessageQueueResolver
 import uk.gov.dluhc.registercheckerapi.messaging.mapper.RegisterCheckResultMessageMapper
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
@@ -76,6 +77,9 @@ internal class RegisterCheckServiceTest {
 
     @Mock
     private lateinit var confirmRegisterCheckResultMessageQueue: MessageQueue<RegisterCheckResultMessage>
+
+    @Mock
+    private lateinit var messageQueueResolver: MessageQueueResolver
 
     @Mock
     private lateinit var matchStatusResolver: MatchStatusResolver
@@ -402,6 +406,7 @@ internal class RegisterCheckServiceTest {
             }
             given(registerCheckResultMessageMapper.fromRegisterCheckEntityToRegisterCheckResultMessage(any())).willReturn(expectedMessage)
             given(matchStatusResolver.resolveStatus(any(), any())).willReturn(registerCheckStatus)
+            given(messageQueueResolver.getTargetQueueForSourceType(any())).willReturn(confirmRegisterCheckResultMessageQueue)
 
             // When
             registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto)

@@ -21,9 +21,30 @@ class MessagingConfiguration {
     @Value("\${sqs.confirm-applicant-register-check-result-queue-name}")
     private lateinit var confirmRegisterCheckResultQueueName: String
 
-    @Bean
+    @Value("\${sqs.postal-vote-confirm-applicant-register-check-result-queue-name}")
+    private lateinit var postalVoteConfirmRegisterCheckResultQueueName: String
+
+    @Value("\${sqs.proxy-vote-confirm-applicant-register-check-result-queue-name}")
+    private lateinit var proxyVoteConfirmRegisterCheckResultQueueName: String
+
+    @Value("\${sqs.overseas-vote-confirm-applicant-register-check-result-queue-name}")
+    private lateinit var overseasVoteConfirmRegisterCheckResultQueueName: String
+
+    @Bean(name = ["confirmRegisterCheckResultQueue"])
     fun confirmRegisterCheckResultQueue(queueMessagingTemplate: QueueMessagingTemplate) =
         MessageQueue<RegisterCheckResultMessage>(confirmRegisterCheckResultQueueName, queueMessagingTemplate)
+
+    @Bean(name = ["postalVoteConfirmRegisterCheckResultQueue"])
+    fun postalVoteConfirmRegisterCheckResultQueue(queueMessagingTemplate: QueueMessagingTemplate) =
+        MessageQueue<RegisterCheckResultMessage>(postalVoteConfirmRegisterCheckResultQueueName, queueMessagingTemplate)
+
+    @Bean(name = ["proxyVoteConfirmRegisterCheckResultQueue"])
+    fun proxyVoteConfirmRegisterCheckResultQueue(queueMessagingTemplate: QueueMessagingTemplate) =
+        MessageQueue<RegisterCheckResultMessage>(proxyVoteConfirmRegisterCheckResultQueueName, queueMessagingTemplate)
+
+    @Bean(name = ["overseasVoteConfirmRegisterCheckResultQueue"])
+    fun overseasVoteConfirmRegisterCheckResultQueue(queueMessagingTemplate: QueueMessagingTemplate) =
+        MessageQueue<RegisterCheckResultMessage>(overseasVoteConfirmRegisterCheckResultQueueName, queueMessagingTemplate)
 
     @Bean
     fun queueMessageHandlerFactory(

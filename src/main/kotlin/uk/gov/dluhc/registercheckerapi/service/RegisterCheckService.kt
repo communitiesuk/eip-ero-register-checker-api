@@ -21,9 +21,8 @@ import uk.gov.dluhc.registercheckerapi.exception.PendingRegisterCheckNotFoundExc
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckUnexpectedStatusException
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMapper
-import uk.gov.dluhc.registercheckerapi.messaging.MessagePublisher
+import uk.gov.dluhc.registercheckerapi.messaging.MessageQueueResolver
 import uk.gov.dluhc.registercheckerapi.messaging.mapper.RegisterCheckResultMessageMapper
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -36,7 +35,7 @@ class RegisterCheckService(
     private val pendingRegisterCheckMapper: PendingRegisterCheckMapper,
     private val registerCheckResultMapper: RegisterCheckResultMapper,
     private val registerCheckResultMessageMapper: RegisterCheckResultMessageMapper,
-    private val registerCheckResultMessagePublisher: MessagePublisher<RegisterCheckResultMessage>,
+    private val messageQueueResolver: MessageQueueResolver,
     private val matchStatusResolver: MatchStatusResolver
 ) {
 
@@ -80,7 +79,7 @@ class RegisterCheckService(
                 "Publishing ConfirmRegisterCheckResultMessage with sourceType:[$sourceType], sourceReferenceApplicationId:[$sourceReference], " +
                     "sourceCorrelationId:[$sourceCorrelationId] for correlationId:[${registerCheck.correlationId}]"
             }
-            registerCheckResultMessagePublisher.publish(this)
+            messageQueueResolver.getTargetQueueForSourceType(sourceType).submit(this)
         }
     }
 

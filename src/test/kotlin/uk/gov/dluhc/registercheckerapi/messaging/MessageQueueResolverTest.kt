@@ -1,20 +1,17 @@
-package uk.gov.dluhc.registercheckerapi.service
+package uk.gov.dluhc.registercheckerapi.messaging
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
-import org.mockito.kotlin.verify
-import uk.gov.dluhc.registercheckerapi.messaging.MessageQueue
-import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType
-import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
-internal class RegisterCheckResultPublisherTest {
+internal class MessageQueueResolverTest {
 
     @Mock
     private lateinit var confirmRegisterCheckResultMockQueue: MessageQueue<RegisterCheckResultMessage>
@@ -28,12 +25,12 @@ internal class RegisterCheckResultPublisherTest {
     @Mock
     private lateinit var overseasVoteConfirmRegisterCheckResultMockQueue: MessageQueue<RegisterCheckResultMessage>
 
-    private lateinit var registerCheckResultPublisher: RegisterCheckResultPublisher
+    private lateinit var messageQueueResolver: MessageQueueResolver
 
     @BeforeEach
     fun setup() {
         // not using @InjectMocks due to https://github.com/mockito/mockito/issues/2921
-        registerCheckResultPublisher = RegisterCheckResultPublisher(
+        messageQueueResolver = MessageQueueResolver(
             postalVoteConfirmRegisterCheckResultQueue = postalVoteConfirmRegisterCheckResultMockQueue,
             proxyVoteConfirmRegisterCheckResultQueue = proxyVoteConfirmRegisterCheckResultMockQueue,
             overseasVoteConfirmRegisterCheckResultQueue = overseasVoteConfirmRegisterCheckResultMockQueue,
@@ -47,22 +44,14 @@ internal class RegisterCheckResultPublisherTest {
         SourceType.POSTAL_MINUS_VOTE to postalVoteConfirmRegisterCheckResultMockQueue,
         SourceType.PROXY_MINUS_VOTE to proxyVoteConfirmRegisterCheckResultMockQueue,
         SourceType.OVERSEAS_MINUS_VOTE to overseasVoteConfirmRegisterCheckResultMockQueue
-    ).map { (sourceType, targetQueue) ->
-        DynamicTest.dynamicTest("result for $sourceType should be published to $targetQueue") {
+    ).map { (sourceType, expetcedTargetQueue) ->
+        dynamicTest("for $sourceType return $expetcedTargetQueue") {
 
-            val expectedMessageContentSentToQueue = RegisterCheckResultMessage(
-                sourceType = sourceType,
-                sourceReference = "reference",
-                sourceCorrelationId = UUID.randomUUID(),
-                registerCheckResult = RegisterCheckResult.NO_MINUS_MATCH,
-                matches = emptyList()
-            )
-
-            // when
-            registerCheckResultPublisher.publish(expectedMessageContentSentToQueue)
+            // When
+            val actualResult = messageQueueResolver.getTargetQueueForSourceType(sourceType)
 
             // Then
-            verify(targetQueue).submit(expectedMessageContentSentToQueue)
+            assertThat(actualResult).isEqualTo(expetcedTargetQueue)
         }
     }
 }

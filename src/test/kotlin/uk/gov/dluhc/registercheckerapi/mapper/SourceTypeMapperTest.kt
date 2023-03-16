@@ -1,6 +1,6 @@
 package uk.gov.dluhc.registercheckerapi.mapper
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.dluhc.registercheckerapi.models.SourceSystem
@@ -30,7 +30,7 @@ class SourceTypeMapperTest {
         val actual = mapper.fromSqsToDtoEnum(sourceType)
 
         // Then
-        Assertions.assertThat(actual).isEqualTo(expected)
+        assertThat(actual).isEqualTo(expected)
     }
 
     @ParameterizedTest
@@ -52,7 +52,7 @@ class SourceTypeMapperTest {
         val actual = mapper.fromEntityToVcaSqsEnum(sourceType)
 
         // Then
-        Assertions.assertThat(actual).isEqualTo(expected)
+        assertThat(actual).isEqualTo(expected)
     }
 
     @ParameterizedTest
@@ -74,7 +74,7 @@ class SourceTypeMapperTest {
         val actual = mapper.fromEntityToDtoEnum(sourceType)
 
         // Then
-        Assertions.assertThat(actual).isEqualTo(expected)
+        assertThat(actual).isEqualTo(expected)
     }
 
     @ParameterizedTest
@@ -96,7 +96,7 @@ class SourceTypeMapperTest {
         val actual = mapper.fromDtoToEntityEnum(sourceType)
 
         // Then
-        Assertions.assertThat(actual).isEqualTo(expected)
+        assertThat(actual).isEqualTo(expected)
     }
 
     @ParameterizedTest
@@ -118,6 +118,6 @@ class SourceTypeMapperTest {
         val actual = mapper.sourceTypeDtoToSourceSystem(sourceType)
 
         // Then
-        Assertions.assertThat(actual).isEqualTo(expected)
+        assertThat(actual).isEqualTo(expected)
     }
 }

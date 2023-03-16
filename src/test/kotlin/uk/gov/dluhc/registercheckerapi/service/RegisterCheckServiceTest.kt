@@ -35,7 +35,8 @@ import uk.gov.dluhc.registercheckerapi.exception.PendingRegisterCheckNotFoundExc
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckUnexpectedStatusException
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMapper
-import uk.gov.dluhc.registercheckerapi.messaging.MessagePublisher
+import uk.gov.dluhc.registercheckerapi.messaging.MessageQueue
+import uk.gov.dluhc.registercheckerapi.messaging.MessageQueueResolver
 import uk.gov.dluhc.registercheckerapi.messaging.mapper.RegisterCheckResultMessageMapper
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
@@ -75,7 +76,10 @@ internal class RegisterCheckServiceTest {
     private lateinit var registerCheckResultMessageMapper: RegisterCheckResultMessageMapper
 
     @Mock
-    private lateinit var registerCheckResultMessagePublisher: MessagePublisher<RegisterCheckResultMessage>
+    private lateinit var confirmRegisterCheckResultMessageQueue: MessageQueue<RegisterCheckResultMessage>
+
+    @Mock
+    private lateinit var messageQueueResolver: MessageQueueResolver
 
     @Mock
     private lateinit var matchStatusResolver: MatchStatusResolver
@@ -315,7 +319,7 @@ internal class RegisterCheckServiceTest {
             assertThat(ex.message).isEqualTo("Pending register check for requestid:[$requestId] not found")
             verify(registerCheckRepository).findByCorrelationId(requestId)
             verify(retrieveGssCodeService).getGssCodeFromCertificateSerial(certificateSerial)
-            verifyNoInteractions(registerCheckResultMapper, registerCheckResultMessagePublisher)
+            verifyNoInteractions(registerCheckResultMapper, confirmRegisterCheckResultMessageQueue)
         }
 
         @ParameterizedTest
@@ -351,7 +355,7 @@ internal class RegisterCheckServiceTest {
             assertThat(ex.message).isEqualTo("Register check with requestid:[$requestId] has an unexpected status:[$existingCheckStatusInDb]")
             verify(registerCheckRepository).findByCorrelationId(requestId)
             verify(retrieveGssCodeService).getGssCodeFromCertificateSerial(certificateSerial)
-            verifyNoInteractions(registerCheckResultMapper, registerCheckResultMessagePublisher)
+            verifyNoInteractions(registerCheckResultMapper, confirmRegisterCheckResultMessageQueue)
         }
 
         @ParameterizedTest
@@ -402,6 +406,7 @@ internal class RegisterCheckServiceTest {
             }
             given(registerCheckResultMessageMapper.fromRegisterCheckEntityToRegisterCheckResultMessage(any())).willReturn(expectedMessage)
             given(matchStatusResolver.resolveStatus(any(), any())).willReturn(registerCheckStatus)
+            given(messageQueueResolver.getTargetQueueForSourceType(any())).willReturn(confirmRegisterCheckResultMessageQueue)
 
             // When
             registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto)
@@ -409,7 +414,7 @@ internal class RegisterCheckServiceTest {
             // Then
             verify(registerCheckRepository).findByCorrelationId(requestId)
             verify(registerCheckResultMessageMapper).fromRegisterCheckEntityToRegisterCheckResultMessage(savedPendingRegisterCheckEntity)
-            verify(registerCheckResultMessagePublisher).publish(expectedMessage)
+            verify(confirmRegisterCheckResultMessageQueue).submit(expectedMessage)
             verify(matchStatusResolver).resolveStatus(registerCheckResultDto, savedPendingRegisterCheckEntity)
             registerCheckMatchDtoList.forEach { verify(registerCheckResultMapper).fromDtoToRegisterCheckMatchEntity(it) }
             verify(retrieveGssCodeService).getGssCodeFromCertificateSerial(certificateSerial)

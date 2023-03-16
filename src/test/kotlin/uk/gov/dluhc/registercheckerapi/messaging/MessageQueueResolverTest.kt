@@ -44,14 +44,14 @@ internal class MessageQueueResolverTest {
         SourceType.POSTAL_MINUS_VOTE to postalVoteConfirmRegisterCheckResultMockQueue,
         SourceType.PROXY_MINUS_VOTE to proxyVoteConfirmRegisterCheckResultMockQueue,
         SourceType.OVERSEAS_MINUS_VOTE to overseasVoteConfirmRegisterCheckResultMockQueue
-    ).map { (sourceType, expetcedTargetQueue) ->
-        dynamicTest("for $sourceType return $expetcedTargetQueue") {
+    ).map { (sourceType, expectedTargetQueue) ->
+        dynamicTest("for $sourceType return $expectedTargetQueue") {
 
             // When
             val actualResult = messageQueueResolver.getTargetQueueForSourceType(sourceType)
 
             // Then
-            assertThat(actualResult).isEqualTo(expetcedTargetQueue)
+            assertThat(actualResult).isEqualTo(expectedTargetQueue)
         }
     }
 }

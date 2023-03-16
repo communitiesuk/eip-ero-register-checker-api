@@ -7,9 +7,7 @@ import org.apache.commons.lang3.StringUtils.trim
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.core.ConditionTimeoutException
 import org.awaitility.kotlin.await
-import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.http.MediaType.APPLICATION_JSON
@@ -17,10 +15,7 @@ import reactor.core.publisher.Mono
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
-import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.OVERSEAS_VOTE
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.POSTAL_VOTE
-import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.PROXY_VOTE
-import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.VOTER_CARD
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType
@@ -743,72 +738,64 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         )
     }
 
-    @TestFactory
-    fun `should submit the message to the relevant queue`() = listOf(
-        VOTER_CARD to localStackContainerSettings.mappedQueueUrlConfirmRegisterCheckResult,
-        POSTAL_VOTE to localStackContainerSettings.mappedQueueUrlPostalVoteConfirmRegisterCheckResult,
-        PROXY_VOTE to localStackContainerSettings.mappedQueueUrlProxyVoteConfirmRegisterCheckResult,
-        OVERSEAS_VOTE to localStackContainerSettings.mappedQueueUrlOverseasVoteConfirmRegisterCheckResult
-    ).map { (sourceType, targetQueueUrl) ->
-        DynamicTest.dynamicTest("result for $sourceType should be published to $targetQueueUrl") {
+    @Test
+    fun `should submit the POSTAL_VOTE result message to the postal vote queue`() {
+        // Given
+        val requestId = UUID.randomUUID()
+        val eroIdFromIerApi = "camden-city-council"
+        val gssCodeFromEroApi = "E12345678"
+        val anotherGssCodeFromEroApi = "E98764532"
 
-            // Given
-            val requestId = UUID.randomUUID()
-            val eroIdFromIerApi = "camden-city-council"
-            val gssCodeFromEroApi = "E12345678"
-            val anotherGssCodeFromEroApi = "E98764532"
+        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
+        wireMockService.stubEroManagementGetEro(eroIdFromIerApi, gssCodeFromEroApi, anotherGssCodeFromEroApi)
 
-            wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
-            wireMockService.stubEroManagementGetEro(eroIdFromIerApi, gssCodeFromEroApi, anotherGssCodeFromEroApi)
-
-            val savedPendingRegisterCheckEntity = registerCheckRepository.save(
-                buildRegisterCheck(
-                    sourceType = sourceType,
-                    correlationId = requestId,
-                    gssCode = gssCodeFromEroApi,
-                    status = CheckStatus.PENDING
-                )
-            )
-            registerCheckRepository.save(buildRegisterCheck(correlationId = UUID.randomUUID()))
-
-            val matchResultSentAt = OffsetDateTime.now(ZoneOffset.UTC)
-            val matchCount = 2
-            val matches = listOf(buildRegisterCheckMatchRequest(), buildRegisterCheckMatchRequest())
-
-            val expectedMessageContent = RegisterCheckResultMessage(
-                sourceType = sourceTypeMapper.fromEntityToVcaSqsEnum(sourceType),
-                sourceReference = savedPendingRegisterCheckEntity.sourceReference,
-                sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
-                registerCheckResult = RegisterCheckResult.MULTIPLE_MINUS_MATCH,
-                matches = matches.map { buildVcaRegisterCheckMatchFromMatchApi(it) }
-            )
-            val requestBody = buildRegisterCheckResultRequest(
-                requestId = requestId,
+        val savedPendingRegisterCheckEntity = registerCheckRepository.save(
+            buildRegisterCheck(
+                sourceType = POSTAL_VOTE,
+                correlationId = requestId,
                 gssCode = gssCodeFromEroApi,
-                createdAt = matchResultSentAt,
-                registerCheckMatchCount = matchCount,
-                registerCheckMatches = matches
+                status = CheckStatus.PENDING
             )
+        )
+        registerCheckRepository.save(buildRegisterCheck(correlationId = UUID.randomUUID()))
 
-            // When
-            webTestClient.post()
-                .uri(buildUri(requestId))
-                .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
-                .contentType(APPLICATION_JSON)
-                .body(
-                    Mono.just(requestBody),
-                    RegisterCheckResultRequest::class.java
-                )
-                .exchange()
-                .expectStatus()
-                .isCreated
+        val matchResultSentAt = OffsetDateTime.now(ZoneOffset.UTC)
+        val matchCount = 2
+        val matches = listOf(buildRegisterCheckMatchRequest(), buildRegisterCheckMatchRequest())
 
-            // Then
-            assertMessageSubmittedToSqs(
-                queueUrl = targetQueueUrl,
-                expectedMessageContent = expectedMessageContent
+        val expectedMessageContent = RegisterCheckResultMessage(
+            sourceType = sourceTypeMapper.fromEntityToVcaSqsEnum(POSTAL_VOTE),
+            sourceReference = savedPendingRegisterCheckEntity.sourceReference,
+            sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
+            registerCheckResult = RegisterCheckResult.MULTIPLE_MINUS_MATCH,
+            matches = matches.map { buildVcaRegisterCheckMatchFromMatchApi(it) }
+        )
+        val requestBody = buildRegisterCheckResultRequest(
+            requestId = requestId,
+            gssCode = gssCodeFromEroApi,
+            createdAt = matchResultSentAt,
+            registerCheckMatchCount = matchCount,
+            registerCheckMatches = matches
+        )
+
+        // When
+        webTestClient.post()
+            .uri(buildUri(requestId))
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
+            .contentType(APPLICATION_JSON)
+            .body(
+                Mono.just(requestBody),
+                RegisterCheckResultRequest::class.java
             )
-        }
+            .exchange()
+            .expectStatus()
+            .isCreated
+
+        // Then
+        assertMessageSubmittedToSqs(
+            queueUrl = localStackContainerSettings.mappedQueueUrlPostalVoteConfirmRegisterCheckResult,
+            expectedMessageContent = expectedMessageContent
+        )
     }
 
     private fun assertMessageSubmittedToSqs(queueUrl: String, expectedMessageContent: RegisterCheckResultMessage) {

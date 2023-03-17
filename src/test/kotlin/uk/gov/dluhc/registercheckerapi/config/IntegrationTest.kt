@@ -24,7 +24,7 @@ import javax.sql.DataSource
  * Base class used to bring up the entire Spring ApplicationContext
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
+@ActiveProfiles("integration-test")
 @AutoConfigureWebTestClient(timeout = "PT5M")
 internal abstract class IntegrationTest {
 

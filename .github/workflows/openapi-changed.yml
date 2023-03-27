@@ -29,3 +29,18 @@ jobs:
                 repo: 'eip-ero-register-checker-api'
               }
             });
+      - name: Trigger the eip-ero-portal-ui openapi-changed dispatch workflow
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.CABINETOFFICE_EIP_ERO_PAT }}
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: 'eip-ero-portal-ui',
+              workflow_id: 'openapi-changed.yml',
+              ref: 'main',
+              inputs: {
+                file_to_update: 'src/main/resources/openapi/RegisterCheckerAPIs.yaml',
+                repo: 'eip-ero-register-checker-api'
+              }
+            });

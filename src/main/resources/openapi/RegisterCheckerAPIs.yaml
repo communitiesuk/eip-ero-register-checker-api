@@ -4,6 +4,8 @@ info:
   version: '2.0.0'
   description: -|
     Requests checks and responses from EMS systems to validate elector details exists within the EMS.
+    For change history see
+    https://github.com/cabinetoffice/eip-ero-register-checker-api/blob/main/src/main/resources/openapi/RegisterCheckerAPIs.yaml
   contact:
     name: Krister Bone
     email: krister.bone@valtech.com
@@ -349,12 +351,9 @@ components:
           type: boolean
           default: false
           description: |-
-            Instruction to search either current or historical registers.
-            Used in the processing of overseas electors who are applying on the basis of historical 
-            precense on the electoral roll.
-        historicalSearchDateRange:
-          description: Required when historicalSearch=true
-          $ref: '#/components/schemas/DateRange'
+            Indicated the search is in relation to an Overseas elector application.
+            For ERO's to detemine Overseas applications, they need to know if the applicant is already on the current register as an Overseas elector, or 
+            if they existed on any historical registers, therefore current and historical registers must be searched.
         fn:
           type: string
           description: The applicant's first name
@@ -436,24 +435,6 @@ components:
       enum:
         - EROP
 
-    DateRange:
-      title: DateRange
-      description: A start and an end date representing the time period to search the electoral register.
-      properties:
-        startDate:
-          type: string
-          format: date
-          example: 2022-09-07
-          description: The start date of the date range
-        endDate:
-          type: string
-          format: date
-          example: 2023-09-07
-          description: The end date of the date range
-      required:
-        - startDate
-        - endDate
-
     RegisterCheckResultRequest:
       title: RegisterCheckResultRequest
       type: object
@@ -478,6 +459,17 @@ components:
           type: integer
           description: The number of possible matches found in the Electoral Register for the details in the request. If 10 or fewer matches were found, each should be returned in the “registerCheckMatches” array below. If more than 10 matches were found, the “registerCheckMatches” array should be omitted.
           example: 10
+        historicalSearchEarliestDate:
+          type: string
+          description: -|
+            The oldest date the EMS was able search within all/historical registers.
+            This will aid ERO's ability to process Overseas applcations. 
+            As part of the Elector's Overseas application they can provide an estimated last registered date. 
+            Where an EMS does not have records that go as far back as the Elector has
+            indicated, supplying this value to the ERO would allow them to make better informed decisions
+            about what next steps to perform to approve or reject applications. 
+          format: date-time
+          example: 1996-09-07
         registerCheckMatches:
           type: array
           description: Each record in “registerCheckMatches” represents one potential match within the EMS that could represent the Elector in the Register Check Request

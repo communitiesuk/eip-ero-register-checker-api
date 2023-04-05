@@ -5,7 +5,7 @@ import org.owasp.dependencycheck.reporting.ReportGenerator.Format.HTML
 import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 
 plugins {
-    id("org.springframework.boot") version "2.7.7"
+    id("org.springframework.boot") version "2.7.10"
     id("io.spring.dependency-management") version "1.1.0"
     kotlin("jvm") version "1.7.21"
     kotlin("kapt") version "1.7.21"
@@ -74,7 +74,7 @@ dependencies {
     implementation("com.vladmihalcea:hibernate-types-55:2.21.1")
 
     // mysql
-    runtimeOnly("mysql:mysql-connector-java")
+    runtimeOnly("com.mysql:mysql-connector-j")
     runtimeOnly("software.aws.rds:aws-mysql-jdbc:1.1.1")
     runtimeOnly("software.amazon.awssdk:rds")
 

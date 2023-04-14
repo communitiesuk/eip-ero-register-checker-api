@@ -1,19 +1,11 @@
 <configuration>
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
-        </encoder>
-    </appender>
-
-    <root level="info">
-        <appender-ref ref="STDOUT"/>
-    </root>
+    <include resource="org/springframework/boot/logging/logback/base.xml" />
 
     <logger name="org.testcontainers" level="INFO"/>
     <logger name="com.github.dockerjava" level="WARN"/>
 
-    <!-- to output SQL and params -->
-    <!--    <logger name="org.hibernate.SQL" level="DEBUG"/>
-    <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/> -->
-
+    <!-- to output SQL and params
+     <logger name="org.hibernate.SQL" level="DEBUG"/>
+     <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/>
+    -->
 </configuration>

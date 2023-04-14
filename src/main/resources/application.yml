@@ -37,3 +37,7 @@ sqs:
   remove-applicant-register-check-data-queue-name: ${SQS_REMOVE_APPLICANT_REGISTER_CHECK_DATA_QUEUE_NAME}
 
 caching.time-to-live: PT1H
+
+logging:
+  pattern:
+    level: "%X{correlationId} %5p"

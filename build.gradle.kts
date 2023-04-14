@@ -15,7 +15,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
     id("org.jlleitschuh.gradle.ktlint-idea") version "11.0.0"
     id("org.openapi.generator") version "6.2.1"
-    id("org.owasp.dependencycheck") version "8.1.2"
+    id("org.owasp.dependencycheck") version "8.2.1"
 }
 
 group = "uk.gov.dluhc"
@@ -23,6 +23,7 @@ version = "latest"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
 ext["snakeyaml.version"] = "1.33"
+ext["spring-framework.version"] = "5.3.27" // Spring Boot 2.7.11 will include this when released on 20/04/23
 extra["awsSdkVersion"] = "2.18.9"
 extra["springCloudVersion"] = "2.4.2"
 

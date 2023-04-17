@@ -13,7 +13,23 @@ class MessageQueue<T : Any>(
 
     /**
      * Extension function on [QueueMessagingTemplate] to allow invocation of it's protected `doConvert` method to
-     * get convert the payload into a [Message] with all the default headers etc.
+     * convert the payload into a [Message] with all the default headers etc.
+     *
+     * The objective is to invoke `io.awspring.cloud.messaging.core.support.AbstractMessageChannelMessagingSendingTemplate.send(queueName, Message)`
+     * via `QueueMessagingTemplate.send(queueName, Message)` so that the AOP Aspect that adds the correlation ID to the message header
+     * is invoked.
+     *
+     * `QueueMessageTemplate.convertAndSend(queueName, payload)` (which is slightly more convenient) does not use a public method
+     * on `QueueMessageTemplate` or any of its superclasses to convert the payload to a Message, so our AOP Aspect method that
+     * manipulates the Message before it is sent does not get weaved or invoked.
+     *
+     * We need to convert the payload into a `Message` to be able to use `QueueMessageTemplate.send(queueName, Message)`, whose
+     * public superclass method `io.awspring.cloud.messaging.core.support.AbstractMessageChannelMessagingSendingTemplate.send(queueName, Message)`
+     * that the Aspect weaves.
+     *
+     * Ordinarily we cannot call `doConvert` directly as it is `protected`. This extension function uses reflection to change the
+     * `doConvert` method to public, and then invoke it and return the resultant `Message` so that we can use it in the call
+     * `QueueMessageTemplate.send(queueName, Message)`
      */
     private fun QueueMessagingTemplate.convertToMessage(payload: T): Message<T> =
         javaClass.getDeclaredMethod("doConvert", Any::class.java, Map::class.java, MessagePostProcessor::class.java).let {

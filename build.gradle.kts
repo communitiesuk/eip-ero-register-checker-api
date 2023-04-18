@@ -62,6 +62,9 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-ui:1.6.14")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
+    // Logging
+    runtimeOnly("net.logstash.logback:logstash-logback-encoder:7.3")
+
     // webclient
     implementation("org.springframework:spring-webflux")
     implementation("io.projectreactor.netty:reactor-netty-http")

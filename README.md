@@ -16,6 +16,24 @@ $ ./gradlew ktlintApplyToIdea
 ```
 This only needs doing once to setup your IDE with the code styles.
 
+#### AWS CodeArtifact Access Set Up
+
+To access libraries stored in the AWS CodeArtifact repository an access token is required that the build script fetches
+in the background using the credentials for the `code-artifact` profile. To create this profile on your developer
+machine follow these instructions:
+
+```shell
+aws configure --profile code-artifact
+```
+
+At the prompts configure the `code-artifact` profile as follows:
+* Your AWS Access Key ID
+* Your AWS Secret Access Key
+* Default region name, `eu-west-2`
+* Default output format, `json`
+
+Note: AWS CLI must be installed on the developer workstation as a pre-requisite.
+
 #### Running Tests
 In order to run the tests successfully, you will first need to set the `LOCALSTACK_API_KEY` environment variable (i.e.
 within your .bash_profile or similar). Then run:

@@ -1,0 +1,31 @@
+name: Trigger raising infra PR for changed openapi spec
+
+on:
+  pull_request:
+    branches:
+      - eip-main
+    types:
+      - closed
+    paths:
+      - "src/main/resources/openapi/RegisterCheckerAPIs.yaml"
+
+jobs:
+  trigger-raise-openapi-spec-change-pr:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: Trigger the eip-ero-infra openapi-changed dispatch workflow
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.CABINETOFFICE_EIP_ERO_PAT }}
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: 'eip-ero-infra',
+              workflow_id: 'openapi-changed.yml',
+              ref: 'eip-main',
+              inputs: {
+                file_to_update: 'src/main/resources/openapi/RegisterCheckerAPIs.yaml',
+                repo: 'eip-ero-register-checker-api'
+              }
+            });

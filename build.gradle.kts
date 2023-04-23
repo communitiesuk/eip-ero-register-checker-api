@@ -6,7 +6,7 @@ import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 import java.lang.ProcessBuilder.Redirect
 
 plugins {
-    id("org.springframework.boot") version "2.7.10"
+    id("org.springframework.boot") version "2.7.11"
     id("io.spring.dependency-management") version "1.1.0"
     kotlin("jvm") version "1.7.21"
     kotlin("kapt") version "1.7.21"
@@ -24,7 +24,6 @@ version = "latest"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
 ext["snakeyaml.version"] = "1.33"
-ext["spring-framework.version"] = "5.3.27" // Spring Boot 2.7.11 will include this when released on 20/04/23
 extra["awsSdkVersion"] = "2.18.9"
 extra["springCloudVersion"] = "2.4.2"
 

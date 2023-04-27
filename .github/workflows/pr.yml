@@ -1,0 +1,34 @@
+name: Ensure CODEOWNERS file exists or does not exist as necessary
+
+on:
+  - pull_request
+
+jobs:
+  check-codeowners-file:
+    runs-on: ubuntu-latest
+    env:
+      LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
+      AWS_REGION: eu-west-2
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Check CODEOWNERS file exists
+        if: ${{ github.base_ref == 'main' }}
+        run: |
+          if [ ! -f ./CODEOWNERS ]; then
+            echo "CODEOWNERS file not found! Please replace this to ensure the main branch is protected."
+            exit 1
+          fi
+        working-directory: .github
+        shell: bash
+        
+      - name: Check CODEOWNERS file does not exist
+        if: ${{ github.base_ref == 'eip-main' }}
+        run: |
+          if [ -f ./CODEOWNERS ]; then
+            echo "CODEOWNERS file found! Please remove this to avoid notifications to SoftWire for all PRs."
+            exit 1
+          fi
+        working-directory: .github
+        shell: bash

@@ -6,9 +6,6 @@ on:
 jobs:
   check-codeowners-file:
     runs-on: ubuntu-latest
-    env:
-      LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
-      AWS_REGION: eu-west-2
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3

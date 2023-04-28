@@ -647,7 +647,9 @@ components:
           description: |
             Required only if “ballot” address given. The reason the applicant gave for using a different address for the ballot paper (max 500 utf-8 chars)
           maxLength: 500
-
+      required:
+        - ballotstreet
+        - ballotpostcode
     ProxyVote:
       type: object
       properties:

@@ -132,7 +132,9 @@ internal class PendingRegisterCheckMapperTest {
             reglocality = pendingRegisterCheckDto.personalDetail.address.locality,
             regtown = pendingRegisterCheckDto.personalDetail.address.town,
             regarea = pendingRegisterCheckDto.personalDetail.address.area,
-            reguprn = pendingRegisterCheckDto.personalDetail.address.uprn
+            reguprn = pendingRegisterCheckDto.personalDetail.address.uprn,
+            emsElectorId = null,
+            historicalSearch = null,
         )
 
         // When
@@ -174,7 +176,9 @@ internal class PendingRegisterCheckMapperTest {
             reglocality = pendingRegisterCheckDto.personalDetail.address.locality,
             regtown = pendingRegisterCheckDto.personalDetail.address.town,
             regarea = pendingRegisterCheckDto.personalDetail.address.area,
-            reguprn = pendingRegisterCheckDto.personalDetail.address.uprn
+            reguprn = pendingRegisterCheckDto.personalDetail.address.uprn,
+            emsElectorId = null,
+            historicalSearch = null,
         )
 
         // When

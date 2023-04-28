@@ -1,13 +1,24 @@
 openapi: 3.0.0
 info:
   title: Register Checker APIs
-  version: '1.1.0'
-  description: Requests checks and accepts responses from EMS systems to validate elector details exists within the EMS.
+  version: '2.0.0'
+  description: -|
+    Requests checks and responses from EMS systems to validate elector details exists within the EMS.
+    For change history see
+    https://github.com/cabinetoffice/eip-ero-register-checker-api/blob/main/src/main/resources/openapi/RegisterCheckerAPIs.yaml
   contact:
     name: Krister Bone
     email: krister.bone@valtech.com
 servers:
   - url: 'http://localhost:3000'
+  - url: 'https://api.registerchecker.dev.erop.ierds.uk'
+  - url: 'https://api.registerchecker.int.erop.ierds.uk'
+  - url: 'https://api.registerchecker.test.erop.ierds.uk'
+  - url: 'https://api.registerchecker.erop.ierds.uk'
+  - url: 'https://api.registerchecker.dev.eip.erop.ierds.uk'
+  - url: 'https://api.registerchecker.int.eip.erop.ierds.uk'
+  - url: 'https://api.registerchecker.test.eip.erop.ierds.uk'
+  - url: 'https://api.registerchecker.beta.eip.erop.ierds.uk'
 #
 # --------------------------------------------------------------------------------
 #
@@ -105,9 +116,11 @@ paths:
                   error:
                     type: string
                     example: 'Not Found'
+                    maxLength: 500
                   message:
                     type: string
                     example: 'EROCertificateMapping for certificateSerial=[543212222] not found'
+                    maxLength: 500
                 required:
                   - timestamp
                   - status
@@ -176,7 +189,9 @@ paths:
                 {}
     post:
       summary: Update Pending Register Check
-      description: The EMS system's response to a single Register Check. Updates a pending Register Check with the outcome of the check.
+      description: -|
+        The EMS system's response to an individual Register Check. 
+        Updates a pending Register Check with the outcome of the check.
       operationId: update-pending-register-check
       tags:
         - Single Register Check
@@ -211,13 +226,16 @@ paths:
                   error:
                     type: string
                     example: 'Bad Request'
+                    maxLength: 500
                   message:
                     type: string
                     example: 'Validation failed for object=''registerCheckResultRequest''. Error count: 1'
+                    maxLength: 500
                   validationErrors:
                     type: array
                     items:
                       type: string
+                      maxLength: 500
                     example:
                       - 'Error on field ''gssCode'': rejected value [1234], must match "^[a-zA-Z]\d{8}$"'
                 required:
@@ -259,6 +277,7 @@ components:
         error:
           type: string
           example: 'Bad Request'
+          maxLength: 500
         message:
           type: string
           example: 'Validation failed for object=''registerCheckResultRequest''. Error count: 1'
@@ -266,6 +285,7 @@ components:
           type: array
           items:
             type: string
+            maxLength: 500
           example:
             - 'Error on field ''gssCode'': rejected value [1234], must match "^[a-zA-Z]\d{8}$"'
       required:
@@ -311,26 +331,47 @@ components:
           type: string
           description: |-
             Indicates who/what initiated the register check request.
-            
-            Where EROP creates the request automatically this will be "EROP". Should there be a need to manually force an additional check, this will indicate the id of the ERO user who triggered the request (for auditing purposes).
+            Where EROP creates the request automatically this will be "EROP". 
+            Should there be a need to manually force an additional check, this will indicate the id/email address 
+            of the ERO user who triggered the request (for auditing purposes).
           example: EROP
         createdAt:
           type: string
           description: The date and time this request to check the Electoral Register was generated
           format: date-time
           example: 2022-09-07T14:14:55.123Z
+        emsElectorId:
+          type: string
+          description: |-
+            A stable unique id of an elector within the EMS to allow ID matching of an individual elector.
+            If supplied, the EMS system should only use this value to perform a lookup
+            within their system. All other search fields should be ignored.
+          maxLength: 50
+        historicalSearch:
+          type: boolean
+          default: false
+          description: |-
+            Indicated the search is in relation to an Overseas elector application.
+            For ERO's to detemine Overseas applications, they need to know if the applicant is already on the current register as an Overseas elector, or 
+            if they existed on any historical registers, therefore current and historical registers must be searched.
         fn:
           type: string
           description: The applicant's first name
           example: Fred
+          minLength: 1
+          maxLength: 35
         mn:
           type: string
           description: The applicant's middle name(s)
           example: Cuthbert
+          minLength: 1
+          maxLength: 100
         ln:
           type: string
           description: The applicant's surname
           example: Bloggs
+          minLength: 1
+          maxLength: 35
         dob:
           type: string
           description: The applicant's date of birth (ISO-8601 format)
@@ -339,31 +380,43 @@ components:
         regproperty:
           type: string
           example: Aviation House
+          maxLength: 255
         regstreet:
           type: string
           example: 125 Kingsway
+          minLength: 1
+          maxLength: 255
         reglocality:
           type: string
           example: Camden
+          maxLength: 255
         regtown:
           type: string
           example: London
+          maxLength: 255
         regarea:
           type: string
           example: Greater London
+          maxLength: 255
         regpostcode:
           type: string
           example: SW112DR
+          minLength: 1
+          maxLength: 10
         reguprn:
           type: string
+          pattern: '^\d{1,12}$'
+          maxLength: 12
           example: 0987654321
         phone:
           type: string
           description: The applicant's phone number for contact purposes.
           example: 01234 567890
+          maxLength: 50
         email:
           type: string
           format: email
+          maxLength: 255
           description: The applicant's email address for contact purposes.
       required:
         - requestid
@@ -406,6 +459,17 @@ components:
           type: integer
           description: The number of possible matches found in the Electoral Register for the details in the request. If 10 or fewer matches were found, each should be returned in the “registerCheckMatches” array below. If more than 10 matches were found, the “registerCheckMatches” array should be omitted.
           example: 10
+        historicalSearchEarliestDate:
+          type: string
+          description: -|
+            The oldest date the EMS was able search within all/historical registers.
+            This will aid ERO's ability to process Overseas applcations. 
+            As part of the Elector's Overseas application they can provide an estimated last registered date. 
+            Where an EMS does not have records that go as far back as the Elector has
+            indicated, supplying this value to the ERO would allow them to make better informed decisions
+            about what next steps to perform to approve or reject applications. 
+          format: date-time
+          example: 1996-09-07
         registerCheckMatches:
           type: array
           description: Each record in “registerCheckMatches” represents one potential match within the EMS that could represent the Elector in the Register Check Request
@@ -424,19 +488,26 @@ components:
       properties:
         emsElectorId:
           type: string
+          minLength: 1
+          maxLength: 50
           description: The stable unique id of the elector provided by the EMS client.
         fn:
           type: string
           description: The applicant's first name
           example: Fred
+          minLength: 1
+          maxLength: 35       
         mn:
           type: string
           description: The applicant's middle name(s)
           example: Cuthbert
+          maxLength: 100      
         ln:
           type: string
           description: The applicant's surname
           example: Bloggs
+          minLength: 1
+          maxLength: 35          
         dob:
           type: string
           description: The applicant's date of birth (ISO-8601 format)
@@ -445,32 +516,44 @@ components:
         regproperty:
           type: string
           example: Aviation House
+          maxLength: 255
         regstreet:
           type: string
           example: 125 Kingsway
+          minLength: 1
+          maxLength: 255          
         reglocality:
           type: string
           example: Camden
+          maxLength: 255      
         regtown:
           type: string
           example: London
+          maxLength: 255
         regarea:
           type: string
           example: Greater London
+          maxLength: 255
         regpostcode:
           type: string
           example: SW112DR
+          minLength: 1
+          maxLength: 10          
         reguprn:
           type: string
+          pattern: '^\d{1,12}$'
+          maxLength: 12
           example: 0987654321
         phone:
           type: string
           description: The applicant's phone number for contact purposes.
           example: 01234 567890
+          maxLength: 50   
         email:
           type: string
           format: email
           description: The applicant's email address for contact purposes.
+          maxLength: 255          
         registeredStartDate:
           type: string
           description: ISO-8601 format. The date the match was registered.
@@ -492,6 +575,7 @@ components:
         franchiseCode:
           type: string
           description: Franchise codes indicate the electors voting eligibility within different elections, i.e. national or local elections.
+          maxLength: 50
         postalVote:
           $ref: '#/components/schemas/PostalVote'
         proxyVote:
@@ -514,43 +598,58 @@ components:
           type: string
           description: Date in ISO-8601 format. If set, the elector has a postal vote for the election(s) and referendum(s) to be held on the specified date.
           format: date
+          example: 2022-02-02
         postalVoteStartDate:
           type: string
           description: Date in ISO-8601 format. If set, the elector has a postal vote for the period defined by the two dates.
           format: date
+          example: 2022-02-02
         postalVoteEndDate:
           type: string
           description: Date in ISO-8601 format. If set, the elector has a postal vote for the period defined by the two dates.
           format: date
+          example: 2022-02-02
         ballotproperty:
           type: string
           description: The property name of the address to which the applicant has requested the ballot paper is sent (if different to their registered address).
+          maxLength: 255
         ballotstreet:
           type: string
           description: The street of the address to which the applicant has requested the ballot paper is sent (if different to their registered address - required if so).
+          minLength: 1
+          maxLength: 255
         ballotlocality:
           type: string
           description: The localtiy of the address to which the applicant has requested the ballot paper is sent (if different to their registered address).
+          maxLength: 255
         ballottown:
           type: string
           description: The town of the address to which the applicant has requested the ballot paper is sent (if different to their registered address).
+          maxLength: 255
         ballotarea:
           type: string
           description: The area of the address to which the applicant has requested the ballot paper is sent (if different to their registered address).
+          maxLength: 255
         ballotpostcode:
           type: string
           example: SW112DR
           description: The postcode of the address to which the applicant has requested the ballot paper is sent (if different to their registered address - required if so).
+          minLength: 1
+          maxLength: 10
         ballotuprn:
           type: string
-          example: 098766
+          pattern: '^\d{1,12}$'
+          maxLength: 12
+          example: 0987654321
           description: The UPRN of the address to which the applicant has requested the ballot paper is sent (if different to their registered address).
         ballotAddressReason:
           type: string
           description: |
             Required only if “ballot” address given. The reason the applicant gave for using a different address for the ballot paper (max 500 utf-8 chars)
           maxLength: 500
-
+      required:
+        - ballotstreet
+        - ballotpostcode
     ProxyVote:
       type: object
       properties:
@@ -561,23 +660,31 @@ components:
           type: string
           description: Date in ISO-8601 format. If set, the elector has a proxy vote for the election(s) and referendum(s) to be held on the specified date.
           format: date
+          example: 2022-02-02
         proxyVoteStartDate:
           type: string
           description: Date in ISO-8601 format. If set, the elector has a proxy vote for the period defined by the two dates.
           format: date
+          example: 2022-02-02
         proxyVoteEndDate:
           type: string
           description: Date in ISO-8601 format. If set, the elector has a proxy vote for the period defined by the two dates.
           format: date
+          example: 2022-03-02
         proxyfn:
           type: string
           description: First name of the chosen proxy.
+          minLength: 1
+          maxLength: 35          
         proxymn:
           type: string
           description: (Optional) Middle name(s) of the chosen proxy.
+          maxLength: 100
         proxyln:
           type: string
           description: Last name of the chosen proxy.
+          minLength: 1
+          maxLength: 35          
         proxyfamilyrelationship:
           type: string
           description: (Optional) The family relationship (if any) of the chosen proxy. The question to users is “What is your proxy’s relationship to you?”
@@ -585,33 +692,45 @@ components:
         proxyproperty:
           type: string
           description: The property of the address of the chosen proxy as supplied by the applicant.
+          maxLength: 255
         proxystreet:
           type: string
           description: (Required) The street of the address of the chosen proxy as supplied by the applicant.
+          minLength: 1          
+          maxLength: 255
         proxylocality:
           type: string
-          description: The locality of the address of the chosen proxy as supplied by the applicant.
+          description: The locality of the address of the chosen proxy as supplied by the applicant.        
+          maxLength: 255          
         proxytown:
           type: string
-          description: The town of the address of the chosen proxy as supplied by the applicant.
+          description: The town of the address of the chosen proxy as supplied by the applicant.        
+          maxLength: 255          
         proxyarea:
           type: string
-          description: The area of the address of the chosen proxy as supplied by the applicant.
+          description: The area of the address of the chosen proxy as supplied by the applicant.        
+          maxLength: 255          
         proxypostcode:
           type: string
           example: SW112DR
           description: (Required) The postcode of the address of the chosen proxy as supplied by the applicant.
+          minLength: 1          
+          maxLength: 10          
         proxyuprn:
           type: string
-          example: 098766
+          pattern: '^\d{1,12}$'
+          maxLength: 12
+          example: 0987654321
           description: The UPRN of the address of the chosen proxy as supplied by the applicant.
         proxyphone:
           type: string
           description: (Optional) phone number of the chosen proxy as supplied by the applicant
+          maxLength: 50
         proxyemail:
           type: string
           description: (Optional) email address of the chosen proxy as supplied by the applicant
           format: email
+          maxLength: 255
         proxyreason:
           type: string
           description: |

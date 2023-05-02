@@ -92,7 +92,9 @@ internal class PendingRegisterCheckMapperTest {
             createdBy = registerCheckEntity.createdBy,
             gssCode = registerCheckEntity.gssCode,
             createdAt = registerCheckEntity.dateCreated,
-            personalDetail = expectedPersonalDetailDto
+            personalDetail = expectedPersonalDetailDto,
+            emsElectorId = registerCheckEntity.emsElectorId,
+            historicalSearch = registerCheckEntity.historicalSearch,
         )
 
         // When

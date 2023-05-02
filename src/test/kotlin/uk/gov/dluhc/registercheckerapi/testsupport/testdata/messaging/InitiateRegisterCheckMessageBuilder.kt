@@ -16,14 +16,18 @@ fun buildInitiateRegisterCheckMessage(
     sourceCorrelationId: UUID = UUID.randomUUID(),
     requestedBy: String = "system",
     gssCode: String = "E123456789",
-    personalDetail: RegisterCheckPersonalDetail = buildRegisterCheckPersonalDetail()
+    personalDetail: RegisterCheckPersonalDetail = buildRegisterCheckPersonalDetail(),
+    emsElectorId: String = RandomStringUtils.randomAlphanumeric(30),
+    historicalSearch: Boolean = false,
 ) = InitiateRegisterCheckMessage(
     sourceType = sourceType,
     sourceReference = sourceReference,
     sourceCorrelationId = sourceCorrelationId,
     requestedBy = requestedBy,
     gssCode = gssCode,
-    personalDetail = personalDetail
+    personalDetail = personalDetail,
+    emsElectorId = emsElectorId,
+    historicalSearch = historicalSearch,
 )
 
 fun buildRegisterCheckPersonalDetail(

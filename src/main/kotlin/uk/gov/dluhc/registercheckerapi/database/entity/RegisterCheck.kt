@@ -72,6 +72,11 @@ class RegisterCheck(
     @NotFound(action = NotFoundAction.EXCEPTION)
     var personalDetail: PersonalDetail,
 
+    @Size(max = 50)
+    var emsElectorId: String? = null,
+
+    var historicalSearch: Boolean? = null,
+
     var matchCount: Int? = null,
 
     var matchResultSentAt: Instant? = null,

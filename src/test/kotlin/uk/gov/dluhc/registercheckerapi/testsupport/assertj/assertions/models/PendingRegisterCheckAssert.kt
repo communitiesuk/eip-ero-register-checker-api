@@ -66,7 +66,9 @@ class PendingRegisterCheckAssert(actual: List<PendingRegisterCheck>?) :
                 reglocality = personalDetail.address.locality,
                 regtown = personalDetail.address.town,
                 regarea = personalDetail.address.area,
-                reguprn = personalDetail.address.uprn
+                reguprn = personalDetail.address.uprn,
+                emsElectorId = emsElectorId,
+                historicalSearch = historicalSearch,
             )
         }
     }

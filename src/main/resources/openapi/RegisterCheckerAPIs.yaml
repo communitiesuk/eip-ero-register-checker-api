@@ -352,7 +352,7 @@ components:
           default: false
           description: |-
             Indicated the search is in relation to an Overseas elector application.
-            For ERO's to detemine Overseas applications, they need to know if the applicant is already on the current register as an Overseas elector, or 
+            For ERO's to determine Overseas applications, they need to know if the applicant is already on the current register as an Overseas elector, or 
             if they existed on any historical registers, therefore current and historical registers must be searched.
         fn:
           type: string

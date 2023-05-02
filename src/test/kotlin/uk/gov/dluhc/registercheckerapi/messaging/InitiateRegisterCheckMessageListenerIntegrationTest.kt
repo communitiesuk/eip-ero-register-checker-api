@@ -57,7 +57,9 @@ internal class InitiateRegisterCheckMessageListenerIntegrationTest : Integration
                     postcode = message.personalDetail.address.postcode,
                     uprn = message.personalDetail.address.uprn,
                 )
-            )
+            ),
+            emsElectorId = message.emsElectorId,
+            historicalSearch = message.historicalSearch,
         )
 
         // When

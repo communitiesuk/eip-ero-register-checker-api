@@ -59,7 +59,9 @@ internal class InitiateRegisterCheckMapperTest {
                         uprn = address.uprn,
                     )
                 )
-            }
+            },
+            emsElectorId = message.emsElectorId,
+            historicalSearch = message.historicalSearch,
         )
 
         // When

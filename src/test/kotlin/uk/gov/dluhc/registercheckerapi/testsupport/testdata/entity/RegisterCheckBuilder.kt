@@ -1,5 +1,6 @@
 package uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity
 
+import org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.PENDING
 import uk.gov.dluhc.registercheckerapi.database.entity.PersonalDetail
@@ -20,6 +21,8 @@ fun buildRegisterCheck(
     matchCount: Int = 0,
     registerCheckMatches: MutableList<RegisterCheckMatch> = mutableListOf(),
     personalDetail: PersonalDetail = buildPersonalDetail(),
+    emsElectorId: String = randomAlphanumeric(30),
+    historicalSearch: Boolean = false,
     createdBy: String = "system"
 ) = RegisterCheck(
     id = id,
@@ -32,5 +35,7 @@ fun buildRegisterCheck(
     matchCount = matchCount,
     registerCheckMatches = registerCheckMatches,
     personalDetail = personalDetail,
+    emsElectorId = emsElectorId,
+    historicalSearch = historicalSearch,
     createdBy = createdBy
 )

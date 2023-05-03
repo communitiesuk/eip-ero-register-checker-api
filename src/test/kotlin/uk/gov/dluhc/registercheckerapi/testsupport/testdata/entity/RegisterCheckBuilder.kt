@@ -8,6 +8,7 @@ import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.VOTER_CARD
+import java.time.Instant
 import java.util.UUID
 
 fun buildRegisterCheck(
@@ -23,6 +24,7 @@ fun buildRegisterCheck(
     personalDetail: PersonalDetail = buildPersonalDetail(),
     emsElectorId: String = randomAlphanumeric(30),
     historicalSearch: Boolean = false,
+    historicalSearchEarliestDate: Instant? = Instant.now(),
     createdBy: String = "system"
 ) = RegisterCheck(
     id = id,
@@ -37,5 +39,6 @@ fun buildRegisterCheck(
     personalDetail = personalDetail,
     emsElectorId = emsElectorId,
     historicalSearch = historicalSearch,
+    historicalSearchEarliestDate = historicalSearchEarliestDate,
     createdBy = createdBy
 )

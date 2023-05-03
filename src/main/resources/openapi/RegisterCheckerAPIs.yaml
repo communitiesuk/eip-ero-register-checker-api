@@ -463,7 +463,7 @@ components:
           type: string
           description: -|
             The oldest date the EMS was able search within all/historical registers.
-            This will aid ERO's ability to process Overseas applcations. 
+            This will aid ERO's ability to process Overseas applications. 
             As part of the Elector's Overseas application they can provide an estimated last registered date. 
             Where an EMS does not have records that go as far back as the Elector has
             indicated, supplying this value to the ERO would allow them to make better informed decisions

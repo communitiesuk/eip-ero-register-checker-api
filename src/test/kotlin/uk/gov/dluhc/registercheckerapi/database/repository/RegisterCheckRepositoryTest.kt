@@ -27,6 +27,7 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         )
         private val DATE_FIELDS = arrayOf(
             "dateCreated",
+            "historicalSearchEarliestDate",
             "personalDetail.dateCreated",
             "personalDetail.address.dateCreated",
             "updatedAt",
@@ -145,7 +146,12 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             val registerCheckToSearch = buildRegisterCheck()
             val registerCheckAnother = buildRegisterCheck()
             registerCheckRepository.saveAll(listOf(registerCheckToSearch, registerCheckAnother))
-            registerCheckToSearch.recordExactMatch(checkStatus, Instant.now(), buildRegisterCheckMatch())
+            registerCheckToSearch.recordExactMatch(
+                checkStatus,
+                Instant.now(),
+                buildRegisterCheckMatch(),
+                null
+            )
             registerCheckAnother.recordNoMatch(Instant.now())
             registerCheckRepository.saveAll(listOf(registerCheckToSearch, registerCheckAnother))
 
@@ -163,6 +169,7 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
                 assertThat(registerCheckMatch.personalDetail.address).isNotNull
             }
             assertThat(actual.matchResultSentAt).isNotNull
+            assertThat(actual.historicalSearchEarliestDate).isNull()
         }
 
         @Test
@@ -190,9 +197,10 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         fun `should record multiple matches`(matchCount: Int) {
             // Given
             val registerCheck = buildRegisterCheck()
+            val historicalSearchEarliestDate = Instant.now()
             registerCheckRepository.save(registerCheck)
             val matches = mutableListOf<RegisterCheckMatch>().apply { repeat(matchCount) { add(buildRegisterCheckMatch()) } }
-            registerCheck.recordMultipleMatches(Instant.now(), matchCount, matches)
+            registerCheck.recordMultipleMatches(Instant.now(), matchCount, matches, historicalSearchEarliestDate)
             registerCheckRepository.save(registerCheck)
 
             // When
@@ -209,6 +217,7 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
                 assertThat(registerCheckMatch.personalDetail.address).isNotNull
             }
             assertThat(actual.matchResultSentAt).isNotNull
+            assertThat(actual.historicalSearchEarliestDate).isNotNull
         }
 
         @ParameterizedTest
@@ -216,9 +225,10 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         fun `should record too many matches`(matchCount: Int) {
             // Given
             val registerCheck = buildRegisterCheck()
+            val historicalSearchEarliestDate = Instant.now()
             registerCheckRepository.save(registerCheck)
             val matches = mutableListOf<RegisterCheckMatch>().apply { repeat(matchCount) { add(buildRegisterCheckMatch()) } }
-            registerCheck.recordTooManyMatches(Instant.now(), matchCount, matches)
+            registerCheck.recordTooManyMatches(Instant.now(), matchCount, matches, historicalSearchEarliestDate)
             registerCheckRepository.save(registerCheck)
 
             // When
@@ -235,6 +245,7 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
                 assertThat(registerCheckMatch.personalDetail.address).isNotNull
             }
             assertThat(actual.matchResultSentAt).isNotNull
+            assertThat(actual.historicalSearchEarliestDate).isNotNull
         }
     }
 
@@ -252,7 +263,16 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
             val unMatchedRegisterCheck1 = buildRegisterCheck(sourceReference = randomUUID().toString())
             val unMatchedRegisterCheck2 = buildRegisterCheck()
             val expectedMatchingResults = 3
-            registerCheckRepository.saveAll(listOf(matchingRegisterCheck1, matchingRegisterCheck2, matchingRegisterCheck3, unMatchedRegisterCheck1, unMatchedRegisterCheck2))
+
+            registerCheckRepository.saveAll(
+                listOf(
+                    matchingRegisterCheck1,
+                    matchingRegisterCheck2,
+                    matchingRegisterCheck3,
+                    unMatchedRegisterCheck1,
+                    unMatchedRegisterCheck2
+                )
+            )
 
             // When
             val actual = registerCheckRepository.findBySourceReferenceAndSourceType(sourceReference, VOTER_CARD)

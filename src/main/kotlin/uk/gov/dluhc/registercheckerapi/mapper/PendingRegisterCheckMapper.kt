@@ -34,15 +34,15 @@ abstract class PendingRegisterCheckMapper {
     @Mapping(target = "mn", source = "personalDetail.middleNames")
     @Mapping(target = "ln", source = "personalDetail.surname")
     @Mapping(target = "dob", source = "personalDetail.dateOfBirth")
-    @Mapping(target = "phone", source = "personalDetail.phone")
-    @Mapping(target = "email", source = "personalDetail.email")
     @Mapping(target = "regproperty", source = "personalDetail.address.property")
     @Mapping(target = "regstreet", source = "personalDetail.address.street")
-    @Mapping(target = "regpostcode", source = "personalDetail.address.postcode")
     @Mapping(target = "reglocality", source = "personalDetail.address.locality")
     @Mapping(target = "regtown", source = "personalDetail.address.town")
     @Mapping(target = "regarea", source = "personalDetail.address.area")
+    @Mapping(target = "regpostcode", source = "personalDetail.address.postcode")
     @Mapping(target = "reguprn", source = "personalDetail.address.uprn")
+    @Mapping(target = "phone", source = "personalDetail.phone")
+    @Mapping(target = "email", source = "personalDetail.email")
     abstract fun pendingRegisterCheckDtoToPendingRegisterCheckModel(pendingRegisterCheckDto: PendingRegisterCheckDto): PendingRegisterCheck
 
     @Named("createdByToActingStaffId")

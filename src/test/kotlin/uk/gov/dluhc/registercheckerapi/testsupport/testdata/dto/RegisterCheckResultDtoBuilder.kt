@@ -15,7 +15,8 @@ fun buildRegisterCheckResultDto(
     matchResultSentAt: Instant = Instant.now(),
     matchCount: Int = 1,
     registerCheckStatus: RegisterCheckStatus = RegisterCheckStatus.EXACT_MATCH,
-    registerCheckMatches: List<RegisterCheckMatchDto>? = listOf(buildRegisterCheckMatchDto())
+    registerCheckMatches: List<RegisterCheckMatchDto>? = listOf(buildRegisterCheckMatchDto()),
+    historicalSearchEarliestDate: Instant? = Instant.now()
 ) = RegisterCheckResultDto(
     requestId = requestId,
     correlationId = correlationId,
@@ -23,7 +24,8 @@ fun buildRegisterCheckResultDto(
     matchResultSentAt = matchResultSentAt,
     matchCount = matchCount,
     registerCheckStatus = registerCheckStatus,
-    registerCheckMatches = registerCheckMatches
+    registerCheckMatches = registerCheckMatches,
+    historicalSearchEarliestDate = historicalSearchEarliestDate,
 )
 
 fun buildRegisterCheckMatchDto(

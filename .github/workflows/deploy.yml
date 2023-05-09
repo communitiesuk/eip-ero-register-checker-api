@@ -28,10 +28,16 @@ jobs:
         id: set-deployment-env
         run: |
           DEPLOY_ENV=${{ inputs.deploy_environment }}
-          
+
           if [ $DEPLOY_ENV != "test" ]
           then
             echo "SECRET_PREFIX=${DEPLOY_ENV^^}_" >> $GITHUB_ENV
+          fi
+          if [ $DEPLOY_ENV != "test2" ]
+          then
+            echo "tf_env_name=${DEPLOY_ENV}" >> $GITHUB_OUTPUT
+          else
+            echo "tf_env_name=tst2" >> $GITHUB_OUTPUT
           fi
 
       - name: Configure AWS credentials
@@ -44,7 +50,7 @@ jobs:
       # Note that the base Task Definition is managed by Terraform
       - name: Download task definition
         run: |
-          aws ecs describe-task-definition --task-definition "${{inputs.deploy_environment}}-${{inputs.app}}-ecs-task-definition" \
+          aws ecs describe-task-definition --task-definition "${{steps.set-deployment-env.outputs.tf_env_name}}-${{inputs.app}}-ecs-task-definition" \
           --query taskDefinition > task-definition.json
 
       - name: Login to Amazon ECR
@@ -56,14 +62,14 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
-          container-name: ${{inputs.deploy_environment}}-${{inputs.app}}-ecs-container
+          container-name: ${{steps.set-deployment-env.outputs.tf_env_name}}-${{inputs.app}}-ecs-container
           image: ${{ steps.login-ecr.outputs.registry }}/${{inputs.ecr_repo}}:${{ inputs.version }}
 
       - name: Update appspec file for environment
         uses: jacobtomlinson/gha-find-replace@v2
         with:
           find: "{env}"
-          replace: ${{inputs.deploy_environment}}
+          replace: ${{steps.set-deployment-env.outputs.tf_env_name}}
           include: "**/appspec.yaml"
           regex: false
 
@@ -71,9 +77,9 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{inputs.deploy_environment}}-${{inputs.app}}-ecs-service
-          cluster: ${{inputs.deploy_environment}}-${{inputs.app}}-ecs-cluster
+          service: ${{steps.set-deployment-env.outputs.tf_env_name}}-${{inputs.app}}-ecs-service
+          cluster: ${{steps.set-deployment-env.outputs.tf_env_name}}-${{inputs.app}}-ecs-cluster
           wait-for-service-stability: true
           codedeploy-appspec: ${{ github.workspace }}/.github/workflows/files/appspec.yaml
-          codedeploy-application: ${{inputs.deploy_environment}}-${{inputs.app}}
-          codedeploy-deployment-group: ${{inputs.deploy_environment}}-${{inputs.app}}-deployment-group
+          codedeploy-application: ${{steps.set-deployment-env.outputs.tf_env_name}}-${{inputs.app}}
+          codedeploy-deployment-group: ${{steps.set-deployment-env.outputs.tf_env_name}}-${{inputs.app}}-deployment-group

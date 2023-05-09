@@ -98,6 +98,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
         val actual = response.responseBody.blockFirst()
         assertThat(actual).isNotNull
         assertThat(actual!!.pageSize).isEqualTo(expectedRecordCount)
+
         PendingRegisterCheckAssert
             .assertThat(actual.registerCheckRequests)
             .isNotNull
@@ -108,6 +109,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
                     pendingRegisterCheckResult3ForGssCode1
                 )
             )
+
         wireMockService.verifyIerGetEroIdentifierCalledOnce()
         wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
     }

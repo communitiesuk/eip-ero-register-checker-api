@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet author="shumail.arshad@valtech.com" id="0011_add_historical_search_earliest_date_column" context="ddl">
+        <addColumn tableName="register_check">
+            <column name="historical_search_earliest_date" type="timestamp" afterColumn="historical_search" />
+        </addColumn>
+
+        <rollback>
+            <dropColumn tableName="register_check" columnName="historical_search_earliest_date"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

@@ -92,7 +92,9 @@ internal class PendingRegisterCheckMapperTest {
             createdBy = registerCheckEntity.createdBy,
             gssCode = registerCheckEntity.gssCode,
             createdAt = registerCheckEntity.dateCreated,
-            personalDetail = expectedPersonalDetailDto
+            personalDetail = expectedPersonalDetailDto,
+            emsElectorId = registerCheckEntity.emsElectorId,
+            historicalSearch = registerCheckEntity.historicalSearch,
         )
 
         // When
@@ -120,19 +122,21 @@ internal class PendingRegisterCheckMapperTest {
             gssCode = pendingRegisterCheckDto.gssCode,
             actingStaffId = "EROP",
             createdAt = pendingRegisterCheckDto.createdAt!!.atOffset(ZoneOffset.UTC),
+            emsElectorId = null,
+            historicalSearch = null,
             fn = pendingRegisterCheckDto.personalDetail.firstName,
             mn = pendingRegisterCheckDto.personalDetail.middleNames,
             ln = pendingRegisterCheckDto.personalDetail.surname,
             dob = pendingRegisterCheckDto.personalDetail.dateOfBirth,
-            phone = pendingRegisterCheckDto.personalDetail.phone,
-            email = pendingRegisterCheckDto.personalDetail.email,
-            regstreet = pendingRegisterCheckDto.personalDetail.address.street,
-            regpostcode = pendingRegisterCheckDto.personalDetail.address.postcode,
             regproperty = pendingRegisterCheckDto.personalDetail.address.property,
+            regstreet = pendingRegisterCheckDto.personalDetail.address.street,
             reglocality = pendingRegisterCheckDto.personalDetail.address.locality,
             regtown = pendingRegisterCheckDto.personalDetail.address.town,
             regarea = pendingRegisterCheckDto.personalDetail.address.area,
-            reguprn = pendingRegisterCheckDto.personalDetail.address.uprn
+            regpostcode = pendingRegisterCheckDto.personalDetail.address.postcode,
+            reguprn = pendingRegisterCheckDto.personalDetail.address.uprn,
+            phone = pendingRegisterCheckDto.personalDetail.phone,
+            email = pendingRegisterCheckDto.personalDetail.email,
         )
 
         // When
@@ -174,7 +178,9 @@ internal class PendingRegisterCheckMapperTest {
             reglocality = pendingRegisterCheckDto.personalDetail.address.locality,
             regtown = pendingRegisterCheckDto.personalDetail.address.town,
             regarea = pendingRegisterCheckDto.personalDetail.address.area,
-            reguprn = pendingRegisterCheckDto.personalDetail.address.uprn
+            reguprn = pendingRegisterCheckDto.personalDetail.address.uprn,
+            emsElectorId = null,
+            historicalSearch = null,
         )
 
         // When

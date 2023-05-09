@@ -7,6 +7,8 @@ cloud:
       use-default-aws-credentials-chain: true
 
 spring:
+  application:
+    name: 'eip-ero-register-checker-api'
   datasource:
     url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/register_checker
     readOnlyUrl: ${spring.datasource.url}
@@ -37,3 +39,7 @@ sqs:
   remove-applicant-register-check-data-queue-name: ${SQS_REMOVE_APPLICANT_REGISTER_CHECK_DATA_QUEUE_NAME}
 
 caching.time-to-live: PT1H
+
+logging:
+  pattern:
+    level: "%X{correlationId} %5p"

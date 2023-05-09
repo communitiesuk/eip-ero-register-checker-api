@@ -1,19 +1,20 @@
 <configuration>
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
-        </encoder>
-    </appender>
+    <!--
+    Logging configuration for tests.
 
-    <root level="info">
-        <appender-ref ref="STDOUT"/>
-    </root>
+    This uses the standard Spring Boot logback configuration, including console appender and pattern.
+
+    To customise log format output, unless it is agreed as a standard by the team, it is not recommended to add an appender
+    pattern here. Instead, refer to https://docs.spring.io/spring-boot/docs/2.1.13.RELEASE/reference/html/boot-features-logging.html#boot-features-custom-log-configuration
+    and use local environment variables such as `CONSOLE_LOG_PATTERN` or `LOG_DATEFORMAT_PATTERN` etc.
+    -->
+    <include resource="org/springframework/boot/logging/logback/base.xml" />
 
     <logger name="org.testcontainers" level="INFO"/>
     <logger name="com.github.dockerjava" level="WARN"/>
 
-    <!-- to output SQL and params -->
-    <!--    <logger name="org.hibernate.SQL" level="DEBUG"/>
-    <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/> -->
-
+    <!-- to output SQL and params
+     <logger name="org.hibernate.SQL" level="DEBUG"/>
+     <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/>
+    -->
 </configuration>

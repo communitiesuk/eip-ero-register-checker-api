@@ -51,6 +51,7 @@ import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegister
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildRegisterCheckResultMessage
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildVcaRegisterCheckMatchFromMatchDto
 import java.time.Instant
+import java.time.ZoneOffset
 import java.util.UUID
 import java.util.UUID.randomUUID
 
@@ -380,6 +381,7 @@ internal class RegisterCheckServiceTest {
             val requestId = randomUUID()
             val matchingGssCode = getRandomGssCode()
             val otherGssCode = getRandomGssCode()
+            val historicalSearchEarliestDate = Instant.now()
             val registerCheckMatchDtoList = mutableListOf<RegisterCheckMatchDto>().apply { repeat(matchCount) { add(buildRegisterCheckMatchDto()) } }
             val registerCheckResultDto = buildRegisterCheckResultDto(
                 requestId = requestId,
@@ -388,15 +390,20 @@ internal class RegisterCheckServiceTest {
                 matchResultSentAt = Instant.now(),
                 matchCount = matchCount,
                 registerCheckStatus = registerCheckStatus,
-                registerCheckMatches = registerCheckMatchDtoList
+                registerCheckMatches = registerCheckMatchDtoList,
+                historicalSearchEarliestDate = historicalSearchEarliestDate,
             )
-            val savedPendingRegisterCheckEntity = buildRegisterCheck(correlationId = requestId, status = PENDING)
+            val savedPendingRegisterCheckEntity = buildRegisterCheck(
+                correlationId = requestId,
+                status = PENDING
+            )
             val expectedMessage = buildRegisterCheckResultMessage(
                 sourceType = SourceType.VOTER_MINUS_CARD,
                 sourceReference = savedPendingRegisterCheckEntity.sourceReference,
                 sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
                 registerCheckResult = registerCheckResult,
-                matches = registerCheckResultDto.registerCheckMatches!!.map { buildVcaRegisterCheckMatchFromMatchDto(it) }
+                matches = registerCheckResultDto.registerCheckMatches!!.map { buildVcaRegisterCheckMatchFromMatchDto(it) },
+                historicalSearchEarliestDate = historicalSearchEarliestDate.atOffset(ZoneOffset.UTC)
             )
 
             given(retrieveGssCodeService.getGssCodeFromCertificateSerial(any())).willReturn(listOf(matchingGssCode, otherGssCode))

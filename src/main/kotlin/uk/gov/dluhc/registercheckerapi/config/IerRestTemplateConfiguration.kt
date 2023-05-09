@@ -15,6 +15,7 @@ import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain
 import software.amazon.awssdk.services.sts.StsClient
 import software.amazon.awssdk.services.sts.auth.StsAssumeRoleCredentialsProvider
 import software.amazon.awssdk.services.sts.model.AssumeRoleRequest
+import uk.gov.dluhc.logging.rest.CorrelationIdRestTemplateClientHttpRequestInterceptor
 
 /**
  * Configuration class exposing a configured [RestTemplate] suitable for calling IER REST APIs.
@@ -23,7 +24,8 @@ import software.amazon.awssdk.services.sts.model.AssumeRoleRequest
 @Configuration
 class IerRestTemplateConfiguration(
     @Value("\${api.ier.base.url}") private val ierApiBaseUrl: String,
-    @Value("\${api.ier.sts.assume.role}") private val ierStsAssumeRole: String
+    @Value("\${api.ier.sts.assume.role}") private val ierStsAssumeRole: String,
+    private val correlationIdRestTemplateClientHttpRequestInterceptor: CorrelationIdRestTemplateClientHttpRequestInterceptor,
 ) {
 
     companion object {
@@ -35,6 +37,7 @@ class IerRestTemplateConfiguration(
     fun ierRestTemplate(ierClientHttpRequestFactory: ClientHttpRequestFactory): RestTemplate {
         return RestTemplateBuilder()
             .requestFactory { ierClientHttpRequestFactory }
+            .interceptors(correlationIdRestTemplateClientHttpRequestInterceptor)
             .rootUri(ierApiBaseUrl)
             .build()
     }

@@ -83,7 +83,7 @@ internal class IerApiClientIntegrationTest : IntegrationTest() {
         WireMock.matching(
             "AWS4-HMAC-SHA256 " +
                 "Credential=.*, " +
-                "SignedHeaders=accept;accept-encoding;host;x-amz-date;x-amz-security-token, " +
+                "SignedHeaders=accept;accept-encoding;host;x-amz-date;x-amz-security-token;x-correlation-id, " +
                 "Signature=.*"
         )
 }

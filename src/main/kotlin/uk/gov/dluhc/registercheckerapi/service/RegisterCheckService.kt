@@ -89,13 +89,48 @@ class RegisterCheckService(
             val matches = registerCheckMatches?.map(registerCheckResultMapper::fromDtoToRegisterCheckMatchEntity) ?: emptyList()
             when (registerCheckStatus!!) {
                 RegisterCheckStatus.NO_MATCH -> registerCheck.recordNoMatch(matchResultSentAt)
-                RegisterCheckStatus.EXACT_MATCH -> registerCheck.recordExactMatch(EXACT_MATCH, matchResultSentAt, matches.first())
-                RegisterCheckStatus.PARTIAL_MATCH -> registerCheck.recordExactMatch(PARTIAL_MATCH, matchResultSentAt, matches.first())
-                RegisterCheckStatus.PENDING_DETERMINATION -> registerCheck.recordExactMatch(PENDING_DETERMINATION, matchResultSentAt, matches.first())
-                RegisterCheckStatus.EXPIRED -> registerCheck.recordExactMatch(EXPIRED, matchResultSentAt, matches.first())
-                RegisterCheckStatus.NOT_STARTED -> registerCheck.recordExactMatch(NOT_STARTED, matchResultSentAt, matches.first())
-                RegisterCheckStatus.MULTIPLE_MATCH -> registerCheck.recordMultipleMatches(matchResultSentAt, matchCount, matches)
-                RegisterCheckStatus.TOO_MANY_MATCHES -> registerCheck.recordTooManyMatches(matchResultSentAt, matchCount, matches)
+                RegisterCheckStatus.EXACT_MATCH -> registerCheck.recordExactMatch(
+                    EXACT_MATCH,
+                    matchResultSentAt,
+                    matches.first(),
+                    historicalSearchEarliestDate
+                )
+                RegisterCheckStatus.PARTIAL_MATCH -> registerCheck.recordExactMatch(
+                    PARTIAL_MATCH,
+                    matchResultSentAt,
+                    matches.first(),
+                    historicalSearchEarliestDate
+                )
+                RegisterCheckStatus.PENDING_DETERMINATION -> registerCheck.recordExactMatch(
+                    PENDING_DETERMINATION,
+                    matchResultSentAt,
+                    matches.first(),
+                    historicalSearchEarliestDate
+                )
+                RegisterCheckStatus.EXPIRED -> registerCheck.recordExactMatch(
+                    EXPIRED,
+                    matchResultSentAt,
+                    matches.first(),
+                    historicalSearchEarliestDate
+                )
+                RegisterCheckStatus.NOT_STARTED -> registerCheck.recordExactMatch(
+                    NOT_STARTED,
+                    matchResultSentAt,
+                    matches.first(),
+                    historicalSearchEarliestDate
+                )
+                RegisterCheckStatus.MULTIPLE_MATCH -> registerCheck.recordMultipleMatches(
+                    matchResultSentAt,
+                    matchCount,
+                    matches,
+                    historicalSearchEarliestDate
+                )
+                RegisterCheckStatus.TOO_MANY_MATCHES -> registerCheck.recordTooManyMatches(
+                    matchResultSentAt,
+                    matchCount,
+                    matches,
+                    historicalSearchEarliestDate
+                )
             }.also {
                 logger.info {
                     "Updated register check status to [${registerCheck.status}], matchCount to [${registerCheck.matchCount}], " +

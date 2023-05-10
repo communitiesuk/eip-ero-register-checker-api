@@ -14,13 +14,15 @@ fun buildRegisterCheckResultRequest(
     createdAt: OffsetDateTime = OffsetDateTime.now(),
     registerCheckMatchCount: Int = 1,
     applicationCreatedAt: OffsetDateTime? = OffsetDateTime.now(),
-    registerCheckMatches: List<RegisterCheckMatch>? = listOf(buildRegisterCheckMatchRequest(applicationCreatedAt = applicationCreatedAt))
+    registerCheckMatches: List<RegisterCheckMatch>? = listOf(buildRegisterCheckMatchRequest(applicationCreatedAt = applicationCreatedAt)),
+    historicalSearchEarliestDate: OffsetDateTime? = OffsetDateTime.now()
 ) = RegisterCheckResultRequest(
     requestid = requestId,
     gssCode = gssCode,
     createdAt = createdAt,
     registerCheckMatchCount = registerCheckMatchCount,
-    registerCheckMatches = registerCheckMatches
+    registerCheckMatches = registerCheckMatches,
+    historicalSearchEarliestDate = historicalSearchEarliestDate
 )
 
 fun buildRegisterCheckMatchRequest(

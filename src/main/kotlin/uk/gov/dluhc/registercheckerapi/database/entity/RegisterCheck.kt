@@ -72,6 +72,11 @@ class RegisterCheck(
     @NotFound(action = NotFoundAction.EXCEPTION)
     var personalDetail: PersonalDetail,
 
+    @Size(max = 50)
+    var emsElectorId: String? = null,
+
+    var historicalSearch: Boolean? = null,
+
     var matchCount: Int? = null,
 
     var matchResultSentAt: Instant? = null,
@@ -79,6 +84,8 @@ class RegisterCheck(
     @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "register_check_id", referencedColumnName = "id", nullable = false)
     var registerCheckMatches: MutableList<RegisterCheckMatch> = mutableListOf(),
+
+    var historicalSearchEarliestDate: Instant? = null,
 
     @NotNull
     @Size(max = 255)
@@ -112,27 +119,41 @@ class RegisterCheck(
     }
 
     fun recordNoMatch(matchResultSentAt: Instant) =
-        recordMatchResult(NO_MATCH, 0, matchResultSentAt, emptyList())
+        recordMatchResult(NO_MATCH, 0, matchResultSentAt, emptyList(), historicalSearchEarliestDate)
 
-    fun recordExactMatch(status: CheckStatus, matchResultSentAt: Instant, registerCheckMatch: RegisterCheckMatch) =
-        recordMatchResult(status, 1, matchResultSentAt, listOf(registerCheckMatch))
+    fun recordExactMatch(
+        status: CheckStatus,
+        matchResultSentAt: Instant,
+        registerCheckMatch: RegisterCheckMatch,
+        historicalSearchEarliestDate: Instant?
+    ) = recordMatchResult(status, 1, matchResultSentAt, listOf(registerCheckMatch), historicalSearchEarliestDate)
 
-    fun recordMultipleMatches(matchResultSentAt: Instant, matchCount: Int, registerCheckMatches: List<RegisterCheckMatch>) =
-        recordMatchResult(MULTIPLE_MATCH, matchCount, matchResultSentAt, registerCheckMatches)
+    fun recordMultipleMatches(
+        matchResultSentAt: Instant,
+        matchCount: Int,
+        registerCheckMatches: List<RegisterCheckMatch>,
+        historicalSearchEarliestDate: Instant?
+    ) = recordMatchResult(MULTIPLE_MATCH, matchCount, matchResultSentAt, registerCheckMatches, historicalSearchEarliestDate)
 
-    fun recordTooManyMatches(matchResultSentAt: Instant, matchCount: Int, registerCheckMatches: List<RegisterCheckMatch>) =
-        recordMatchResult(TOO_MANY_MATCHES, matchCount, matchResultSentAt, registerCheckMatches)
+    fun recordTooManyMatches(
+        matchResultSentAt: Instant,
+        matchCount: Int,
+        registerCheckMatches: List<RegisterCheckMatch>,
+        historicalSearchEarliestDate: Instant?
+    ) = recordMatchResult(TOO_MANY_MATCHES, matchCount, matchResultSentAt, registerCheckMatches, historicalSearchEarliestDate)
 
     private fun recordMatchResult(
         status: CheckStatus,
         matchCount: Int,
         matchResultSentAt: Instant,
-        registerCheckMatches: List<RegisterCheckMatch>
+        registerCheckMatches: List<RegisterCheckMatch>,
+        historicalSearchEarliestDate: Instant?
     ) {
         this.status = status
         this.matchCount = matchCount
         this.matchResultSentAt = matchResultSentAt
         this.registerCheckMatches += registerCheckMatches
+        this.historicalSearchEarliestDate = historicalSearchEarliestDate
     }
 }
 

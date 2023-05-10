@@ -13,6 +13,7 @@ import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessa
 import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.DataFaker.Companion.faker
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
 
 fun buildRegisterCheckResultMessage(
@@ -20,13 +21,15 @@ fun buildRegisterCheckResultMessage(
     sourceReference: String = "VPIOKNHPBP",
     sourceCorrelationId: UUID = UUID.randomUUID(),
     registerCheckResult: RegisterCheckResult = RegisterCheckResult.EXACT_MINUS_MATCH,
-    matches: List<RegisterCheckMatch> = listOf(buildVcaRegisterCheckMatch())
+    matches: List<RegisterCheckMatch> = listOf(buildVcaRegisterCheckMatch()),
+    historicalSearchEarliestDate: OffsetDateTime? = OffsetDateTime.now()
 ) = RegisterCheckResultMessage(
     sourceType = sourceType,
     sourceReference = sourceReference,
     sourceCorrelationId = sourceCorrelationId,
     registerCheckResult = registerCheckResult,
-    matches = matches
+    matches = matches,
+    historicalSearchEarliestDate = historicalSearchEarliestDate
 )
 
 fun buildVcaRegisterCheckMatch(

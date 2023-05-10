@@ -10,6 +10,8 @@ data class PendingRegisterCheckDto(
     val sourceType: SourceType,
     val gssCode: String,
     val personalDetail: PersonalDetailDto,
+    val emsElectorId: String? = null,
+    val historicalSearch: Boolean? = null,
     val createdBy: String,
     val createdAt: Instant? = null
 )

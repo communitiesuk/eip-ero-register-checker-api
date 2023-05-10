@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Register Checker SQS Message Types
-  version: '1.1.1'
+  version: '1.1.2'
   description: |-
     Register Checker SQS Message Types
     
@@ -92,6 +92,20 @@ components:
           example: system
         personalDetail:
           $ref: '#/components/schemas/RegisterCheckPersonalDetail'
+        emsElectorId:
+          type: string
+          description: |-
+            A stable unique id of an elector within the EMS to allow ID matching of an individual elector.
+            If supplied, the EMS system should only use this value to perform a lookup
+            within their system. All other search fields should be ignored.
+          maxLength: 50
+        historicalSearch:
+          type: boolean
+          default: false
+          description: |-
+            Indicated the search is in relation to an Overseas elector application.
+            For ERO's to determine Overseas applications, they need to know if the applicant is already on the current register as an Overseas elector, or 
+            if they existed on any historical registers, therefore current and historical registers must be searched.
       required:
         - gssCode
         - sourceCorrelationId
@@ -128,6 +142,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RegisterCheckMatch'
+        historicalSearchEarliestDate:
+          type: string
+          description: -|
+            The oldest date the EMS was able search within all/historical registers.
+            This will aid ERO's ability to process Overseas applications.
+            As part of the Elector's Overseas application they can provide an estimated last registered date.
+            Where an EMS does not have records that go as far back as the Elector has
+            indicated, supplying this value to the ERO would allow them to make better informed decisions
+            about what next steps to perform to approve or reject applications.
+          format: date-time
+          example: 1996-09-07
+
       required:
         - sourceType
         - sourceReference
@@ -212,6 +238,7 @@ components:
         - firstName
         - surname
         - address
+
     RegisterCheckAddress:
       title: RegisterCheckAddress
       description: Address to perform a register check on

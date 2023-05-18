@@ -616,7 +616,6 @@ components:
         ballotstreet:
           type: string
           description: The street of the address to which the applicant has requested the ballot paper is sent (if different to their registered address - required if so).
-          minLength: 1
           maxLength: 255
         ballotlocality:
           type: string
@@ -634,7 +633,6 @@ components:
           type: string
           example: SW112DR
           description: The postcode of the address to which the applicant has requested the ballot paper is sent (if different to their registered address - required if so).
-          minLength: 1
           maxLength: 10
         ballotuprn:
           type: string
@@ -647,9 +645,6 @@ components:
           description: |
             Required only if “ballot” address given. The reason the applicant gave for using a different address for the ballot paper (max 500 utf-8 chars)
           maxLength: 500
-      required:
-        - ballotstreet
-        - ballotpostcode
     ProxyVote:
       type: object
       properties:

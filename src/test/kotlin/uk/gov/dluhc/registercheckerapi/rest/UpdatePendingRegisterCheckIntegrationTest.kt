@@ -392,7 +392,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
                   "fn": "HAYWOOD",
                   "ln": "BECKETT",
                   "dob": "1980-07-31",
-                  "regstreet": "14 Churcher Close",
+                  "regstreet": "",
                   "regtown": "Gosport",
                   "regarea": "Hampshire",
                   "regpostcode": "PO12 2SL",
@@ -425,9 +425,8 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasTimestampNotBefore(earliestExpectedTimeStamp)
             .hasStatus(400)
             .hasError("Bad Request")
-            .hasMessage("Validation failed for object='registerCheckResultRequest'. Error count: 2")
+            .hasMessage("Validation failed for object='registerCheckResultRequest'. Error count: 1")
             .hasValidationError("Error on field 'gssCode': rejected value [1234], must match \"^[a-zA-Z]\\d{8}\$\"")
-            .hasValidationError("Error on field 'registerCheckMatches[0].email': rejected value [not an email address], must be a well-formed email address")
         assertRequestIsNotAudited(UUID.fromString("5e881061-57fd-4dc1-935f-8401ebe5758f"))
     }
 

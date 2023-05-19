@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Register Checker APIs
-  version: '2.0.0'
+  version: '2.0.1'
   description: -|
     Requests checks and responses from EMS systems to validate elector details exists within the EMS.
     For change history see
@@ -520,7 +520,6 @@ components:
         regstreet:
           type: string
           example: 125 Kingsway
-          minLength: 1
           maxLength: 255          
         reglocality:
           type: string
@@ -551,7 +550,6 @@ components:
           maxLength: 50   
         email:
           type: string
-          format: email
           description: The applicant's email address for contact purposes.
           maxLength: 255          
         registeredStartDate:
@@ -691,7 +689,6 @@ components:
         proxystreet:
           type: string
           description: (Required) The street of the address of the chosen proxy as supplied by the applicant.
-          minLength: 1          
           maxLength: 255
         proxylocality:
           type: string

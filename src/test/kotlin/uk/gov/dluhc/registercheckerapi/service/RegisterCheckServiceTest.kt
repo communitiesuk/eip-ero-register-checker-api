@@ -19,6 +19,7 @@ import org.mockito.kotlin.given
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.verifyNoMoreInteractions
+import uk.gov.dluhc.messagingsupport.MessageQueue
 import uk.gov.dluhc.registercheckerapi.client.ElectoralRegistrationOfficeGeneralException
 import uk.gov.dluhc.registercheckerapi.client.ElectoralRegistrationOfficeNotFoundException
 import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
@@ -35,7 +36,6 @@ import uk.gov.dluhc.registercheckerapi.exception.PendingRegisterCheckNotFoundExc
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckUnexpectedStatusException
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMapper
-import uk.gov.dluhc.registercheckerapi.messaging.MessageQueue
 import uk.gov.dluhc.registercheckerapi.messaging.MessageQueueResolver
 import uk.gov.dluhc.registercheckerapi.messaging.mapper.RegisterCheckResultMessageMapper
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult

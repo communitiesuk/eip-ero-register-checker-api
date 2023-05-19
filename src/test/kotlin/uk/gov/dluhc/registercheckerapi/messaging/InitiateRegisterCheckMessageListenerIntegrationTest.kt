@@ -15,6 +15,8 @@ import uk.gov.dluhc.registercheckerapi.database.entity.SourceType
 import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckMessage
 import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.entity.RegisterCheckAssert
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildInitiateRegisterCheckMessage
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildRegisterCheckAddress
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildRegisterCheckPersonalDetail
 import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -29,7 +31,11 @@ internal class InitiateRegisterCheckMessageListenerIntegrationTest : Integration
     @Test
     fun `should process message received on queue`() {
         // Given
-        val message = buildInitiateRegisterCheckMessage()
+        val message = buildInitiateRegisterCheckMessage(
+            personalDetail = buildRegisterCheckPersonalDetail(
+                address = buildRegisterCheckAddress(street = "")
+            )
+        )
         val payload = objectMapper.writeValueAsString(message)
         val earliestDateCreated = Instant.now()
         val expected = RegisterCheck(

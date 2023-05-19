@@ -257,7 +257,6 @@ components:
       properties:
         street:
           type: string
-          minLength: 1
           maxLength: 255
           example: Charles Lane
         property:

@@ -48,7 +48,7 @@ fun buildRegisterCheckPersonalDetail(
     address = address
 )
 
-private fun buildRegisterCheckAddress(
+fun buildRegisterCheckAddress(
     fakeAddress: Address = DataFaker.faker.address(),
     property: String? = fakeAddress.buildingNumber(),
     street: String = fakeAddress.streetName(),

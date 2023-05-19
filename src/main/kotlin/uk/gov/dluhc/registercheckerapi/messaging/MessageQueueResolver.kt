@@ -2,6 +2,7 @@ package uk.gov.dluhc.registercheckerapi.messaging
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
+import uk.gov.dluhc.messagingsupport.MessageQueue
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType
 import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType.OVERSEAS_MINUS_VOTE

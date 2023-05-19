@@ -67,7 +67,8 @@ dependencies {
     kapt("org.mapstruct:mapstruct-processor:1.5.3.Final")
 
     // internal libs
-    implementation("uk.gov.dluhc:logging-library:0.0.2")
+    implementation("uk.gov.dluhc:logging-library:2.2.0")
+    implementation("uk.gov.dluhc:messaging-support-library:1.0.0")
 
     // api
     implementation("org.springframework.boot:spring-boot-starter-actuator")

@@ -30,7 +30,7 @@ fun buildInitiateRegisterCheckMessage(
     historicalSearch = historicalSearch,
 )
 
-fun buildRegisterCheckPersonalDetail(
+private fun buildRegisterCheckPersonalDetail(
     firstName: String = DataFaker.faker.name().firstName(),
     middleNames: String? = DataFaker.faker.name().firstName(),
     surname: String = DataFaker.faker.name().lastName(),
@@ -48,7 +48,7 @@ fun buildRegisterCheckPersonalDetail(
     address = address
 )
 
-fun buildRegisterCheckAddress(
+private fun buildRegisterCheckAddress(
     fakeAddress: Address = DataFaker.faker.address(),
     property: String? = fakeAddress.buildingNumber(),
     street: String = fakeAddress.streetName(),

@@ -95,7 +95,8 @@ internal class RegisterCheckResultMapperTest {
                 createdAt = createdAt,
                 registerCheckMatchCount = 0,
                 applicationCreatedAt = null,
-                registerCheckMatches = null
+                registerCheckMatches = null,
+                historicalSearchEarliestDate = null,
             )
 
             val expectedMatchSentAt = createdAt.toInstant()
@@ -108,7 +109,8 @@ internal class RegisterCheckResultMapperTest {
                 matchResultSentAt = expectedMatchSentAt,
                 matchCount = apiRequest.registerCheckMatchCount,
                 registerCheckStatus = null,
-                registerCheckMatches = null
+                registerCheckMatches = null,
+                historicalSearchEarliestDate = null,
             )
 
             // When

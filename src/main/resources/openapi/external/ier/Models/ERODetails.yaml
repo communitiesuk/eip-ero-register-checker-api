@@ -1,0 +1,40 @@
+type: object
+description: >
+  ERO Details for the EROListResponse.
+properties:
+  eroIdentifier:
+    description: >
+      The identifier for the ERO. Stored in IER as ero.identifier.
+      This is created from the name, e.g. `west-suffolk-council`
+    type: string
+    maxLength: 200
+  name:
+    description: Human readable name for the ERO
+    type: string
+    maxLength: 200
+  activeClientCertificateSerials:
+    description: >
+      The serial number of all active (non-revoked, non-expired) client
+      certificates that have been issued for this ERO by IER.
+      Used by the ERO's EMS to authenticate to IER EMS API and EROP EMS API.
+      The EROP EMS API should validate that the presented client cert has
+      been signed by IER, after which point the serial number can be relied
+      upon to securely identify the connecting ERO.
+    type: array
+    items:
+      type: string
+      maxLength: 255
+  localAuthorities:
+    description: >
+      The list of Local Authorities currently managed by this ERO.
+      All VAC applications with GSS Codes matching LAs in this list
+      belong to this ERO.
+    type: array
+    minItems: 0
+    items:
+      $ref: ./LocalAuthorityDetails.yaml
+required:
+  - eroIdentifier
+  - description
+  - activeClientCertificateSerials
+  - localAuthorities

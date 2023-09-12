@@ -1,0 +1,210 @@
+description: >
+  The ERO Portal should send this message to IER via SQS every time a relevant change occurs.
+  (i.e. every time there is an update to an application that would change the value of
+  one of the fields included here).
+
+  The ERO Portal must send all fields every time an application is updated, not just
+  changed fields.
+  (Some fields are nullable, if that information is inapplicable to the application.)
+
+  IER will process update messages in the order in which they are received. If a single
+  VAC is modified concurrently or in quick succession then EROP should ensure that the
+  update message sent last is the final version.
+title: UpdateVoterCardApplicationStatisticsMessage
+type: object
+properties:
+  id:
+    type: string
+    pattern: '^[a-fA-F\d]{24}$'
+    description: 'The unique IER identifier for this application. A 24 character hex string.'
+  source:
+    type: string
+    description: How the application was received (application channel)
+    enum:
+      - DIGITAL
+      - POST
+      - IN_PERSON
+  gssCode:
+    $ref: ./Primatives/GssCode.yaml
+  datetimeSubmitted:
+    type: string
+    format: date-time
+    description: >
+      Time the applicant completed the web front end journey for source=DIGITAL, or
+      the time at which the paper application was received by post or by hand.
+  datetimeCreatedInErop:
+    type: string
+    format: date-time
+    description: >
+      Time the application was recevied by EROP over SQS for source=DIGITAL, or the
+      time the ERO did the data entry for a paper application.
+  ninoProvided:
+    type: boolean
+  registeredWithUnknownDob:
+    type: boolean
+  age:
+    type: integer
+    description: >
+      The age in years of the applicant at the time of the application.
+      The "dateOfBirth" is not stored in aggregate statistics, for privacy.
+      This will be null if the application was made with unknown dateOfBirth:
+      in that case, ageRange should be provided instead.
+  ageRange:
+    $ref: ./AgeRange.yaml
+    # Only required for applications where DOB not known
+  registeredAddressPostcode:
+    type: string
+    description: 'Postcode of the UK address where citizen is registered to vote'
+  registeredAddressManuallyEntered:
+    type: boolean
+    description: >
+      true if the address was entered manually vs using an address dropdown
+      (false iff the address has a UPRN)
+  applicantRequestedNotPostToRegAddress:
+    type: boolean
+    description: >
+      true if the applicant indicated that they cannot receive their VAC by post
+      at their registered address.
+      This corresponds to `cardIssuingPreferences.cannotPostToAddress`
+  deliveryAddressType:
+    type: string
+    enum:
+      - REGISTERED
+      - ERO_COLLECTION
+  overseasCountryOfResidence:
+    type: string
+    description: 'Country of residence for overseas electors. These should be the full name of the country, in the same format as in frontend/src/services/nationalities.ts'
+  emailProvided:
+    type: boolean
+  phoneProvided:
+    type: boolean
+  identityDocuments:
+    type: array
+    description: 'List of identity documents provided by user.'
+    items:
+      type: object
+      title: IdentityDocumentSummary
+      properties:
+        rejectedReason:
+          type: string
+          description: 'This contains the reason an ERO has manually rejected a document. 
+          It should not be populated for documents which have been removed by the virus scanner before the application
+          reached EROP.'
+        type:
+          type: string
+        status:
+          type: string
+        channel:
+          type: string
+          enum:
+            - APPLICANT_UPLOADED
+            - OFFLINE
+  identityDocumentsRequested:
+    type: boolean
+    description: >
+      true if the applicant has been contacted to request further identity documents
+      at least once
+  alternativeFormatNeeded:
+    $ref: ./AlternativeFormat.yaml
+    # nullable
+  submittedInWelsh:
+    type: boolean
+  photoRejected:
+    type: boolean
+    description: true if at least one photo rejected
+  photoRequested:
+    type: boolean
+    description: >
+      true if the applicant has been contacted to request a new photo
+      at least once
+  photoDoesNotMeetGuidelinesReasonProvided:
+    type: boolean
+    description: >
+      true if user has given a reason why they cannot provide a photo
+      that meets the guidelines, e.g. becuase of a disability
+  ninoMatch:
+    type: string
+    enum:
+      - Pending
+      - Matched
+      - InsufficientData
+      - MatchedDeceased
+      - NotMatched
+  applicationStatus:
+    type: string
+    enum:
+      - APPROVED
+      - REJECTED
+      - SENT_TO_PRINT
+      - RECEIVED
+      - IN_PROGRESS
+      - ON_HOLD
+  certificateStatus:
+    type: string
+    enum:
+      - PENDING_ASSIGNMENT_TO_BATCH
+      - ASSIGNED_TO_BATCH
+      - SENT_TO_PRINT_PROVIDER
+      - RECEIVED_BY_PRINT_PROVIDER
+      - VALIDATED_BY_PRINT_PROVIDER
+      - IN_PRODUCTION
+      - DISPATCHED
+      - NOT_DELIVERED
+      - PRINT_PROVIDER_VALIDATION_FAILED
+      - PRINT_PROVIDER_PRODUCTION_FAILED
+      - PRINT_PROVIDER_DISPATCH_FAILED
+  certificateReprinted:
+    type: boolean
+  determinationDate:
+    type: string
+    format: date-time
+    description: Time at which the ERO accepted or rejected the application
+  sentToPrintDate:
+    type: string
+    format: date-time
+  rejectedReason:
+    type: string
+    enum:
+      - NOT_REGISTERED_TO_VOTE
+      - INCOMPLETE_APPLICATION
+      - PHOTO_IS_NOT_ACCEPTABLE
+      - NO_RESPONSE_FROM_APPLICANT
+      - INACCURATE_INFORMATION
+      - FRAUDULENT_APPLICATION
+      - OTHER_REJECT_REASON
+  registerCheckStatus:
+    type: string
+    enum:
+      # Pending includes rejected: the VAC will be in rejected state; can't tell from
+      # here if that was the ultimate cause
+      - PENDING
+      # All states like "insufficient_data", "partial_match" etc. end up in Manually confirmed
+      - MANUALLY_CONFIRMED
+      - EXACT_AUTO_MATCH
+  temporaryCertificateIssued:
+    type: boolean
+  electorType:
+    type: string
+    enum:
+      - ORDINARY
+      - ANONYMOUS
+      - OVERSEAS
+      - CROWN
+      - FORCES
+required:
+  - id
+  - source
+  - gssCode
+  - datetimeSubmitted
+  - datetimeCreatedInErop
+  - ninoProvided
+  - registeredWithUnknownDob
+  - registeredAddressPostcode
+  - registeredAddressManuallyEntered
+  - applicantRequestedNotPostToRegAddress
+  - emailProvided
+  - phoneProvided
+  - submittedInWelsh
+  - ninoMatch
+  - applicationStatus
+  - electorType

@@ -1,0 +1,10 @@
+title: Proxy Vote reason
+type: string
+description: Proxy Vote reason
+enum:
+  - overseas
+  - armed-forces
+  - armed-forces-spouse
+  - crown
+  - crown-spouse
+  - other

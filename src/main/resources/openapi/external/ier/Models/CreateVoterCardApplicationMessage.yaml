@@ -1,0 +1,96 @@
+title: CreateVoterCardApplicationMessage
+type: object
+description: 'Message used to create a Voter Card Application, sent from IER to EROP'
+x-api-owner: IER
+x-api-consumer: EROP
+properties:
+  id:
+    type: string
+    pattern: '^[a-fA-F\d]{24}$'
+    description: 'The unique IER identifier for this application. A 24 character hex string.'
+  gssCode:
+    $ref: ./Primatives/GssCode.yaml
+  applicationReference:
+    type: string
+    description: 'The application reference as known by the citizen. Not guaranteed to be unique.'
+  datetimeSubmitted:
+    type: string
+    format: date-time
+  firstName:
+    type: string
+    maxLength: 255
+  middleNames:
+    type: string
+    maxLength: 255
+  surname:
+    type: string
+    maxLength: 255
+  dateOfBirth:
+    type: string
+    format: date
+  registeredWithUnknownDob:
+    type: boolean
+  unknownDobReason:
+    type: string
+  ageRange:
+    $ref: ./AgeRange.yaml
+    # Only required for applications where DOB not known
+  email:
+    type: string
+    format: email
+    maxLength: 256
+  phoneNumber:
+    type: string
+    maxLength: 50
+  noContact:
+    type: boolean
+    default: false
+  nino:
+    type: string
+    maxLength: 10
+  cantSupplyNinoReason:
+    type: string
+  address:
+    $ref: ./Address.yaml
+  overseasAddress:
+    $ref: ./OverseasAddress.yaml
+  cardIssuingPreferences:
+    $ref: ./CardIssuingPreferences.yaml
+  identityDocuments:
+    type: array
+    items:
+      $ref: ./DocumentReference.yaml
+  cantUploadDocuments:
+    type: boolean
+    default: false
+  photo:
+    $ref: ./PhotoReference.yaml
+  submittedInWelsh:
+    type: boolean
+    default: false
+  alternativeFormatNeeded:
+    $ref: ./AlternativeFormat.yaml
+    # nullable
+  applicantIpAddress:
+    type: string
+    maxLength: 45
+    description: The IP address of the applicant when completing their application on the IER web application front end. An optional value that if provided may be either an IPv4 or IPv6 address.
+  recentlyAppliedToRtv:
+    type: boolean
+    description: Indicates that the applicant may have a pending register to vote application; the truth of this cannot be guaranteed as it is based on the applicant's answer to a question.
+  isDuplicate:
+    type: boolean
+    description: Indicates that the application was detected as a duplicate, but the applicant decided to submit it anyway.
+required:
+  - id
+  - gssCode
+  - applicationReference
+  - datetimeSubmitted
+  - firstName
+  - surname
+  - cardIssuingPreferences
+  - address
+  - photo
+  - submittedInWelsh
+  - recentlyAppliedToRtv
+  - isDuplicate

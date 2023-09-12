@@ -1,0 +1,191 @@
+title: LocalAuthorityDetails
+description: >
+  Details of a Local Authority for use in the /eros endpoint.
+  
+  If the LA is Welsh, then all of the following fields are required:
+  nameVacCymraeg, phoneNumberCymraeg, at least one of emailAddressVacCymraeg
+  or emailAddressCymraeg, urlVacCymraeg, addressLine1Cymraeg,
+  addressLine2Cymraeg.
+type: object
+properties:
+  gssCode:
+    description: >
+      The ID that uniquely identifies this local authority.
+      GSS Codes are a ONS concept. The GSS Codes used in IER closely
+      relate to those but do not always match the current ONS codes.
+      All applications are assigned a GSS Code based on the registered
+      address of the applicant.
+    type: string
+    maxLength: 20
+  isActive:
+    type: boolean
+    default: true
+    description: >
+      If false, this LA can no longer receive applications, but might have
+      applications in progress or old applications stored.
+      This is intended to be used when a Local Authority has ceased to exist
+      due to a boundary change or a merger of multiple LAs.
+  name:
+    type: string
+    description: Citizen facing name of the LA
+    maxLength: 100
+  osPlacesCustodianCode:
+    description: >
+      The "LOCAL_CUSTODIAN_CODE" used by OSPlaces that should be mapped to this
+      Local Authority, if any.
+      See https://osdatahub.os.uk/docs/places/technicalSpecification
+
+      At the time of writing, there is a single ERO in Northern Ireland which
+      has a single LA which uses the GSS Code 'N07000001' in the IER system.
+      No osPlacesCustodianCode value will be returned here for that LA.
+    type: integer
+  addressLine1:
+    description: >
+      Line 1 of the public facing postal address for this local authority.
+      Shown to users when they apply.
+    type: string
+    maxLength: 64
+  addressLine2:
+    type: string
+    maxLength: 64
+  addressLine3:
+    type: string
+    maxLength: 64
+  addressLine4:
+    type: string
+    maxLength: 64
+  postcode:
+    type: string
+    maxLength: 12
+  phoneNumber:
+    description: Public facing contact phone number
+    type: string
+    maxLength: 20
+  emailAddress:
+    description: Public facing contact email
+    type: string
+    maxLength: 255
+  url:
+    description: Public facing URL of their website
+    type: string
+    maxLength: 255
+  nameCymraeg:
+    type: string
+    description: >
+      Citizen facing name of the LA in Welsh / Cymraeg.
+      Shown to users when they apply in Welsh.
+    maxLength: 100
+  addressLine1Cymraeg:
+    description: >
+      Line 1 of the public facing postal address for this local authority.
+      The Welsh / Cymraeg address.
+      Shown to users when they apply in Welsh.
+    type: string
+    maxLength: 64
+  addressLine2Cymraeg:
+    type: string
+    maxLength: 64
+  addressLine3Cymraeg:
+    type: string
+    maxLength: 64
+  addressLine4Cymraeg:
+    type: string
+    maxLength: 64
+  phoneNumberCymraeg:
+    description: Public facing contact phone number for Welsh applicants
+    type: string
+    maxLength: 20
+  emailAddressCymraeg:
+    description: Public facing contact email for Welsh applicants
+    type: string
+    maxLength: 255
+  urlCymraeg:
+    description: Public facing URL of their website for Welsh applicants
+    type: string
+    maxLength: 255
+  ipAddressCidrs:
+    description: >
+      Newline separated list of IPv4 CIDRs from which this Local Authority
+      may access the EMS API.
+    type: string
+    maxLength: 2047
+  nameVac:
+    description: The name printed on the physical Voter Authority Certificate. 
+      Must be the legal name of the issuing LA. This name will not necessarily match up 
+      with the usual name that an LA goes by. This name should only be used on the 
+      certificate itself, and within EROP where the certificate details are previewed. Everywhere 
+      else should use the existing name field, as this is individual to the LA which the 
+      legal name may not be (VJBs have the same legal name for all of the constituent LAs).
+      Required if name exceeds 90 characters;; if not specified, the existing name field will be used.
+    type: string
+    maxLength: 90
+  emailAddressVac:
+    description: Email address to be used on certificates, and for all correspondence
+      relating to VAC apps, i.e. in confirmation emails etc. which include LA contact details.
+      Some LAs have specific emails that they want people to use for queries 
+      relating to VAC applications, which is different from the email used for registration 
+      queries. Required if email field exceeds 50 chars; if not specified, the existing 
+      email field will be used.
+    type: string
+    maxLength: 50
+  urlVac:
+    description: URL to be used on certificates, and for all correspondence
+      relating to VAC apps, i.e. in confirmation emails. Normal URLs 
+      (i.e. the ones used for RTV) generally exceed the 50 character limit imposed 
+      by the printers, so for printing on certs we use shortened URLs, often shortened 
+      to just end at .gov.uk. Required if url exceeds 50 chars; if not specified, 
+      the existing url field will be used.
+    type: string
+    maxLength: 50
+  nameVacCymraeg:
+    description: The name printed on Welsh physical Voter Authority Certificates.
+      Must be the legal name of the issuing LA. This name will not necessarily match up
+      with the usual name that an LA goes by. This name should only be used on the
+      certificate itself, and within EROP where the certificate details are previewed. Everywhere
+      else should use the existing name field, as this is individual to the LA which the
+      legal name may not be (VJBs have the same legal name for all of the constituent LAs).
+      Required if nameCymraeg exceeds 90 characters; if not specified, the existing nameCymraeg field will be used.
+    type: string
+    maxLength: 90
+  emailAddressVacCymraeg:
+    description: Email address to be used on Welsh certificates, and for all correspondence
+      relating to VAC apps, i.e. in confirmation emails etc. which include LA contact details.
+      Some LAs have specific emails that they want people to use for queries
+      relating to VAC applications, which is different from the email used for registration
+      queries. Required if emailCymraeg field exceeds 50 chars; if not specified, the existing
+      emailCymraeg field will be used.
+    type: string
+    maxLength: 50
+  urlVacCymraeg:
+    description: URL to be used on Welsh certificates, and for all correspondence
+      relating to VAC apps, i.e. in confirmation emails. Normal URLs
+      (i.e. the ones used for RTV) generally exceed the 50 character limit imposed
+      by the printers, so for printing on certs we use shortened URLs, often shortened
+      to just end at .gov.uk. Required if urlCymraeg exceeds 50 chars; if not specified,
+      the existing urlCymraeg field will be used.
+    type: string
+    maxLength: 50
+  eroNameVac:
+    description: Addressee/line 0 of the LA address when it’s printed on a certificate.
+      Most LAs will not need to provide this, and the default text will be sufficient.
+      Optional; if not set, ‘Electoral Registration Officer’ will be printed.
+    type: string
+    maxLength: 50
+  eroNameVacCymraeg:
+    description: Addressee/line 0 of the LA address when it’s printed on a Welsh certificate.
+      Most LAs will not need to provide this, and the default text will be sufficient.
+      Optional; if not set, ‘Electoral Registration Officer’ (in welsh) will be printed.
+    type: string
+    maxLength: 50
+
+required:
+  - gssCode
+  - name
+  - nameVac
+  - emailAddress
+  - url
+  - urlVac
+  - addressLine1
+  - addressLine2
+  - postcode
+  - phoneNumber

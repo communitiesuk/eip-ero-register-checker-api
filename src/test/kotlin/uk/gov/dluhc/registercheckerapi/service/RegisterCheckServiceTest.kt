@@ -20,8 +20,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.verifyNoMoreInteractions
 import uk.gov.dluhc.messagingsupport.MessageQueue
-import uk.gov.dluhc.registercheckerapi.client.ElectoralRegistrationOfficeGeneralException
-import uk.gov.dluhc.registercheckerapi.client.ElectoralRegistrationOfficeNotFoundException
 import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
 import uk.gov.dluhc.registercheckerapi.client.IerGeneralException
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
@@ -41,7 +39,6 @@ import uk.gov.dluhc.registercheckerapi.messaging.mapper.RegisterCheckResultMessa
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType
-import uk.gov.dluhc.registercheckerapi.testsupport.getRandomEroId
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomGssCode
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPendingRegisterCheckDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildRegisterCheckMatchDto
@@ -254,45 +251,6 @@ internal class RegisterCheckServiceTest {
             verify(retrieveGssCodeService).getGssCodeFromCertificateSerial(certificateSerial)
             verifyNoInteractions(registerCheckRepository, pendingRegisterCheckMapper)
         }
-
-        @Test
-        fun `should throw ERO not found exception given ERO API client throws not found exception`() {
-            // Given
-            val certificateSerial = "123456789"
-            val expected = ElectoralRegistrationOfficeNotFoundException(certificateSerial)
-            given(retrieveGssCodeService.getGssCodeFromCertificateSerial(any())).willThrow(expected)
-
-            // When
-            val ex = catchThrowableOfType(
-                { registerCheckService.getPendingRegisterChecks(certificateSerial, DEFAULT_PAGE_SIZE) },
-                ElectoralRegistrationOfficeNotFoundException::class.java
-            )
-
-            // Then
-            assertThat(ex).isEqualTo(expected)
-            verify(retrieveGssCodeService).getGssCodeFromCertificateSerial(certificateSerial)
-            verifyNoInteractions(registerCheckRepository, pendingRegisterCheckMapper)
-        }
-
-        @Test
-        fun `should throw general ERO exception given ERO API client throws general exception`() {
-            // Given
-            val certificateSerial = "123456789"
-            val eroIdFromIerApi = getRandomEroId()
-            val expected = ElectoralRegistrationOfficeGeneralException("Some error getting ERO $eroIdFromIerApi")
-            given(retrieveGssCodeService.getGssCodeFromCertificateSerial(any())).willThrow(expected)
-
-            // When
-            val ex = catchThrowableOfType(
-                { registerCheckService.getPendingRegisterChecks(certificateSerial, DEFAULT_PAGE_SIZE) },
-                ElectoralRegistrationOfficeGeneralException::class.java
-            )
-
-            // Then
-            assertThat(ex).isEqualTo(expected)
-            verify(retrieveGssCodeService).getGssCodeFromCertificateSerial(certificateSerial)
-            verifyNoInteractions(registerCheckRepository, pendingRegisterCheckMapper)
-        }
     }
 
     @Nested
@@ -484,46 +442,6 @@ internal class RegisterCheckServiceTest {
             val ex = catchThrowableOfType(
                 { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
                 IerGeneralException::class.java
-            )
-
-            // Then
-            assertThat(ex).isEqualTo(expected)
-            verify(retrieveGssCodeService).getGssCodeFromCertificateSerial(certificateSerial)
-        }
-
-        @Test
-        fun `should throw ERO not found exception given ERO API client throws not found exception`() {
-            // Given
-            val certificateSerial = "123456789"
-            val registerCheckResultDto = buildRegisterCheckResultDto()
-            val expected = ElectoralRegistrationOfficeNotFoundException(certificateSerial)
-
-            given(retrieveGssCodeService.getGssCodeFromCertificateSerial(any())).willThrow(expected)
-
-            // When
-            val ex = catchThrowableOfType(
-                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
-                ElectoralRegistrationOfficeNotFoundException::class.java
-            )
-
-            // Then
-            assertThat(ex).isEqualTo(expected)
-            verify(retrieveGssCodeService).getGssCodeFromCertificateSerial(certificateSerial)
-        }
-
-        @Test
-        fun `should throw general ERO exception given ERO API client throws general exception`() {
-            // Given
-            val certificateSerial = "123456789"
-            val registerCheckResultDto = buildRegisterCheckResultDto()
-            val expected = ElectoralRegistrationOfficeGeneralException("Some error getting ERO camden-city-council")
-
-            given(retrieveGssCodeService.getGssCodeFromCertificateSerial(any())).willThrow(expected)
-
-            // When
-            val ex = catchThrowableOfType(
-                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
-                ElectoralRegistrationOfficeGeneralException::class.java
             )
 
             // Then

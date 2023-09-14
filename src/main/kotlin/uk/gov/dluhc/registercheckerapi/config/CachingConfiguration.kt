@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.time.Duration
 
-const val ERO_CERTIFICATE_MAPPING_CACHE = "eroCertificateMappings"
+const val IER_ELECTORAL_REGISTRATION_OFFICES_CACHE = "ier-eros"
 
 @Configuration
 @EnableCaching
@@ -22,7 +22,7 @@ class CachingConfiguration {
         return CaffeineCacheManager()
             .apply {
                 setCaffeine(Caffeine.newBuilder().expireAfterWrite(timeToLive))
-                setCacheNames(listOf(ERO_CERTIFICATE_MAPPING_CACHE))
+                setCacheNames(listOf(IER_ELECTORAL_REGISTRATION_OFFICES_CACHE))
             }
     }
 }

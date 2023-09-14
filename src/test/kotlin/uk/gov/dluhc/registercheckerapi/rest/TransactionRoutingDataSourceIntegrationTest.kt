@@ -24,11 +24,10 @@ internal class TransactionRoutingDataSourceIntegrationTest : IntegrationTest() {
     @Test
     fun `should use read-only data source for get function`() {
         // Given
-        val eroIdFromIerApi = "camden-city-council"
-        val gssCodeFromEroApi = getRandomGssCode()
+        val eroId = "camden-city-council"
+        val gssCode = getRandomGssCode()
 
-        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
-        wireMockService.stubEroManagementGetEro(eroIdFromIerApi, gssCodeFromEroApi)
+        wireMockService.stubIerApiGetEros(CERT_SERIAL_NUMBER_VALUE, eroId, listOf(gssCode))
 
         // When
         webTestClient.get()
@@ -49,12 +48,12 @@ internal class TransactionRoutingDataSourceIntegrationTest : IntegrationTest() {
     fun `should use read-write data source for updating function`() {
         // Given
         val requestId = UUID.fromString("322ff65f-a0a1-497d-a224-04800711a1fb")
-        val eroIdFromIerApi = "camden-city-council"
-        val firstGssCodeFromEroApi = "E12345678"
-        val secondGssCodeFromEroApi = "E98764532"
+        val eroId = "camden-city-council"
+        val firstGssCode = "E12345678"
+        val secondGssCode = "E98764532"
+        val gssCodes = listOf(firstGssCode, secondGssCode)
 
-        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
-        wireMockService.stubEroManagementGetEro(eroIdFromIerApi, firstGssCodeFromEroApi, secondGssCodeFromEroApi)
+        wireMockService.stubIerApiGetEros(CERT_SERIAL_NUMBER_VALUE, eroId, gssCodes)
 
         // When
         webTestClient.post()

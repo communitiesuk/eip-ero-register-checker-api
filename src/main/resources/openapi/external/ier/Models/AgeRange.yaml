@@ -1,6 +1,6 @@
 title: Age Ranges
 type: string
-description: Age Ranges
+description: Age Ranges. Only required for applications where DOB not known
 enum:
   - under-16
   - between-16-and-17

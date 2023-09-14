@@ -1,15 +1,29 @@
 openapi: 3.0.0
 info:
   title: IER-ERO-APIs
-  version: '1.0'
+  version: '1.2'
   description: Contains a mix of APIs and models for SQS between IER and ERO systems.
   contact:
     name: Krister Bone
     email: krister.bone@valtech.com
 servers:
-  - url: 'http://localhost:3000/ier-ero'
+  - url : 'http://localhost:5000'
+  - url: 'https://erop-api.int.eip.rtv.ierds.uk'
+  - url: 'https://erop-api.test.eip.rtv.ierds.uk'
+  - url: 'https://erop-api.rtv.ierds.uk'
 paths:
+  /eros:
+    description: Endpoints relating to EROs
+    parameters: []
+    get:
+      summary: >
+        Lists all EROs currently in the system, including their configuration and
+        managed Local Authorities
+      responses:
+        '200':
+          $ref: '#/components/responses/EROListResponse'
   /ero:
+    description: TODO:EIP1-3901 OBSOLETE -- discuss deprecating with Valtech, in favour of /eros -> activeClientCertificateSerials
     parameters: []
     get:
       summary: Get ERO Identifier from Certificate Serial
@@ -28,6 +42,7 @@ paths:
           name: certificateSerial
           description: The serial identifier as provided by the API gateway lambda
   /eroipallowlist:
+    description: TODO:EIP1-3901 OBSOLETE? -- discuss deprecating with Valtech, in favour of /eros -> localAuthorities -> ipAddressCidrs
     parameters: []
     get:
       summary: Get all allowlisted ERO IP addresses managed in IER admin app
@@ -58,6 +73,29 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ResubmitPhotoInvite'
+  /update-voter-card-application-statistics:
+    parameters: []
+    post:
+      summary: Notify the IER admin stats that an application has changed.
+      tags: [ ]
+      responses:
+        '200':
+          description: "Success"
+        '400':
+          description: "Request invalid"
+        '500':
+          description: "Error with our service"
+      operationId: update-voter-card-application-statistics
+      description: >
+        The ERO Portal should send this message to IER every time a relevant change occurs.
+        The ERO Portal must send all fields every time an application is updated, not just
+        changed fields. (Some fields are nullable, if that information is inapplicable to the application.)
+      requestBody:
+        description: The new state of the application
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateVoterCardApplicationStatisticsMessage'
 components:
   schemas:
     Category1Document:
@@ -65,327 +103,15 @@ components:
     Category2Document:
       $ref: ../Models/Category2Document.yaml
     CreateVoterCardApplicationMessage:
-      title: CreateVoterCardApplicationMessage
-      type: object
-      description: 'Message used to create a Voter Card Application, sent from IER to EROP'
-      properties:
-        id:
-          type: string
-          pattern: '^[a-fA-F\d]{24}$'
-          description: 'The unique IER identifier for this application. A 24 character hex string.'
-        gssCode:
-          $ref: ../Models/Primatives/GssCode.yaml
-        applicationReference:
-          type: string
-          description: 'The application reference as known by the citizen. Not guaranteed to be unique.'
-        datetimeSubmitted:
-          type: string
-          format: date-time
-        firstName:
-          type: string
-          maxLength: 255
-        middleNames:
-          type: string
-          maxLength: 255
-        surname:
-          type: string
-          maxLength: 255
-        dateOfBirth:
-          type: string
-          format: date
-        registeredWithUnknownDob:
-          type: boolean
-        unknownDobReason:
-          type: string
-        ageRange:
-          $ref: ../Models/AgeRange.yaml
-        email:
-          type: string
-          format: email
-          maxLength: 1024
-        phoneNumber:
-          type: string
-          maxLength: 50
-        noContact:
-          type: boolean
-          default: false
-        nino:
-          type: string
-          maxLength: 10
-        cantSupplyNinoReason:
-          type: string
-        address:
-          $ref: ../Models/Address.yaml
-        overseasAddress:
-          $ref: ../Models/OverseasAddress.yaml
-        cardIssuingPreferences:
-          $ref: ../Models/CardIssuingPreferences.yaml
-        identityDocuments:
-          type: array
-          items:
-            $ref: ../Models/DocumentReference.yaml
-        cantUploadDocuments:
-          type: boolean
-          default: false
-        photo:
-          $ref: ../Models/PhotoReference.yaml
-        submittedInWelsh:
-          type: boolean
-          default: false
-        alternativeFormatsNeeded:
-          type: array
-          items:
-            $ref: ../Models/AlternativeFormat.yaml
-      required:
-        - id
-        - gssCode
-        - applicationReference
-        - datetimeSubmitted
-        - firstName
-        - surname
-        - cardIssuingPreferences
-        - address
-        - photo
-        - submittedInWelsh
-    CompletedVoterCardApplicationMessage:
-      title: CompletedVoterCardApplicationMessage
-      type: object
-      properties:
-        gssCode:
-          $ref: ../Models/Primatives/GssCode.yaml
-        emsElectorId:
-          $ref: ../Models/Primatives/Identifier.yaml
-        applicationReference:
-          $ref: ../Models/Primatives/Identifier.yaml
-        firstName:
-          type: string
-          maxLength: 255
-        middleNames:
-          type: string
-          maxLength: 255
-        surname:
-          type: string
-        dateOfBirth:
-          type: string
-          format: date
-        email:
-          type: string
-          format: email
-          maxLength: 255
-        phoneNumber:
-          type: string
-          maxLength: 50
-        nino:
-          type: string
-          maxLength: 10
-        ninoStatus:
-          $ref: ../Models/NinoMatch.yaml
-        authorisingStaffId:
-          type: string
-          maxLength: 255
-        cardNumber:
-          type: string
-          maxLength: 50
-        cardIssueDate:
-          type: string
-          format: date
-        cardStatus:
-          type: string
-          enum:
-            - ToDo # todo-checker-ignore
-            - OnHold
-            - InProgress
-            - Authorised
-            - Rejected
-        address:
-          $ref: ../Models/Address.yaml
-        cardIssuingPreferences:
-          $ref: ../Models/CardIssuingPreferences.yaml
-      required:
-        - applicationReference
-        - firstName
-        - address
-      description: Not MVP.
-    NinoCheckRequest:
-      title: NinoCheckRequest
-      type: object
-      properties:
-        requestId:
-          $ref: ../Models/Primatives/Identifier.yaml
-        firstName:
-          type: string
-          maxLength: 255
-        middleNames:
-          type: string
-          maxLength: 255
-        surname:
-          type: string
-          maxLength: 255
-        nino:
-          type: string
-          maxLength: 10
-        dateOfBirth:
-          type: string
-          format: date
-      required:
-        - requestId
-        - firstName
-        - surname
-        - nino
-        - dateOfBirth
-    NinoCheckResponse:
-      title: NinoCheckResponse
-      type: object
-      properties:
-        requestid:
-          $ref: ../Models/Primatives/Identifier.yaml
-        ninoMatch:
-          $ref: ../Models/NinoMatch.yaml
-      required:
-        - requestid
-        - ninoMatch
-    PostalVoteApplicationRequest:
-      title: PostalVoteApplicationRequest
-      type: object
-      properties:
-        gssCode:
-          $ref: ../Models/Primatives/GssCode.yaml
-        datetimeSubmitted:
-          type: string
-          format: date
-        applicationReference:
-          $ref: ../Models/Primatives/Identifier.yaml
-        firstName:
-          type: string
-          maxLength: 255
-        middleNames:
-          type: string
-          maxLength: 255
-        surname:
-          type: string
-          maxLength: 255
-        nino:
-          type: string
-          maxLength: 10
-        email:
-          type: string
-          format: email
-          maxLength: 255
-        phoneNumber:
-          type: string
-          maxLength: 50
-        dateOfBirth:
-          type: string
-          format: date
-        postalVoteType:
-          type: string
-          enum:
-            - SpecificElectionOrReferendum
-            - SpecificDatePeriod
-            - ThreeYears
-        address:
-          $ref: ../Models/Address.yaml
-        ballotAddress:
-          $ref: ../Models/Address.yaml
-        ballotOverseasPostalAddress:
-          $ref: ../Models/Address.yaml
-        ballotPostalAddressReason:
-          type: string
-          maxLength: 500
-        postalVoteFrom:
-          type: string
-          format: date
-        postalVoteTo:
-          type: string
-          format: date
-        signatureImage:
-          type: string
-          format: byte
-        documentReferences:
-          type: array
-          items:
-            $ref: ../Models/DocumentReference.yaml
-        requestedApplicationCopyViaEmail:
-          type: boolean
-          default: false
-      required:
-        - gssCode
-        - datetimeSubmitted
-        - applicationReference
-        - firstName
-        - address
-        - signatureImage
-        - requestedApplicationCopyViaEmail
-    PostalVoteApplicationResponse:
-      title: PostalVoteApplicationResponse
-      type: object
-      properties:
-        gssCode:
-          $ref: ../Models/Primatives/GssCode.yaml
-        applicationReference:
-          $ref: ../Models/Primatives/Identifier.yaml
-        emsElectorId:
-          $ref: ../Models/Primatives/Identifier.yaml
-        firstName:
-          type: string
-          maxLength: 255
-        middleNames:
-          type: string
-          maxLength: 255
-        surname:
-          type: string
-          maxLength: 255
-        nino:
-          type: string
-          maxLength: 10
-        ninoMatch:
-          $ref: ../Models/NinoMatch.yaml
-        email:
-          type: string
-          format: email
-          maxLength: 255
-        phoneNumber:
-          type: string
-          maxLength: 50
-        dateOfBirth:
-          type: string
-          format: date
-        postalVoteType:
-          type: string
-          enum:
-            - SpecificElectionOrReferendum
-            - SpecificDatePeriod
-            - ThreeYears
-        address:
-          $ref: ../Models/Address.yaml
-        ballotAddress:
-          $ref: ../Models/Address.yaml
-        ballotOverseasPostalAddress:
-          $ref: ../Models/OverseasAddress.yaml
-        ballotPostalAddressReason:
-          type: string
-          maxLength: 500
-        postalVoteFrom:
-          type: string
-          format: date
-        postalVoteTo:
-          type: string
-          format: date
-        signatureImage:
-          type: string
-          format: byte
-      required:
-        - gssCode
-        - applicationReference
-        - firstName
-        - surname
-        - dateOfBirth
-        - postalVoteType
-        - address
+      $ref: ../Models/CreateVoterCardApplicationMessage.yaml
+    UpdateVoterCardApplicationStatisticsMessage:
+      $ref: ../Models/UpdateVoterCardApplicationStatisticsMessage.yaml
+    CreatePostalVoteApplicationMessage:
+      $ref: ../Models/CreatePostalVoteApplicationMessage.yaml
+    CreateProxyVoteApplicationMessage:
+      $ref: ../Models/CreateProxyVoteApplicationMessage.yaml
     EROAllowListedIPAddresses:
       title: EROAllowListedIPAddresses
-      x-stoplight:
-        id: 6kqvm18ybpef0
       type: array
       items:
         type: object
@@ -399,8 +125,6 @@ components:
       description: List of all ERO allowlisted IP/CIDRs addresses
     EROCertificateMapping:
       title: EROCertificateMapping
-      x-stoplight:
-        id: tw2onlkb4mqs7
       type: object
       description: ERO certificate serial and IER ERO identifier
       properties:
@@ -408,6 +132,8 @@ components:
           type: string
         certificateSerial:
           type: string
+    ERODetails:
+      $ref: ../Models/ERODetails.yaml
     SubmitNewVoterCardPhotoMessage:
       title: SubmitNewVoterCardPhotoMessage
       description: 'Message describing the resubmission of a Photo for a Voter Card Application. EROP own the queue and the listener implementation (the API). IER are a producer of the message and therefore a consumer of the API'
@@ -454,6 +180,19 @@ components:
         - hasDateOfBirth
         - gssCode
   responses:
+    EROListResponse:
+      description: >
+        Lists all EROs currently in the system, including their configuration and
+        managed Local Authorities
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              eros:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ERODetails'
     EROAllowListedIPAddressesResponse:
       description: List of all ERO allowlisted IP/CIDRs addresses
       content:

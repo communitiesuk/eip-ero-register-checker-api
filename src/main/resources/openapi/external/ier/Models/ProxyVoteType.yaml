@@ -1,0 +1,7 @@
+title: Proxy Vote duration type
+type: string
+description: Proxy Vote duration types
+enum:
+  - specific-date
+  - specific-date-range
+  - indefinite

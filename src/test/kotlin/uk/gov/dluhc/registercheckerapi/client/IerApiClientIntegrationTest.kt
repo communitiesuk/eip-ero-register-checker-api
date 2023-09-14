@@ -2,15 +2,14 @@ package uk.gov.dluhc.registercheckerapi.client
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
 import com.github.tomakehurst.wiremock.matching.StringValuePattern
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import uk.gov.dluhc.external.ier.models.EROCertificateMapping
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildIerEroDetailsList
 import java.time.Duration
 
 /**
@@ -26,55 +25,47 @@ internal class IerApiClientIntegrationTest : IntegrationTest() {
     private lateinit var wireMockServer: WireMockServer
 
     @Test
-    fun `should get EROCertificateMapping response for a given certificate serial`() {
+    fun `should get the response as a list of ERODetails`() {
         // Given
-        val certificateSerial = "1234567891"
-        val expectedEroId = "camden-city-council"
-        val expectedEroCertificateMapping =
-            EROCertificateMapping(eroId = expectedEroId, certificateSerial = certificateSerial)
-        wireMockService.stubIerApiGetEroIdentifier(certificateSerial, expectedEroId)
+        val expectedEros = buildIerEroDetailsList()
+        wireMockService.stubIerApiGetEros(expectedEros)
 
         // When
-        val actualEroCertificateMapping = ierApiClient.getEroIdentifier(certificateSerial)
+        val actualEros = ierApiClient.getEros()
 
         // Then
-        assertThat(actualEroCertificateMapping).isEqualTo(expectedEroCertificateMapping)
-        verifyWiremockGetInvokedFor(certificateSerial)
+        assertThat(actualEros).isEqualTo(expectedEros)
+        verifyWiremockGetInvoked()
     }
 
     @Test
     fun `should cache and evict cache`() {
         // Given
-        val certificateSerial = "1234567891"
-        val expectedEroId = "camden-city-council"
-        val expectedEroId2 = "camden-city-council-2"
-        val expectedEroCertificateMapping =
-            EROCertificateMapping(eroId = expectedEroId, certificateSerial = certificateSerial)
-        val expectedEroCertificateMapping2 =
-            EROCertificateMapping(eroId = expectedEroId2, certificateSerial = certificateSerial)
-        wireMockService.stubIerApiGetEroIdentifier(certificateSerial, expectedEroId)
+        val firstExpectedEros = buildIerEroDetailsList()
+        wireMockService.stubIerApiGetEros(firstExpectedEros)
+
+        val secondExpectedEros = buildIerEroDetailsList()
 
         // When
-        ierApiClient.getEroIdentifier(certificateSerial)
-        wireMockService.stubIerApiGetEroIdentifier(certificateSerial, expectedEroId2)
-        ierApiClient.getEroIdentifier(certificateSerial)
+        ierApiClient.getEros()
+        wireMockService.stubIerApiGetEros(secondExpectedEros)
+        ierApiClient.getEros()
 
         // Then
-        verifyWiremockGetInvokedFor(certificateSerial)
+        verifyWiremockGetInvoked()
 
-        // Within the TTL, we should retrieve result with expectedEroId and afterwards, with expectedEroId2
+        // Within the TTL, we should retrieve result with firstExpectedEros and afterwards, with secondExpectedEros
         await.during(timeToLive.minusMillis(500)).atMost(timeToLive).untilAsserted {
-            assertThat(ierApiClient.getEroIdentifier(certificateSerial)).isEqualTo(expectedEroCertificateMapping)
+            assertThat(ierApiClient.getEros()).isEqualTo(firstExpectedEros)
         }
         await.atMost(Duration.ofSeconds(1)).untilAsserted {
-            assertThat(ierApiClient.getEroIdentifier(certificateSerial)).isEqualTo(expectedEroCertificateMapping2)
+            assertThat(ierApiClient.getEros()).isEqualTo(secondExpectedEros)
         }
     }
 
-    private fun verifyWiremockGetInvokedFor(certificateSerial: String) {
+    private fun verifyWiremockGetInvoked() {
         wireMockServer.verify(
-            WireMock.getRequestedFor(urlPathMatching("/ier-ero/ero"))
-                .withQueryParam("certificateSerial", equalTo(certificateSerial))
+            WireMock.getRequestedFor(urlPathMatching("/ier-ero/eros"))
                 .withHeader("Authorization", matchingAwsSignedAuthHeader())
         )
     }

@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.context.request.RequestAttributes.SCOPE_REQUEST
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
-import uk.gov.dluhc.registercheckerapi.client.ElectoralRegistrationOfficeManagementApiException
 import uk.gov.dluhc.registercheckerapi.client.IerApiException
 import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
 import uk.gov.dluhc.registercheckerapi.config.ApiRequestErrorAttributes
@@ -51,16 +50,6 @@ class GlobalExceptionHandler(
         request: WebRequest
     ): ResponseEntity<Any?>? {
         return populateErrorResponseAndHandleExceptionInternal(e, NOT_FOUND, request)
-    }
-
-    @ExceptionHandler(value = [ElectoralRegistrationOfficeManagementApiException::class])
-    protected fun handleElectoralRegistrationOfficeManagementApiException(
-        e: ElectoralRegistrationOfficeManagementApiException,
-        request: WebRequest
-    ): ResponseEntity<Any?>? {
-        request.setAttribute(ERROR_MESSAGE, "Error retrieving GSS codes", SCOPE_REQUEST)
-
-        return populateErrorResponseAndHandleExceptionInternal(e, INTERNAL_SERVER_ERROR, request)
     }
 
     @ExceptionHandler(value = [GssCodeMismatchException::class])

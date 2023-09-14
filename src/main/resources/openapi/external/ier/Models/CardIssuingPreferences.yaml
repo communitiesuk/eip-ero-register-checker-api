@@ -12,6 +12,7 @@ properties:
     enum:
       - registered
       - overseas
+    description: 'If the user is registered overseas, they must have an overseas address and this field will be "overseas"'
 required:
   - cannotPostToAddress
   - addressType

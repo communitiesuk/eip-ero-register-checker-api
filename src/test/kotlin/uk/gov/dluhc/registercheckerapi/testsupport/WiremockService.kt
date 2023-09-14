@@ -7,17 +7,17 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.matching
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
-import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
 import com.github.tomakehurst.wiremock.matching.StringValuePattern
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
-import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildElectoralRegistrationOfficeResponse
-import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildLocalAuthorityResponse
+import uk.gov.dluhc.external.ier.models.ERODetails
+import uk.gov.dluhc.external.ier.models.ErosGet200Response
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildIerEroDetails
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildIerLocalAuthorityDetails
 
-private const val IER_ERO_GET_URL = "/ier-ero/.*"
-private const val ERO_MANAGEMENT_ERO_GET_URL = "/ero-management-api/eros/.*"
+private const val IER_EROS_GET_URL = "/ier-ero/eros"
 
 @Service
 class WiremockService(private val wireMockServer: WireMockServer) {
@@ -29,91 +29,65 @@ class WiremockService(private val wireMockServer: WireMockServer) {
         wireMockServer.resetAll()
     }
 
-    fun verifyIerGetEroIdentifierCalledOnce() {
-        verifyIerGetEroIdentifierCalled(1)
+    fun verifyIerGetErosCalledOnce() {
+        verifyIerGetErosCalled(1)
     }
 
-    fun verifyIerGetEroIdentifierCalled(count: Int) {
-        wireMockServer.verify(count, getRequestedFor(urlPathMatching(IER_ERO_GET_URL)))
+    fun verifyIerGetErosCalled(count: Int) {
+        wireMockServer.verify(count, getRequestedFor(urlPathMatching(IER_EROS_GET_URL)))
     }
 
-    fun verifyIerGetEroIdentifierNeverCalled() {
-        verifyIerGetEroIdentifierCalled(0)
+    fun verifyIerGetErosNeverCalled() {
+        verifyIerGetErosCalled(0)
     }
 
-    fun verifyEroManagementGetEroIdentifierCalledOnce() {
-        verifyEroManagementGetEroIdentifierCalled(1)
-    }
+    fun stubIerApiGetEros(certificateSerial: String, eroId: String, gssCodes: List<String>) {
+        val erosResponse = ErosGet200Response(
+            eros = listOf(
+                buildIerEroDetails(
+                    eroIdentifier = eroId,
+                    activeClientCertificateSerials = listOf(certificateSerial),
+                    localAuthorities = gssCodes.map { buildIerLocalAuthorityDetails(gssCode = it) },
+                )
+            )
+        )
 
-    fun verifyEroManagementGetEroIdentifierCalled(count: Int) {
-        wireMockServer.verify(count, getRequestedFor(urlPathMatching(ERO_MANAGEMENT_ERO_GET_URL)))
-    }
-
-    fun verifyEroManagementGetEroIdentifierNeverCalled() {
-        verifyEroManagementGetEroIdentifierCalled(0)
-    }
-
-    fun stubIerApiGetEroIdentifier(certificateSerial: String, eroId: String) {
         wireMockServer.stubFor(
-            get(urlEqualTo(buildGetIerEndpointUrl(certificateSerial)))
+            get(urlEqualTo(IER_EROS_GET_URL))
                 .withHeader("Authorization", matchingAwsSignedAuthHeader())
                 .willReturn(
                     responseDefinition()
                         .withStatus(200)
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-                        .withBody(
-                            """
-                                {
-                                    "eroId": "$eroId",
-                                    "certificateSerial": "$certificateSerial"
-                                }
-                            """.trimIndent()
-                        )
+                        .withBody(objectMapper.writeValueAsString(erosResponse))
                 )
         )
     }
 
-    fun stubIerApiGetEroIdentifierThrowsInternalServerError(certificateSerial: String) =
-        stubIerApiGetEroIdentifierThrowsException(certificateSerial, 500)
+    fun stubIerApiGetEros(eros: List<ERODetails>) {
+        val erosResponse = ErosGet200Response(eros = eros)
 
-    fun stubIerApiGetEroIdentifierThrowsNotFoundError(certificateSerial: String) =
-        stubIerApiGetEroIdentifierThrowsException(certificateSerial, 404)
-
-    fun stubEroManagementGetEro(eroId: String = "1234", gssCode1: String = "E12345678", gssCode2: String = "E98765432") {
-        val eroResponse = buildElectoralRegistrationOfficeResponse(
-            eroId = eroId,
-            localAuthorities = mutableListOf(
-                buildLocalAuthorityResponse(gssCode = gssCode1),
-                buildLocalAuthorityResponse(gssCode = gssCode2)
-            )
-        )
         wireMockServer.stubFor(
-            get(urlPathEqualTo("/ero-management-api/eros/$eroId"))
+            get(urlEqualTo(IER_EROS_GET_URL))
+                .withHeader("Authorization", matchingAwsSignedAuthHeader())
                 .willReturn(
                     responseDefinition()
                         .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(objectMapper.writeValueAsString(eroResponse))
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                        .withBody(objectMapper.writeValueAsString(erosResponse))
                 )
         )
     }
 
-    fun stubEroManagementGetEroThrowsNotFoundError() {
-        wireMockServer.stubFor(
-            get(urlPathMatching(ERO_MANAGEMENT_ERO_GET_URL))
-                .willReturn(
-                    responseDefinition()
-                        .withStatus(404)
-                )
-        )
-    }
+    fun stubIerApiGetEroIdentifierThrowsInternalServerError() =
+        stubIerApiGetEroIdentifierThrowsException(500)
 
-    private fun stubIerApiGetEroIdentifierThrowsException(
-        certificateSerial: String,
-        httpStatusCode: Int
-    ) {
+    fun stubIerApiGetEroIdentifierThrowsNotFoundError() =
+        stubIerApiGetEroIdentifierThrowsException(404)
+
+    private fun stubIerApiGetEroIdentifierThrowsException(httpStatusCode: Int) {
         wireMockServer.stubFor(
-            get(urlEqualTo(buildGetIerEndpointUrl(certificateSerial)))
+            get(urlEqualTo(IER_EROS_GET_URL))
                 .withHeader("Authorization", matchingAwsSignedAuthHeader())
                 .willReturn(
                     responseDefinition()
@@ -121,8 +95,6 @@ class WiremockService(private val wireMockServer: WireMockServer) {
                 )
         )
     }
-
-    private fun buildGetIerEndpointUrl(certificateSerial: String) = "/ier-ero/ero?certificateSerial=$certificateSerial"
 
     private fun matchingAwsSignedAuthHeader(): StringValuePattern =
         matching(

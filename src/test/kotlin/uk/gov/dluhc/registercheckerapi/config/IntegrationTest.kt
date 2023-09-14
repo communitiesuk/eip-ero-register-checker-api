@@ -89,6 +89,6 @@ internal abstract class IntegrationTest {
     fun clearDatabase() {
         registerCheckResultDataRepository.deleteAll()
         registerCheckRepository.deleteAll()
-        cacheManager.getCache(ERO_CERTIFICATE_MAPPING_CACHE)?.clear()
+        cacheManager.getCache(IER_ELECTORAL_REGISTRATION_OFFICES_CACHE)?.clear()
     }
 }

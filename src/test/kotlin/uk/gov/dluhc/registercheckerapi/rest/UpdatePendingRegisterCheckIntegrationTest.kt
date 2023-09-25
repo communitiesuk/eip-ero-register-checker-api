@@ -61,8 +61,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .isForbidden
 
         // Then
-        wireMockService.verifyIerGetEroIdentifierNeverCalled()
-        wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
+        wireMockService.verifyIerGetErosNeverCalled()
         assertRequestIsNotAudited(requestId)
     }
 
@@ -94,16 +93,19 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasError("Bad Request")
             .hasMessage("Request requestId:[322ff65f-a0a1-497d-a224-04800711a1fb] does not match with requestid:[533ff65f-a0a1-497d-a224-04800711a1fc] in body payload")
             .hasNoValidationErrors()
-        wireMockService.verifyIerGetEroIdentifierNeverCalled()
-        wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
+        wireMockService.verifyIerGetErosNeverCalled()
         assertRequestIsAudited(requestIdInRequestBody)
     }
 
     @Test
-    fun `should return not found error given IER service throws 404`() {
+    fun `should return not found error given IER service returns no ERO with a matching certificate serial number`() {
         // Given
         val requestId = UUID.randomUUID()
-        wireMockService.stubIerApiGetEroIdentifierThrowsNotFoundError(certificateSerial = CERT_SERIAL_NUMBER_VALUE)
+        val eroId = "camden-city-council"
+        val gssCode = getRandomGssCode()
+        val certificateSerialNumberFromIerApi = "543218888"
+
+        wireMockService.stubIerApiGetEros(certificateSerialNumberFromIerApi, eroId, listOf(gssCode))
 
         val earliestExpectedTimeStamp = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
 
@@ -127,8 +129,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasStatus(404)
             .hasError("Not Found")
             .hasMessage("EROCertificateMapping for certificateSerial=[543212222] not found")
-        wireMockService.verifyIerGetEroIdentifierCalledOnce()
-        wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
+        wireMockService.verifyIerGetErosCalledOnce()
         assertRequestIsAudited(requestId)
     }
 
@@ -136,12 +137,12 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     fun `should return not found given non-existing register check for a given requestId`() {
         // Given
         val requestId = UUID.fromString("322ff65f-a0a1-497d-a224-04800711a1fb")
-        val eroIdFromIerApi = "camden-city-council"
-        val firstGssCodeFromEroApi = "E12345678"
-        val secondGssCodeFromEroApi = "E98764532"
+        val eroId = "camden-city-council"
+        val firstGssCode = "E12345678"
+        val secondGssCode = "E98764532"
+        val gssCodes = listOf(firstGssCode, secondGssCode)
 
-        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
-        wireMockService.stubEroManagementGetEro(eroIdFromIerApi, firstGssCodeFromEroApi, secondGssCodeFromEroApi)
+        wireMockService.stubIerApiGetEros(CERT_SERIAL_NUMBER_VALUE, eroId, gssCodes)
 
         val earliestExpectedTimeStamp = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
 
@@ -166,21 +167,19 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasError("Not Found")
             .hasMessage("Pending register check for requestid:[322ff65f-a0a1-497d-a224-04800711a1fb] not found")
             .hasNoValidationErrors()
-        wireMockService.verifyIerGetEroIdentifierCalledOnce()
-        wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
+        wireMockService.verifyIerGetErosCalledOnce()
         assertRequestIsAudited(requestId)
     }
 
     @Test
     fun `should return bad request given registerCheckMatchCount in requestBody mismatches registerCheckMatches array size`() {
         // Given
-        val eroIdFromIerApi = "camden-city-council"
-        val firstGssCodeFromEroApi = "E12345678"
+        val eroId = "camden-city-council"
+        val gssCode = "E12345678"
         val requestId = UUID.randomUUID()
         val registerCheckMatchCount = 10
 
-        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
-        wireMockService.stubEroManagementGetEro(eroIdFromIerApi, firstGssCodeFromEroApi)
+        wireMockService.stubIerApiGetEros(CERT_SERIAL_NUMBER_VALUE, eroId, listOf(gssCode))
 
         val earliestExpectedTimeStamp = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
 
@@ -211,22 +210,21 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasStatus(400)
             .hasError("Bad Request")
             .hasMessage("Request [registerCheckMatches:1] array size must be same as [registerCheckMatchCount:10] in body payload")
-        wireMockService.verifyIerGetEroIdentifierNeverCalled()
-        wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
+        wireMockService.verifyIerGetErosNeverCalled()
         assertRequestIsAudited(requestId)
     }
 
     @Test
     fun `should return forbidden given gssCode in requestBody does not matches gssCode from ERO`() {
         // Given
-        val eroIdFromIerApi = "camden-city-council"
-        val firstGssCodeFromEroApi = "E12345678"
-        val secondGssCodeFromEroApi = "E98764532"
+        val eroId = "camden-city-council"
+        val firstGssCodeFromIerApi = "E12345678"
+        val secondGssCodeFromIerApi = "E98764532"
+        val gssCodesFromIerApi = listOf(firstGssCodeFromIerApi, secondGssCodeFromIerApi)
         val gssCodeFromRequestBody = "E10101010"
         val requestId = UUID.randomUUID()
 
-        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
-        wireMockService.stubEroManagementGetEro(eroIdFromIerApi, firstGssCodeFromEroApi, secondGssCodeFromEroApi)
+        wireMockService.stubIerApiGetEros(CERT_SERIAL_NUMBER_VALUE, eroId, gssCodesFromIerApi)
 
         val earliestExpectedTimeStamp = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
 
@@ -251,8 +249,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasStatus(403)
             .hasError("Forbidden")
             .hasMessage("Request gssCode:[E10101010] does not match with gssCode for certificateSerial:[543212222]")
-        wireMockService.verifyIerGetEroIdentifierCalledOnce()
-        wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
+        wireMockService.verifyIerGetErosCalledOnce()
         assertRequestIsAudited(requestId)
     }
 
@@ -260,7 +257,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     fun `should return internal server error given IER service throws 500`() {
         // Given
         val requestId = UUID.randomUUID()
-        wireMockService.stubIerApiGetEroIdentifierThrowsInternalServerError(certificateSerial = CERT_SERIAL_NUMBER_VALUE)
+        wireMockService.stubIerApiGetEroIdentifierThrowsInternalServerError()
 
         val earliestExpectedTimeStamp = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
 
@@ -284,42 +281,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasStatus(500)
             .hasError("Internal Server Error")
             .hasMessage("Error getting eroId for certificate serial")
-        wireMockService.verifyIerGetEroIdentifierCalledOnce()
-        wireMockService.verifyEroManagementGetEroIdentifierNeverCalled()
-        assertRequestIsAudited(requestId)
-    }
-
-    @Test
-    fun `should return internal server error given ERO service throws 404`() {
-        // Given
-        val requestId = UUID.randomUUID()
-        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, "camden-city-council")
-        wireMockService.stubEroManagementGetEroThrowsNotFoundError()
-
-        val earliestExpectedTimeStamp = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
-
-        // When
-        val response = webTestClient.post()
-            .uri(buildUri(requestId))
-            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
-            .contentType(APPLICATION_JSON)
-            .body(
-                Mono.just(buildRegisterCheckResultRequest(requestId = requestId)),
-                RegisterCheckResultRequest::class.java
-            )
-            .exchange()
-            .expectStatus().is5xxServerError
-            .returnResult(ErrorResponse::class.java)
-
-        // Then
-        val actual = response.responseBody.blockFirst()
-        assertThat(actual)
-            .hasTimestampNotBefore(earliestExpectedTimeStamp)
-            .hasStatus(500)
-            .hasError("Internal Server Error")
-            .hasMessage("Error retrieving GSS codes")
-        wireMockService.verifyIerGetEroIdentifierCalledOnce()
-        wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
+        wireMockService.verifyIerGetErosCalledOnce()
         assertRequestIsAudited(requestId)
     }
 
@@ -434,17 +396,17 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     fun `should return conflict given pending register check existing status is other than PENDING`() {
         // Given
         val requestId = UUID.fromString("14f66386-a86e-4dbc-af52-3327834f33d1")
-        val eroIdFromIerApi = "camden-city-council"
-        val firstGssCodeFromEroApi = "E12345678"
-        val secondGssCodeFromEroApi = "E98764532"
+        val eroId = "camden-city-council"
+        val firstGssCode = "E12345678"
+        val secondGssCode = "E98764532"
+        val gssCodes = listOf(firstGssCode, secondGssCode)
         val registerCheckMatchCountInRequest = 1 // Exact match
 
-        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
-        wireMockService.stubEroManagementGetEro(eroIdFromIerApi, firstGssCodeFromEroApi, secondGssCodeFromEroApi)
+        wireMockService.stubIerApiGetEros(CERT_SERIAL_NUMBER_VALUE, eroId, gssCodes)
         val savedPendingRegisterCheckEntity = registerCheckRepository.save(
             buildRegisterCheck(
                 correlationId = requestId,
-                gssCode = firstGssCodeFromEroApi,
+                gssCode = firstGssCode,
                 status = CheckStatus.NO_MATCH, // Existing record with NO_MATCH check status
                 matchCount = 0
             )
@@ -473,8 +435,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasError("Conflict")
             .hasMessage("Register check with requestid:[14f66386-a86e-4dbc-af52-3327834f33d1] has an unexpected status:[NO_MATCH]")
             .hasNoValidationErrors()
-        wireMockService.verifyIerGetEroIdentifierCalledOnce()
-        wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
+        wireMockService.verifyIerGetErosCalledOnce()
 
         assertRequestIsAudited(requestId)
         assertMessageNotSubmittedToSqs(
@@ -487,18 +448,18 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     fun `should return created given a post request with multiple matches found`() {
         // Given
         val requestId = UUID.randomUUID()
-        val eroIdFromIerApi = "camden-city-council"
-        val gssCodeFromEroApi = "E12345678"
-        val anotherGssCodeFromEroApi = "E98764532"
+        val eroId = "camden-city-council"
+        val gssCode = "E12345678"
+        val anotherGssCode = "E98764532"
+        val gssCodes = listOf(gssCode, anotherGssCode)
         val historicalSearchEarliestDate = OffsetDateTime.now(ZoneOffset.UTC)
 
-        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
-        wireMockService.stubEroManagementGetEro(eroIdFromIerApi, gssCodeFromEroApi, anotherGssCodeFromEroApi)
+        wireMockService.stubIerApiGetEros(CERT_SERIAL_NUMBER_VALUE, eroId, gssCodes)
 
         val savedPendingRegisterCheckEntity = registerCheckRepository.save(
             buildRegisterCheck(
                 correlationId = requestId,
-                gssCode = gssCodeFromEroApi,
+                gssCode = gssCode,
                 status = CheckStatus.PENDING,
                 historicalSearchEarliestDate = null,
             )
@@ -522,7 +483,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         )
         val requestBody = buildRegisterCheckResultRequest(
             requestId = requestId,
-            gssCode = gssCodeFromEroApi,
+            gssCode = gssCode,
             createdAt = matchResultSentAt,
             registerCheckMatchCount = matchCount,
             registerCheckMatches = matches,
@@ -553,11 +514,10 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasMatchCount(matchCount)
             .hasRegisterCheckMatches(expectedRegisterCheckMatchEntityList)
 
-        wireMockService.verifyIerGetEroIdentifierCalledOnce()
-        wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
+        wireMockService.verifyIerGetErosCalledOnce()
 
         val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationIdIn(setOf(requestId))[0]
-        assertRequestIsAudited(actualRegisterResultData, requestId, matchResultSentAt.toString(), gssCodeFromEroApi, matchCount)
+        assertRequestIsAudited(actualRegisterResultData, requestId, matchResultSentAt.toString(), gssCode, matchCount)
         val persistedRequest = objectMapper.readValue(actualRegisterResultData.requestBody, RegisterCheckResultRequest::class.java)
         assertThat(persistedRequest).usingRecursiveComparison()
             .ignoringFields("registerCheckMatches.applicationCreatedAt")
@@ -590,17 +550,16 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     ) {
         // Given
         val requestId = UUID.randomUUID()
-        val eroIdFromIerApi = "camden-city-council"
-        val gssCodeFromEroApi = getRandomGssCode()
+        val eroId = "camden-city-council"
+        val gssCode = getRandomGssCode()
         val historicalSearchEarliestDate = OffsetDateTime.now(ZoneOffset.UTC)
 
-        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
-        wireMockService.stubEroManagementGetEro(eroIdFromIerApi, gssCodeFromEroApi)
+        wireMockService.stubIerApiGetEros(CERT_SERIAL_NUMBER_VALUE, eroId, listOf(gssCode))
 
         val savedPendingRegisterCheckEntity = registerCheckRepository.save(
             buildRegisterCheck(
                 correlationId = requestId,
-                gssCode = gssCodeFromEroApi,
+                gssCode = gssCode,
                 status = CheckStatus.PENDING,
                 personalDetail = buildPersonalDetail(
                     address = buildAddress(postcode = applicationPostcode)
@@ -637,7 +596,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
         val requestBody = buildRegisterCheckResultRequest(
             requestId = requestId,
-            gssCode = gssCodeFromEroApi,
+            gssCode = gssCode,
             createdAt = matchResultSentAt,
             registerCheckMatchCount = matchCount,
             registerCheckMatches = matches,
@@ -668,11 +627,10 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasMatchCount(matchCount)
             .hasRegisterCheckMatches(expectedRegisterCheckMatchEntityList)
 
-        wireMockService.verifyIerGetEroIdentifierCalledOnce()
-        wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
+        wireMockService.verifyIerGetErosCalledOnce()
 
         val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationIdIn(setOf((requestId)))[0]
-        assertRequestIsAudited(actualRegisterResultData, requestId, createdAtFromRequest, gssCodeFromEroApi, matchCount)
+        assertRequestIsAudited(actualRegisterResultData, requestId, createdAtFromRequest, gssCode, matchCount)
 
         assertMessageSubmittedToSqs(
             queueUrl = localStackContainerSettings.mappedQueueUrlConfirmRegisterCheckResult,
@@ -684,17 +642,16 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     fun `should return created given a post request with no matches found`() {
         // Given
         val requestId = UUID.randomUUID()
-        val eroIdFromIerApi = "camden-city-council"
-        val gssCodeFromEroApi = getRandomGssCode()
+        val eroId = "camden-city-council"
+        val gssCode = getRandomGssCode()
         val createdAtFromRequest = "2022-09-13T21:03:03.7788394+05:30"
 
-        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
-        wireMockService.stubEroManagementGetEro(eroIdFromIerApi, gssCodeFromEroApi)
+        wireMockService.stubIerApiGetEros(CERT_SERIAL_NUMBER_VALUE, eroId, listOf(gssCode))
 
         val savedPendingRegisterCheckEntity = registerCheckRepository.save(
             buildRegisterCheck(
                 correlationId = requestId,
-                gssCode = gssCodeFromEroApi,
+                gssCode = gssCode,
                 status = CheckStatus.PENDING,
                 historicalSearchEarliestDate = null
             )
@@ -713,7 +670,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         val bodyPayloadAsJson = buildJsonPayloadWithNoMatches(
             requestId = requestId.toString(),
             createdAt = createdAtFromRequest,
-            gssCode = gssCodeFromEroApi
+            gssCode = gssCode
         )
         val matchResultSentAt = OffsetDateTime.parse(createdAtFromRequest)
 
@@ -737,11 +694,10 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasMatchResultSentAt(matchResultSentAt.toInstant())
             .hasMatchCount(matchCount)
 
-        wireMockService.verifyIerGetEroIdentifierCalledOnce()
-        wireMockService.verifyEroManagementGetEroIdentifierCalledOnce()
+        wireMockService.verifyIerGetErosCalledOnce()
 
         val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationIdIn(setOf(requestId))[0]
-        assertRequestIsAudited(actualRegisterResultData, requestId, createdAtFromRequest, gssCodeFromEroApi, matchCount)
+        assertRequestIsAudited(actualRegisterResultData, requestId, createdAtFromRequest, gssCode, matchCount)
 
         assertMessageSubmittedToSqs(
             queueUrl = localStackContainerSettings.mappedQueueUrlConfirmRegisterCheckResult,
@@ -753,19 +709,19 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     fun `should submit the POSTAL_VOTE result message to the postal vote queue`() {
         // Given
         val requestId = UUID.randomUUID()
-        val eroIdFromIerApi = "camden-city-council"
-        val gssCodeFromEroApi = "E12345678"
-        val anotherGssCodeFromEroApi = "E98764532"
+        val eroId = "camden-city-council"
+        val gssCode = "E12345678"
+        val anotherGssCode = "E98764532"
+        val gssCodes = listOf(gssCode, anotherGssCode)
         val historicalSearchEarliestDate = OffsetDateTime.now(ZoneOffset.UTC)
 
-        wireMockService.stubIerApiGetEroIdentifier(CERT_SERIAL_NUMBER_VALUE, eroIdFromIerApi)
-        wireMockService.stubEroManagementGetEro(eroIdFromIerApi, gssCodeFromEroApi, anotherGssCodeFromEroApi)
+        wireMockService.stubIerApiGetEros(CERT_SERIAL_NUMBER_VALUE, eroId, gssCodes)
 
         val savedPendingRegisterCheckEntity = registerCheckRepository.save(
             buildRegisterCheck(
                 sourceType = POSTAL_VOTE,
                 correlationId = requestId,
-                gssCode = gssCodeFromEroApi,
+                gssCode = gssCode,
                 status = CheckStatus.PENDING,
                 historicalSearchEarliestDate = null
             )
@@ -786,7 +742,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         )
         val requestBody = buildRegisterCheckResultRequest(
             requestId = requestId,
-            gssCode = gssCodeFromEroApi,
+            gssCode = gssCode,
             createdAt = matchResultSentAt,
             registerCheckMatchCount = matchCount,
             registerCheckMatches = matches,

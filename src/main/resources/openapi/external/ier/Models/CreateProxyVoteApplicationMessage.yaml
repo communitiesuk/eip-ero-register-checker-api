@@ -1,0 +1,130 @@
+title: CreateProxyVoteApplicationMessage
+type: object
+description: 'Message used to create a Proxy Vote Application, sent from IER to EROP'
+x-api-owner: IER
+x-api-consumer: EROP
+properties:
+  id:
+    type: string
+    pattern: '^[a-fA-F\d]{24}$'
+    description: 'The unique IER identifier for this application. A 24 character hex string.'
+  gssCode:
+    $ref: ./Primatives/GssCode.yaml
+  applicationReference:
+    type: string
+    description: 'The application reference as known by the citizen. Not guaranteed to be unique.'
+  datetimeSubmitted:
+    type: string
+    format: date-time
+  proxyVoteReason:
+    $ref: ./ProxyReason.yaml
+  proxyVoteReasonOther:
+    type: string
+    maxLength: 500
+    description: 'This is only populated when proxyVoteReason = other'
+  proxyVoteType:
+    $ref: ./ProxyVoteType.yaml
+  specificDate:
+    type: string
+    format: date
+    description: 'This is only populated when ProxyVoteType = specific-date'
+  dateRangeStart:
+    type: string
+    format: date
+    description: 'This is only populated when ProxyVoteType = specific-date-range'
+  dateRangeEnd:
+    type: string
+    format: date
+    description: 'This is only populated when ProxyVoteType = specific-date-range'
+  firstName:
+    type: string
+    maxLength: 255
+  middleNames:
+    type: string
+    maxLength: 255
+  surname:
+    type: string
+    maxLength: 255
+  dateOfBirth:
+    type: string
+    format: date
+  registeredWithUnknownDob:
+    type: boolean
+  unknownDobReason:
+    type: string
+    maxLength: 500
+  ageRange:
+    $ref: ./AgeRange.yaml
+  nino:
+    type: string
+    maxLength: 10
+  cantSupplyNinoReason:
+    type: string
+    maxLength: 500
+  address:
+    $ref: ./Address.yaml
+  email:
+    type: string
+    format: email
+    maxLength: 256
+  phoneNumber:
+    type: string
+    maxLength: 50
+  noContact:
+    type: boolean
+    default: false
+  proxyFirstName:
+    type: string
+    maxLength: 255
+  proxyMiddleNames:
+    type: string
+    maxLength: 255
+  proxySurname:
+    type: string
+    maxLength: 255
+  proxyAddress:
+    $ref: ./Address.yaml
+  proxyEmail:
+    type: string
+    format: email
+    maxLength: 256
+  proxyPhoneNumber:
+    type: string
+    maxLength: 50
+  signatureImage:
+    type: string
+    format: byte
+    description: 'Format is base64 PNG, 1050x300px, monochrome'
+  identityDocuments:
+    type: array
+    items:
+      $ref: ./DocumentReference.yaml
+  cantUploadDocuments:
+    type: boolean
+    default: false
+  submittedInWelsh:
+    type: boolean
+    default: false
+  applicantIpAddress:
+    type: string
+    maxLength: 45
+    description: The IP address of the applicant when completing their application on the IER web application front end. An optional value that if provided may be either an IPv4 or IPv6 address.
+  requestedApplicationCopyViaEmail:
+    type: boolean
+    default: false
+required:
+  - id
+  - gssCode
+  - applicationReference
+  - datetimeSubmitted
+  - proxyVoteType
+  - firstName
+  - surname
+  - address
+  - proxyFirstName
+  - proxySurname
+  - proxyAddress
+  - signatureImage
+  - applicantIpAddress
+  - requestedApplicationCopyViaEmail
+  - submittedInWelsh

@@ -11,5 +11,9 @@ properties:
   documentRemovedReason:
     type: string
     description: 'A reason, to be displayed to the ERO, as to why the photo that the applicant supplied has been removed. If a virus was detected then this will be a description of the issue from the virus scanning system'
+  reasonPhotoDoesNotMeetGuidelines:
+    type: string
+    maxLength: 250
+    description: 'A reason given by applicant why they cannot upload a photo that meets the guidelines, e.g. because of a disability. This reason should be displayed to the ero, and the photo accepted all other requirements being met'
 required:
   - filename

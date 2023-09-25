@@ -16,7 +16,8 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.HttpServerErrorException
 import org.springframework.web.client.RestTemplate
-import uk.gov.dluhc.external.ier.models.EROCertificateMapping
+import uk.gov.dluhc.external.ier.models.ErosGet200Response
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildIerEroDetailsList
 
 @ExtendWith(MockitoExtension::class)
 internal class IerApiClientTest {
@@ -28,89 +29,63 @@ internal class IerApiClientTest {
     private lateinit var ierApiClient: IerApiClient
 
     @Test
-    fun `should get EROCertificateMapping response for a given certificate serial`() {
+    fun `should get a response with a list of ERODetails`() {
         // Given
-        val certificateSerial = "1234567891"
-        val expectedEroId = "camden-city-council"
-        val expectedEroCertificateMapping =
-            EROCertificateMapping(eroId = expectedEroId, certificateSerial = certificateSerial)
-        val expectedUrl = "/ero?certificateSerial=$certificateSerial"
+        val expectedEros = buildIerEroDetailsList()
+        val expectedUrl = "/eros"
 
-        given(ierRestTemplate.getForEntity(anyString(), eq(EROCertificateMapping::class.java)))
-            .willReturn(ResponseEntity.ok(expectedEroCertificateMapping))
+        given(ierRestTemplate.getForEntity(anyString(), eq(ErosGet200Response::class.java)))
+            .willReturn(ResponseEntity.ok(ErosGet200Response(expectedEros)))
 
         // When
-        val actualEroCertificateMapping = ierApiClient.getEroIdentifier(certificateSerial)
+        val actualEros = ierApiClient.getEros()
 
         // Then
-        assertThat(actualEroCertificateMapping).isEqualTo(expectedEroCertificateMapping)
+        assertThat(actualEros).isEqualTo(expectedEros)
 
-        verify(ierRestTemplate).getForEntity(expectedUrl, EROCertificateMapping::class.java)
-    }
-
-    @Test
-    fun `should return not found when EROCertificateMapping for given certificate serial is not found in IER`() {
-        // Given
-        val certificateSerial = "1234567892"
-        val expectedUrl = "/ero?certificateSerial=$certificateSerial"
-        val expectedException = IerEroNotFoundException(certificateSerial = certificateSerial)
-
-        given(ierRestTemplate.getForEntity(anyString(), eq(EROCertificateMapping::class.java)))
-            .willThrow(HttpClientErrorException(HttpStatus.NOT_FOUND, "No ero found"))
-
-        // When
-        val ex = Assertions.catchThrowableOfType(
-            { ierApiClient.getEroIdentifier(certificateSerial) },
-            IerEroNotFoundException::class.java
-        )
-
-        // Then
-        assertThat(ex.message).isEqualTo(expectedException.message)
-        verify(ierRestTemplate).getForEntity(expectedUrl, EROCertificateMapping::class.java)
+        verify(ierRestTemplate).getForEntity(expectedUrl, ErosGet200Response::class.java)
     }
 
     @Test
     fun `should return general exception when IER returns forbidden error`() {
         // Given
-        val certificateSerial = "1234567895"
-        val expectedUrl = "/ero?certificateSerial=$certificateSerial"
+        val expectedUrl = "/eros"
         val exceptionMessage = "Forbidden while communicating to IER"
         val expectedException =
-            IerGeneralException(message = "Unable to retrieve EROCertificateMapping for certificate serial [$certificateSerial] due to error: [403 $exceptionMessage]")
+            IerGeneralException(message = "Error getting EROs from IER API")
 
-        given(ierRestTemplate.getForEntity(anyString(), eq(EROCertificateMapping::class.java)))
+        given(ierRestTemplate.getForEntity(anyString(), eq(ErosGet200Response::class.java)))
             .willThrow(HttpClientErrorException(HttpStatus.FORBIDDEN, exceptionMessage))
 
         // When
         val ex = Assertions.catchThrowableOfType(
-            { ierApiClient.getEroIdentifier(certificateSerial) },
+            { ierApiClient.getEros() },
             IerGeneralException::class.java
         )
 
         // Then
         assertThat(ex.message).isEqualTo(expectedException.message)
-        verify(ierRestTemplate).getForEntity(expectedUrl, EROCertificateMapping::class.java)
+        verify(ierRestTemplate).getForEntity(expectedUrl, ErosGet200Response::class.java)
     }
 
     @Test
     fun `should return general exception when IER returns internal server error`() {
         // Given
-        val certificateSerial = "1234567893"
-        val expectedUrl = "/ero?certificateSerial=$certificateSerial"
+        val expectedUrl = "/eros"
         val expectedException =
-            IerGeneralException(message = "Unable to retrieve EROCertificateMapping for certificate serial [$certificateSerial] due to error: [500 INTERNAL_SERVER_ERROR]")
+            IerGeneralException(message = "Error getting EROs from IER API")
 
-        given(ierRestTemplate.getForEntity(anyString(), eq(EROCertificateMapping::class.java)))
+        given(ierRestTemplate.getForEntity(anyString(), eq(ErosGet200Response::class.java)))
             .willThrow(HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR))
 
         // When
         val ex = Assertions.catchThrowableOfType(
-            { ierApiClient.getEroIdentifier(certificateSerial) },
+            { ierApiClient.getEros() },
             IerGeneralException::class.java
         )
 
         // Then
         assertThat(ex.message).isEqualTo(expectedException.message)
-        verify(ierRestTemplate).getForEntity(expectedUrl, EROCertificateMapping::class.java)
+        verify(ierRestTemplate).getForEntity(expectedUrl, ErosGet200Response::class.java)
     }
 }

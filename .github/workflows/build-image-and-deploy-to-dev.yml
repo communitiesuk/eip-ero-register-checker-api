@@ -1,4 +1,4 @@
-name: Build image and deploy to dev
+name: Build image and deploy to dev2
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
         uses: oprypin/find-latest-tag@v1
         with:
           repository: cabinetoffice/eip-ero-register-checker-api
-          prefix: 'v1.'
+          prefix: 'v2.'
 
       - name: Bump version tag
         uses: cabinetoffice/action-bump-semver@v1
@@ -48,6 +48,6 @@ jobs:
       - build-and-push
     uses: ./.github/workflows/deploy.yml
     with:
-      deploy_environment: dev
+      deploy_environment: dev2
       version: ${{ needs.tag.outputs.version }}
     secrets: inherit

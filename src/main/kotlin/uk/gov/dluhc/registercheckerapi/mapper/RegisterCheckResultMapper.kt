@@ -4,7 +4,6 @@ import org.apache.commons.lang3.StringUtils
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Named
-import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.dluhc.registercheckerapi.dto.AddressDto
 import uk.gov.dluhc.registercheckerapi.dto.PersonalDetailDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckMatchDto
@@ -24,9 +23,6 @@ import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch as Reg
     ]
 )
 abstract class RegisterCheckResultMapper {
-    @Autowired
-    protected lateinit var instantMapper: InstantMapper
-
     @Mapping(target = "requestId", source = "queryParamRequestId")
     @Mapping(target = "correlationId", source = "apiRequest.requestid")
     @Mapping(target = "matchResultSentAt", source = "apiRequest.createdAt")

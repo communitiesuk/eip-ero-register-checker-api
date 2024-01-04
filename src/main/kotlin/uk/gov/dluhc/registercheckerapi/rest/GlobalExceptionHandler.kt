@@ -18,6 +18,7 @@ import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
 import uk.gov.dluhc.registercheckerapi.config.ApiRequestErrorAttributes
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
 import uk.gov.dluhc.registercheckerapi.exception.PendingRegisterCheckNotFoundException
+import uk.gov.dluhc.registercheckerapi.exception.Pre1970EarliestSearchException
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckMatchCountMismatchException
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckUnexpectedStatusException
 import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
@@ -63,7 +64,8 @@ class GlobalExceptionHandler(
     @ExceptionHandler(
         value = [
             RequestIdMismatchException::class,
-            RegisterCheckMatchCountMismatchException::class
+            RegisterCheckMatchCountMismatchException::class,
+            Pre1970EarliestSearchException::class,
         ]
     )
     protected fun handleBadRequestBusinessException(

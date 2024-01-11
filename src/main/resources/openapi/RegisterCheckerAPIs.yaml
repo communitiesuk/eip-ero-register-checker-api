@@ -1,14 +1,14 @@
 openapi: 3.0.0
 info:
   title: Register Checker APIs
-  version: '2.0.1'
+  version: '2.0.2'
   description: -|
     Requests checks and responses from EMS systems to validate elector details exists within the EMS.
     For change history see
     https://github.com/cabinetoffice/eip-ero-register-checker-api/blob/main/src/main/resources/openapi/RegisterCheckerAPIs.yaml
   contact:
-    name: Krister Bone
-    email: krister.bone@valtech.com
+    name: Duncan Elder
+    email: Duncan.Elder@levellingup.gov.uk
 servers:
   - url: 'http://localhost:3000'
   - url: 'https://api.registerchecker.dev.erop.ierds.uk'
@@ -705,7 +705,7 @@ components:
         proxypostcode:
           type: string
           example: SW112DR
-          description: (Required) The postcode of the address of the chosen proxy as supplied by the applicant.
+          description: (Mandatory if UK proxy) The postcode of the address of the chosen proxy as supplied by the applicant.
           minLength: 1          
           maxLength: 10          
         proxyuprn:
@@ -732,7 +732,6 @@ components:
         - proxyfn
         - proxyln
         - proxystreet
-        - proxypostcode
 
   #
   # Response Body Definitions

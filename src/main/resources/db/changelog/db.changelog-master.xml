@@ -17,5 +17,6 @@
     <include relativeToChangelogFile="true" file="ddl/0009_alter_register_check.xml"/>
     <include relativeToChangelogFile="true" file="ddl/0010_add_ems_elector_id_and_historical_search_columns.xml"/>
     <include relativeToChangelogFile="true" file="ddl/0011_add_historical_search_earliest_date_column.xml"/>
+    <include relativeToChangelogFile="true" file="ddl/0012_voting_arrangement.xml"/>
 
 </databaseChangeLog>

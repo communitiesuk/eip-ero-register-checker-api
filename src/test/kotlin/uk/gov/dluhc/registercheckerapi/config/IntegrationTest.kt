@@ -15,6 +15,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import software.amazon.awssdk.services.sqs.SqsClient
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckResultDataRepository
+import uk.gov.dluhc.registercheckerapi.database.repository.VotingArrangementRepository
 import uk.gov.dluhc.registercheckerapi.mapper.SourceTypeMapper
 import uk.gov.dluhc.registercheckerapi.testsupport.WiremockService
 import java.time.Duration
@@ -42,6 +43,9 @@ internal abstract class IntegrationTest {
 
     @Autowired
     protected lateinit var registerCheckResultDataRepository: RegisterCheckResultDataRepository
+
+    @Autowired
+    protected lateinit var votingArrangementRepository: VotingArrangementRepository
 
     @Autowired
     protected lateinit var sqsClient: SqsClient
@@ -89,6 +93,7 @@ internal abstract class IntegrationTest {
     fun clearDatabase() {
         registerCheckResultDataRepository.deleteAll()
         registerCheckRepository.deleteAll()
+        votingArrangementRepository.deleteAll()
         cacheManager.getCache(IER_ELECTORAL_REGISTRATION_OFFICES_CACHE)?.clear()
     }
 }

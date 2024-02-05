@@ -53,9 +53,9 @@ class RegisterCheckMatch(
     var franchiseCode: String?,
 
     @OneToOne(
-            cascade = [CascadeType.ALL],
-            orphanRemoval = true,
-            fetch = FetchType.EAGER
+        cascade = [CascadeType.ALL],
+        orphanRemoval = true,
+        fetch = FetchType.EAGER
     )
 
     @JoinColumn(name = "postal_voting_arrangement", referencedColumnName = "id")
@@ -63,9 +63,9 @@ class RegisterCheckMatch(
     var postalVotingArrangement: VotingArrangement?,
 
     @OneToOne(
-            cascade = [CascadeType.ALL],
-            orphanRemoval = true,
-            fetch = FetchType.EAGER
+        cascade = [CascadeType.ALL],
+        orphanRemoval = true,
+        fetch = FetchType.EAGER
     )
     @JoinColumn(name = "proxy_voting_arrangement", referencedColumnName = "id")
     @NotFound(action = NotFoundAction.IGNORE)

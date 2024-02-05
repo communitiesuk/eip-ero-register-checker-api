@@ -14,12 +14,12 @@
                     primaryKeyName="voting_arrangement_pkey"
                 />
             </column>
-            <column name="untilFurtherNotice" type="boolean">
+            <column name="until_further_notice" type="boolean">
                 <constraints nullable="false"/>
             </column>
-            <column name="forSingleDate" type="date"/>
-            <column name="startDate" type="date"/>
-            <column name="endDate" type="date"/>
+            <column name="for_single_date" type="date"/>
+            <column name="start_date" type="date"/>
+            <column name="end_date" type="date"/>
         </createTable>
 
         <rollback>

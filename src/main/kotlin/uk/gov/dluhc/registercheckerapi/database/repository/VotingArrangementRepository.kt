@@ -4,5 +4,4 @@ import org.springframework.data.jpa.repository.JpaRepository
 import uk.gov.dluhc.registercheckerapi.database.entity.VotingArrangement
 import java.util.UUID
 
-interface VotingArrangementRepository : JpaRepository<VotingArrangement, UUID>{
-}
+interface VotingArrangementRepository : JpaRepository<VotingArrangement, UUID>

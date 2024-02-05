@@ -2,6 +2,7 @@ package uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity
 
 import uk.gov.dluhc.registercheckerapi.database.entity.PersonalDetail
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch
+import uk.gov.dluhc.registercheckerapi.database.entity.VotingArrangement
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
@@ -15,7 +16,9 @@ fun buildRegisterCheckMatch(
     registeredStartDate: LocalDate? = LocalDate.now(),
     registeredEndDate: LocalDate? = LocalDate.now().plusDays(10),
     applicationCreatedAt: Instant = Instant.now(),
-    franchiseCode: String? = ""
+    franchiseCode: String? = "",
+    postalVotingArrangement: VotingArrangement? = null,
+    proxyVotingArrangement: VotingArrangement? = null,
 ) = RegisterCheckMatch(
     id = id,
     emsElectorId = emsElectorId,
@@ -24,7 +27,9 @@ fun buildRegisterCheckMatch(
     registeredStartDate = registeredStartDate,
     registeredEndDate = registeredEndDate,
     applicationCreatedAt = applicationCreatedAt,
-    franchiseCode = franchiseCode
+    franchiseCode = franchiseCode,
+    postalVotingArrangement = postalVotingArrangement,
+    proxyVotingArrangement = proxyVotingArrangement,
 )
 
 fun buildRegisterCheckMatchEntityFromRegisterCheckMatchApi(
@@ -53,6 +58,22 @@ fun buildRegisterCheckMatchEntityFromRegisterCheckMatchApi(
         registeredStartDate = registeredStartDate,
         registeredEndDate = registeredEndDate,
         applicationCreatedAt = applicationCreatedAt?.toInstant()!!,
-        franchiseCode = franchiseCode
+        franchiseCode = franchiseCode,
+        postalVotingArrangement = postalVote?.let {
+            buildVotingArrangement(
+                untilFurtherNotice = it.postalVoteUntilFurtherNotice!!,
+                forSingleDate = it.postalVoteForSingleDate,
+                startDate = it.postalVoteStartDate,
+                endDate = it.postalVoteEndDate,
+            )
+        },
+        proxyVotingArrangement = proxyVote?.let {
+            buildVotingArrangement(
+                untilFurtherNotice = it.proxyVoteUntilFurtherNotice!!,
+                forSingleDate = it.proxyVoteForSingleDate,
+                startDate = it.proxyVoteStartDate,
+                endDate = it.proxyVoteEndDate,
+            )
+        },
     )
 }

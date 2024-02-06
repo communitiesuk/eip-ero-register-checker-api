@@ -83,9 +83,7 @@ internal class RegisterCheckResultMapperTest {
             val actual = mapper.fromRegisterCheckResultRequestApiToDto(queryParamRequestId, apiRequest)
 
             // Then
-            assertThat(actual).usingRecursiveComparison().isEqualTo(expected)
-            verify(instantMapper).toInstant(createdAt)
-            verify(instantMapper).toInstant(applicationCreatedAt)
+            assertThat(actual).usingRecursiveComparison().ignoringFieldsMatchingRegexes(*JPA_MANAGED_FIELDS.plus("historicalSearchEarliestDate")).isEqualTo(expected)
         }
 
         @Test

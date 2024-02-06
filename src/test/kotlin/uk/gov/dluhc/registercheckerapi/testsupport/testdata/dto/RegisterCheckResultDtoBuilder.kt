@@ -4,6 +4,7 @@ import uk.gov.dluhc.registercheckerapi.dto.PersonalDetailDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckMatchDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
+import uk.gov.dluhc.registercheckerapi.dto.VotingArrangementDto
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
@@ -35,7 +36,9 @@ fun buildRegisterCheckMatchDto(
     registeredStartDate: LocalDate? = LocalDate.now().minusDays(1),
     registeredEndDate: LocalDate? = LocalDate.now().plusDays(1),
     applicationCreatedAt: Instant? = Instant.now(),
-    franchiseCode: String = "Franchise123"
+    franchiseCode: String = "Franchise123",
+    postalVote: VotingArrangementDto? = buildVotingArrangementDto(),
+    proxyVote: VotingArrangementDto? = null
 ) = RegisterCheckMatchDto(
     emsElectorId = emsElectorId,
     attestationCount = attestationCount,
@@ -43,5 +46,7 @@ fun buildRegisterCheckMatchDto(
     registeredStartDate = registeredStartDate,
     registeredEndDate = registeredEndDate,
     applicationCreatedAt = applicationCreatedAt,
-    franchiseCode = franchiseCode
+    franchiseCode = franchiseCode,
+    postalVote = postalVote,
+    proxyVote = proxyVote,
 )

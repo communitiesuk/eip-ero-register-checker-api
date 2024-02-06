@@ -19,8 +19,10 @@ import uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildAddressDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPersonalDetailDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildRegisterCheckMatchDto
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildVotingArrangementDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildPersonalDetail
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatch
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildVotingArrangement
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckMatchRequest
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.models.buildRegisterCheckResultRequest
 import java.time.Instant
@@ -197,7 +199,23 @@ internal class RegisterCheckResultMapperTest {
                 registeredStartDate = registerCheckMatchDto.registeredStartDate,
                 registeredEndDate = registerCheckMatchDto.registeredEndDate,
                 applicationCreatedAt = registerCheckMatchDto.applicationCreatedAt!!,
-                franchiseCode = registerCheckMatchDto.franchiseCode
+                franchiseCode = registerCheckMatchDto.franchiseCode,
+                postalVotingArrangement = registerCheckMatchDto.postalVote?.let {
+                    buildVotingArrangement(
+                        untilFurtherNotice = it.untilFurtherNotice,
+                        forSingleDate = it.forSingleDate,
+                        startDate = it.startDate,
+                        endDate = it.endDate,
+                    )
+                },
+                proxyVotingArrangement = registerCheckMatchDto.proxyVote?.let {
+                    buildVotingArrangement(
+                        untilFurtherNotice = it.untilFurtherNotice,
+                        forSingleDate = it.forSingleDate,
+                        startDate = it.startDate,
+                        endDate = it.endDate,
+                    )
+                }
             )
 
             // When
@@ -242,6 +260,22 @@ internal class RegisterCheckResultMapperTest {
             registeredEndDate = rcmApi.registeredEndDate,
             applicationCreatedAt = expectedApplicationCreatedAt,
             franchiseCode = franchiseCode,
+            postalVote = rcmApi.postalVote?.let {
+                buildVotingArrangementDto(
+                    untilFurtherNotice = it.postalVoteUntilFurtherNotice!!,
+                    forSingleDate = it.postalVoteForSingleDate,
+                    startDate = it.postalVoteStartDate,
+                    endDate = it.postalVoteEndDate,
+                )
+            },
+            proxyVote = rcmApi.proxyVote?.let {
+                buildVotingArrangementDto(
+                    untilFurtherNotice = it.proxyVoteUntilFurtherNotice!!,
+                    forSingleDate = it.proxyVoteForSingleDate,
+                    startDate = it.proxyVoteStartDate,
+                    endDate = it.proxyVoteEndDate,
+                )
+            }
         )
     }
 }

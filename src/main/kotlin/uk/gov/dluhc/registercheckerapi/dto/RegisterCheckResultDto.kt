@@ -22,7 +22,9 @@ data class RegisterCheckMatchDto(
     val registeredStartDate: LocalDate?,
     val registeredEndDate: LocalDate?,
     val applicationCreatedAt: Instant?,
-    val franchiseCode: String
+    val franchiseCode: String,
+    val postalVote: VotingArrangementDto?,
+    val proxyVote: VotingArrangementDto?,
 )
 
 enum class RegisterCheckStatus {

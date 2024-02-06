@@ -17,7 +17,7 @@ fun buildRegisterCheckMatch(
     registeredEndDate: LocalDate? = LocalDate.now().plusDays(10),
     applicationCreatedAt: Instant = Instant.now(),
     franchiseCode: String? = "",
-    postalVotingArrangement: VotingArrangement? = null,
+    postalVotingArrangement: VotingArrangement? = buildVotingArrangement(),
     proxyVotingArrangement: VotingArrangement? = null,
 ) = RegisterCheckMatch(
     id = id,

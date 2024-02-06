@@ -29,6 +29,8 @@ abstract class RegisterCheckResultMapper {
     @Mapping(target = "matchCount", source = "apiRequest.registerCheckMatchCount")
     abstract fun fromRegisterCheckResultRequestApiToDto(queryParamRequestId: UUID, apiRequest: RegisterCheckResultRequest): RegisterCheckResultDto
 
+    @Mapping(target = "postalVotingArrangement", source = "postalVote")
+    @Mapping(target = "proxyVotingArrangement", source = "proxyVote")
     abstract fun fromDtoToRegisterCheckMatchEntity(registerCheckMatchDto: RegisterCheckMatchDto): RegisterCheckMatchEntity
 
     @Mapping(target = "personalDetail", source = ".")

@@ -17,7 +17,7 @@ jobs:
         id: get-latest-tag
         uses: oprypin/find-latest-tag@v1
         with:
-          repository: cabinetoffice/eip-ero-register-checker-api
+          repository: communitiesuk/eip-ero-register-checker-api
           prefix: 'v2.'
 
       - name: Bump version tag

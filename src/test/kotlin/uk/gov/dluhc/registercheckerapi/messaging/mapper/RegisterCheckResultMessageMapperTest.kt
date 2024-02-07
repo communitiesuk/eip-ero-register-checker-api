@@ -22,9 +22,11 @@ import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildPersonalDetailWithOptionalFieldsAsNull
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckMatch
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildVotingArrangement
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildRegisterCheckResultMessage
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildVcaRegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildVcaRegisterCheckPersonalDetailSqsFromEntity
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildVcaRegisterCheckVotingArrangementSqsFromEntity
 import java.time.Instant
 import java.time.ZoneOffset
 import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType as SourceTypeSqsEnum
@@ -88,6 +90,16 @@ internal class RegisterCheckResultMessageMapperTest {
                             franchiseCode = franchiseCode ?: "",
                             registeredStartDate = registeredStartDate,
                             registeredEndDate = registeredEndDate,
+                            postalVotingArrangement = postalVotingArrangement?.let {
+                                buildVcaRegisterCheckVotingArrangementSqsFromEntity(
+                                    it
+                                )
+                            },
+                            proxyVotingArrangement = proxyVotingArrangement?.let {
+                                buildVcaRegisterCheckVotingArrangementSqsFromEntity(
+                                    it
+                                )
+                            },
                         )
                     }
                 },
@@ -148,8 +160,8 @@ internal class RegisterCheckResultMessageMapperTest {
             val registerCheck = buildRegisterCheck(
                 status = CheckStatus.MULTIPLE_MATCH,
                 registerCheckMatches = mutableListOf(
-                    buildRegisterCheckMatch(personalDetail = buildPersonalDetailWithOptionalFieldsAsNull()),
-                    buildRegisterCheckMatch(personalDetail = buildPersonalDetailWithOptionalFieldsAsNull()),
+                    buildRegisterCheckMatch(personalDetail = buildPersonalDetailWithOptionalFieldsAsNull(), postalVotingArrangement = buildVotingArrangement()),
+                    buildRegisterCheckMatch(personalDetail = buildPersonalDetailWithOptionalFieldsAsNull(), proxyVotingArrangement = buildVotingArrangement()),
                 ),
                 historicalSearchEarliestDate = null,
             )
@@ -170,6 +182,16 @@ internal class RegisterCheckResultMessageMapperTest {
                             franchiseCode = franchiseCode ?: "",
                             registeredStartDate = registeredStartDate,
                             registeredEndDate = registeredEndDate,
+                            postalVotingArrangement = postalVotingArrangement?.let {
+                                buildVcaRegisterCheckVotingArrangementSqsFromEntity(
+                                    it
+                                )
+                            },
+                            proxyVotingArrangement = proxyVotingArrangement?.let {
+                                buildVcaRegisterCheckVotingArrangementSqsFromEntity(
+                                    it
+                                )
+                            },
                         )
                     }
                 },

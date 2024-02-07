@@ -57,7 +57,6 @@ class RegisterCheckMatch(
         orphanRemoval = true,
         fetch = FetchType.EAGER
     )
-
     @JoinColumn(name = "postal_voting_arrangement", referencedColumnName = "id")
     @NotFound(action = NotFoundAction.IGNORE)
     var postalVotingArrangement: VotingArrangement?,

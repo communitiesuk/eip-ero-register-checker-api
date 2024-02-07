@@ -3,8 +3,10 @@ package uk.gov.dluhc.registercheckerapi.validator
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
+import uk.gov.dluhc.registercheckerapi.exception.Pre1970EarliestSearchException
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckMatchCountMismatchException
 import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
+import java.time.Instant
 
 private val logger = KotlinLogging.logger {}
 
@@ -14,6 +16,16 @@ class RegisterCheckRequestValidator {
     fun validateRequestBody(certificateSerial: String, registerCheckResultDto: RegisterCheckResultDto) {
         validateRequestIdMatch(registerCheckResultDto)
         validateMatchCountWithRegisterCheckMatchList(registerCheckResultDto)
+        validateHistoricSearchEarliestDateIsPost1970(registerCheckResultDto)
+    }
+
+    private fun validateHistoricSearchEarliestDateIsPost1970(registerCheckResultDto: RegisterCheckResultDto) {
+        if (registerCheckResultDto.historicalSearchEarliestDate != null &&
+            registerCheckResultDto.historicalSearchEarliestDate.isBefore(Instant.parse("1970-01-01T00:00:01Z"))
+        ) {
+            throw Pre1970EarliestSearchException(registerCheckResultDto.requestId, registerCheckResultDto.historicalSearchEarliestDate)
+                .also { logger.warn { it.message } }
+        }
     }
 
     private fun validateRequestIdMatch(registerCheckResultDto: RegisterCheckResultDto) {

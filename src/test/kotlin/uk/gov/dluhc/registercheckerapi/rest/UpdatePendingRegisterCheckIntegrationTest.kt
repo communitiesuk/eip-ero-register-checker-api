@@ -639,6 +639,115 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     }
 
     @Test
+    fun `should return bad request given historic search earliest date before 1970`() {
+        // Given
+        val requestId = UUID.randomUUID()
+        val eroId = "camden-city-council"
+        val gssCode = getRandomGssCode()
+        val createdAtFromRequest = "2022-09-13T21:03:03.7788394+05:30"
+        val historicalSearchEarliestDate = OffsetDateTime.parse("1969-12-31T23:59:59Z")
+
+        wireMockService.stubIerApiGetEros(CERT_SERIAL_NUMBER_VALUE, eroId, listOf(gssCode))
+
+        val bodyPayloadAsJson = buildJsonPayloadWithNoMatches(
+            requestId = requestId.toString(),
+            createdAt = createdAtFromRequest,
+            gssCode = gssCode,
+            historicalSearchEarliestDate = historicalSearchEarliestDate,
+        )
+
+        val earliestExpectedTimeStamp = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
+
+        // When
+        val response = webTestClient.post()
+            .uri(buildUri(requestId))
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
+            .contentType(APPLICATION_JSON)
+            .bodyValue(bodyPayloadAsJson)
+            .exchange()
+            .expectStatus()
+            .isBadRequest
+            .returnResult(ErrorResponse::class.java)
+
+        // Then
+        val actual = response.responseBody.blockFirst()
+        assertThat(actual)
+            .hasTimestampNotBefore(earliestExpectedTimeStamp)
+            .hasStatus(400)
+            .hasError("Bad Request")
+            .hasMessage("Request requestId:[$requestId] cannot have historicalSearchEarliestDate:[$historicalSearchEarliestDate] as dates before 1970 UTC are not valid")
+        assertRequestIsAudited(requestId)
+    }
+
+    @Test
+    fun `should return created given a historic search earliest date after 1970`() {
+        // Given
+        val requestId = UUID.randomUUID()
+        val eroId = "camden-city-council"
+        val gssCode = getRandomGssCode()
+        val createdAtFromRequest = "2022-09-13T21:03:03.7788394+05:30"
+
+        wireMockService.stubIerApiGetEros(CERT_SERIAL_NUMBER_VALUE, eroId, listOf(gssCode))
+
+        val savedPendingRegisterCheckEntity = registerCheckRepository.save(
+            buildRegisterCheck(
+                correlationId = requestId,
+                gssCode = gssCode,
+                status = CheckStatus.PENDING,
+                historicalSearch = true,
+                historicalSearchEarliestDate = null,
+            )
+        )
+
+        val expectedMessageContentSentToVca = RegisterCheckResultMessage(
+            sourceType = SourceType.VOTER_MINUS_CARD,
+            sourceReference = savedPendingRegisterCheckEntity.sourceReference,
+            sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
+            registerCheckResult = RegisterCheckResult.NO_MINUS_MATCH,
+            matches = emptyList()
+        )
+
+        val matchCount = 0
+        val bodyPayloadAsJson = buildJsonPayloadWithNoMatches(
+            requestId = requestId.toString(),
+            createdAt = createdAtFromRequest,
+            historicalSearchEarliestDate = OffsetDateTime.parse("1970-01-01T00:00:01Z"),
+            gssCode = gssCode
+        )
+        val matchResultSentAt = OffsetDateTime.parse(createdAtFromRequest)
+
+        // When
+        webTestClient.post()
+            .uri(buildUri(requestId))
+            .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
+            .contentType(APPLICATION_JSON)
+            .bodyValue(bodyPayloadAsJson)
+            .exchange()
+            .expectStatus()
+            .isCreated
+
+        // Then
+        val actualRegisterCheckJpaEntity = registerCheckRepository.findByCorrelationId(requestId)
+        RegisterCheckAssert
+            .assertThat(actualRegisterCheckJpaEntity)
+            .ignoringIdFields()
+            .ignoringDateFields()
+            .hasStatus(CheckStatus.NO_MATCH)
+            .hasMatchResultSentAt(matchResultSentAt.toInstant())
+            .hasMatchCount(matchCount)
+
+        wireMockService.verifyIerGetErosCalledOnce()
+
+        val actualRegisterResultData = registerCheckResultDataRepository.findByCorrelationIdIn(setOf(requestId))[0]
+        assertRequestIsAudited(actualRegisterResultData, requestId, createdAtFromRequest, gssCode, matchCount)
+
+        assertMessageSubmittedToSqs(
+            queueUrl = localStackContainerSettings.mappedQueueUrlConfirmRegisterCheckResult,
+            expectedMessageContentSentToVca
+        )
+    }
+
+    @Test
     fun `should return created given a post request with no matches found`() {
         // Given
         val requestId = UUID.randomUUID()
@@ -849,12 +958,14 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         requestId: String,
         createdAt: String,
         gssCode: String,
+        historicalSearchEarliestDate: OffsetDateTime? = null
     ): String {
         return """
             {
             "requestid": "$requestId",
             "gssCode": "$gssCode",
             "createdAt": "$createdAt",
+            ${if (historicalSearchEarliestDate == null) "" else "\"historicalSearchEarliestDate\": \"$historicalSearchEarliestDate\"," }
             "registerCheckMatchCount": 0
             }
         """.trimIndent()

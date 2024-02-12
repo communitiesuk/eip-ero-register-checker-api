@@ -59,8 +59,8 @@ fun buildVcaRegisterCheckMatchFromMatchApi(match: uk.gov.dluhc.registercheckerap
             franchiseCode = franchiseCode,
             registeredStartDate = registeredStartDate,
             registeredEndDate = registeredEndDate,
-            postalVotingArrangement = postalVote?.let { buildVcaRegisterCheckMatchVotingArrangementFromPostalVoteApi(it) },
-            proxyVotingArrangement = proxyVote?.let { buildVcaRegisterCheckMatchVotingArrangementFromProxyVoteApi(it) },
+            postalVotingArrangement = postalVote?.let(::buildVcaRegisterCheckMatchVotingArrangementFromPostalVoteApi),
+            proxyVotingArrangement = proxyVote?.let(::buildVcaRegisterCheckMatchVotingArrangementFromProxyVoteApi),
         )
     }
 

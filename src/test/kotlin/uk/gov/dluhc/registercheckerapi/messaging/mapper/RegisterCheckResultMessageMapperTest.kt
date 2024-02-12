@@ -178,16 +178,8 @@ internal class RegisterCheckResultMessageMapperTest {
                             franchiseCode = franchiseCode ?: "",
                             registeredStartDate = registeredStartDate,
                             registeredEndDate = registeredEndDate,
-                            postalVotingArrangement = postalVotingArrangement?.let {
-                                buildVcaRegisterCheckVotingArrangementSqsFromEntity(
-                                    it
-                                )
-                            },
-                            proxyVotingArrangement = proxyVotingArrangement?.let {
-                                buildVcaRegisterCheckVotingArrangementSqsFromEntity(
-                                    it
-                                )
-                            },
+                            postalVotingArrangement = postalVotingArrangement?.let(::buildVcaRegisterCheckVotingArrangementSqsFromEntity),
+                            proxyVotingArrangement = proxyVotingArrangement?.let(::buildVcaRegisterCheckVotingArrangementSqsFromEntity),
                         )
                     }
                 },

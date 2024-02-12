@@ -59,20 +59,20 @@ fun buildRegisterCheckMatchEntityFromRegisterCheckMatchApi(
         registeredEndDate = registeredEndDate,
         applicationCreatedAt = applicationCreatedAt?.toInstant()!!,
         franchiseCode = franchiseCode,
-        postalVotingArrangement = postalVote?.let {
+        postalVotingArrangement = postalVote?.run {
             buildVotingArrangement(
-                untilFurtherNotice = it.postalVoteUntilFurtherNotice!!,
-                forSingleDate = it.postalVoteForSingleDate,
-                startDate = it.postalVoteStartDate,
-                endDate = it.postalVoteEndDate,
+                untilFurtherNotice = postalVoteUntilFurtherNotice!!,
+                forSingleDate = postalVoteForSingleDate,
+                startDate = postalVoteStartDate,
+                endDate = postalVoteEndDate,
             )
         },
-        proxyVotingArrangement = proxyVote?.let {
+        proxyVotingArrangement = proxyVote?.run {
             buildVotingArrangement(
-                untilFurtherNotice = it.proxyVoteUntilFurtherNotice!!,
-                forSingleDate = it.proxyVoteForSingleDate,
-                startDate = it.proxyVoteStartDate,
-                endDate = it.proxyVoteEndDate,
+                untilFurtherNotice = proxyVoteUntilFurtherNotice!!,
+                forSingleDate = proxyVoteForSingleDate,
+                startDate = proxyVoteStartDate,
+                endDate = proxyVoteEndDate,
             )
         },
     )

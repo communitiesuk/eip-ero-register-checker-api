@@ -258,20 +258,20 @@ internal class RegisterCheckResultMapperTest {
             registeredEndDate = rcmApi.registeredEndDate,
             applicationCreatedAt = expectedApplicationCreatedAt,
             franchiseCode = franchiseCode,
-            postalVote = rcmApi.postalVote?.let {
+            postalVote = rcmApi.postalVote?.run {
                 buildVotingArrangementDto(
-                    untilFurtherNotice = it.postalVoteUntilFurtherNotice!!,
-                    forSingleDate = it.postalVoteForSingleDate,
-                    startDate = it.postalVoteStartDate,
-                    endDate = it.postalVoteEndDate,
+                    untilFurtherNotice = postalVoteUntilFurtherNotice!!,
+                    forSingleDate = postalVoteForSingleDate,
+                    startDate = postalVoteStartDate,
+                    endDate = postalVoteEndDate,
                 )
             },
-            proxyVote = rcmApi.proxyVote?.let {
+            proxyVote = rcmApi.proxyVote?.run {
                 buildVotingArrangementDto(
-                    untilFurtherNotice = it.proxyVoteUntilFurtherNotice!!,
-                    forSingleDate = it.proxyVoteForSingleDate,
-                    startDate = it.proxyVoteStartDate,
-                    endDate = it.proxyVoteEndDate,
+                    untilFurtherNotice = proxyVoteUntilFurtherNotice!!,
+                    forSingleDate = proxyVoteForSingleDate,
+                    startDate = proxyVoteStartDate,
+                    endDate = proxyVoteEndDate,
                 )
             }
         )

@@ -74,8 +74,8 @@ fun buildRegisterCheckMatchRequest(
 )
 
 fun buildPostalVote(
-    postalVoteUntilFurtherNotice: Boolean = true,
-    postalVoteForSingleDate: LocalDate? = null,
+    postalVoteUntilFurtherNotice: Boolean = false,
+    postalVoteForSingleDate: LocalDate? = faker.date().birthday().toLocalDateTime().toLocalDate(),
     postalVoteStartDate: LocalDate? = null,
     postalVoteEndDate: LocalDate? = null,
 ) = PostalVote(

@@ -25,6 +25,8 @@ class RegisterCheckAssert(private val actualJpaEntity: RegisterCheck?) :
             "personalDetail.id",
             "personalDetail.address.id",
             "correlationId",
+            "postalVotingArrangement.id",
+            "proxyVotingArrangement.id",
         )
         private val DATE_FIELDS = arrayOf(
             "dateCreated",
@@ -32,6 +34,8 @@ class RegisterCheckAssert(private val actualJpaEntity: RegisterCheck?) :
             "personalDetail.address.dateCreated",
             "updatedAt",
             "applicationCreatedAt",
+            "postalVotingArrangement.dateCreated",
+            "proxyVotingArrangement.dateCreated"
         )
 
         fun assertThat(actual: RegisterCheck?): RegisterCheckAssert {

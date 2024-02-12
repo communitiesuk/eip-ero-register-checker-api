@@ -11,6 +11,7 @@ import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckPersonalDet
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType
+import uk.gov.dluhc.registercheckerapi.messaging.models.VotingArrangement
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.DataFaker.Companion.faker
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -38,12 +39,16 @@ fun buildVcaRegisterCheckMatch(
     franchiseCode: String = aValidFranchiseCode(),
     registeredStartDate: LocalDate? = LocalDate.now().minusDays(2),
     registeredEndDate: LocalDate? = LocalDate.now().plusDays(2),
+    postalVotingArrangement: VotingArrangement? = null,
+    proxyVotingArrangement: VotingArrangement? = null,
 ) = RegisterCheckMatch(
     personalDetail,
     emsElectorId = emsElectoralId,
     franchiseCode = franchiseCode,
     registeredStartDate = registeredStartDate,
     registeredEndDate = registeredEndDate,
+    postalVotingArrangement = postalVotingArrangement,
+    proxyVotingArrangement = proxyVotingArrangement,
 )
 
 fun buildVcaRegisterCheckMatchFromMatchApi(match: uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch): RegisterCheckMatch =
@@ -54,6 +59,28 @@ fun buildVcaRegisterCheckMatchFromMatchApi(match: uk.gov.dluhc.registercheckerap
             franchiseCode = franchiseCode,
             registeredStartDate = registeredStartDate,
             registeredEndDate = registeredEndDate,
+            postalVotingArrangement = postalVote?.let(::buildVcaRegisterCheckMatchVotingArrangementFromPostalVoteApi),
+            proxyVotingArrangement = proxyVote?.let(::buildVcaRegisterCheckMatchVotingArrangementFromProxyVoteApi),
+        )
+    }
+
+fun buildVcaRegisterCheckMatchVotingArrangementFromPostalVoteApi(vote: uk.gov.dluhc.registercheckerapi.models.PostalVote) =
+    with(vote) {
+        buildVcaVotingArrangementSqs(
+            untilFurtherNotice = postalVoteUntilFurtherNotice!!,
+            forSingleDate = postalVoteForSingleDate,
+            startDate = postalVoteStartDate,
+            endDate = postalVoteEndDate,
+        )
+    }
+
+fun buildVcaRegisterCheckMatchVotingArrangementFromProxyVoteApi(vote: uk.gov.dluhc.registercheckerapi.models.ProxyVote) =
+    with(vote) {
+        buildVcaVotingArrangementSqs(
+            untilFurtherNotice = proxyVoteUntilFurtherNotice!!,
+            forSingleDate = proxyVoteForSingleDate,
+            startDate = proxyVoteStartDate,
+            endDate = proxyVoteEndDate,
         )
     }
 
@@ -84,6 +111,18 @@ fun buildVcaRegisterCheckPersonalDetailSqs(
     phone = phone,
     email = email,
     address = address
+)
+
+fun buildVcaVotingArrangementSqs(
+    untilFurtherNotice: Boolean,
+    forSingleDate: LocalDate?,
+    startDate: LocalDate?,
+    endDate: LocalDate?,
+) = VotingArrangement(
+    untilFurtherNotice = untilFurtherNotice,
+    forSingleDate = forSingleDate,
+    startDate = startDate,
+    endDate = endDate,
 )
 
 private fun buildVcaRegisterCheckAddressSqs(
@@ -141,6 +180,16 @@ fun buildVcaRegisterCheckPersonalDetailSqsFromEntity(personalDetailEntity: Perso
             phone = phoneNumber,
             email = email,
             address = buildVcaRegisterCheckAddressSqsFromEntity(address)
+        )
+    }
+
+fun buildVcaRegisterCheckVotingArrangementSqsFromEntity(entity: uk.gov.dluhc.registercheckerapi.database.entity.VotingArrangement): VotingArrangement =
+    with(entity) {
+        buildVcaVotingArrangementSqs(
+            untilFurtherNotice = untilFurtherNotice,
+            forSingleDate = forSingleDate,
+            startDate = startDate,
+            endDate = endDate,
         )
     }
 

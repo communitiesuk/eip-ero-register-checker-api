@@ -14,7 +14,7 @@
                     primaryKeyName="voting_arrangement_pkey"
                 />
             </column>
-            <column name="until_further_notice" type="boolean">
+            <column name="until_further_notice" type="bit(1)">
                 <constraints nullable="false"/>
             </column>
             <column name="for_single_date" type="date"/>

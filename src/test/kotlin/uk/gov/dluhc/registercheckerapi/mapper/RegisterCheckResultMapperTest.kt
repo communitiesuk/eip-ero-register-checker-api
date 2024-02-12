@@ -198,20 +198,20 @@ internal class RegisterCheckResultMapperTest {
                 registeredEndDate = registerCheckMatchDto.registeredEndDate,
                 applicationCreatedAt = registerCheckMatchDto.applicationCreatedAt!!,
                 franchiseCode = registerCheckMatchDto.franchiseCode,
-                postalVotingArrangement = registerCheckMatchDto.postalVote?.let {
+                postalVotingArrangement = registerCheckMatchDto.postalVote?.run {
                     buildVotingArrangement(
-                        untilFurtherNotice = it.untilFurtherNotice,
-                        forSingleDate = it.forSingleDate,
-                        startDate = it.startDate,
-                        endDate = it.endDate,
+                        untilFurtherNotice = untilFurtherNotice,
+                        forSingleDate = forSingleDate,
+                        startDate = startDate,
+                        endDate = endDate,
                     )
                 },
-                proxyVotingArrangement = registerCheckMatchDto.proxyVote?.let {
+                proxyVotingArrangement = registerCheckMatchDto.proxyVote?.run {
                     buildVotingArrangement(
-                        untilFurtherNotice = it.untilFurtherNotice,
-                        forSingleDate = it.forSingleDate,
-                        startDate = it.startDate,
-                        endDate = it.endDate,
+                        untilFurtherNotice = untilFurtherNotice,
+                        forSingleDate = forSingleDate,
+                        startDate = startDate,
+                        endDate = endDate,
                     )
                 }
             )

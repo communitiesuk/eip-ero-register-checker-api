@@ -5,7 +5,7 @@ Spring Boot microservice that is :
 
 # External api dependencies
 - Soft-wire IER api 
-- [eip-ero-management-api](https://github.com/cabinetoffice/eip-ero-management-api)
+- [eip-ero-management-api](https://github.com/communitiesuk/eip-ero-management-api)
 
 ## Developer Setup
 ### Kotlin API Developers
@@ -60,7 +60,7 @@ The following environment variables must be set in order to run the application:
 2. `AWS_SECRET_ACCESS_KEY` - the AWS secret access key
 3. `AWS_REGION` - the AWS region
 4. `REQUEST_HEADER_CLIENT_CERT_SERIAL` is the name of header required in request
-5. `API_ERO_MANAGEMENT_URL` - the base URL of the [ERO Management REST API service](https://github.com/cabinetoffice/eip-ero-management-api).
+5. `API_ERO_MANAGEMENT_URL` - the base URL of the [ERO Management REST API service](https://github.com/communitiesuk/eip-ero-management-api).
 6. `API_IER_BASE_URL` - the base URL of the external IER REST API service.
 7. `API_IER_STS_ASSUME_ROLE` - the IAM role in IER's AWS subscription that should be assumed in order to invoke IER REST API services.
 8. `SQS_EMS_CIDR_UPDATE_QUEUE_NAME` is the name of the queue for EMS CIDR update notifications from IER

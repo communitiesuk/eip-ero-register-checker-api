@@ -30,7 +30,7 @@ jobs:
       - name: Send slack notification
         if: ${{ env.CVE_LIST != '' }}
         run: |
-          # Get the project name from the repository - everything after the final slash - eg: "cabinetoffice/eip-ero-portal" -> "eip-ero-portal"
+          # Get the project name from the repository - everything after the final slash - eg: "communitiesuk/eip-ero-portal" -> "eip-ero-portal"
           PROJECT_NAME=$(echo "${{ github.repository }}" | grep -Eo "([^/]+$)")
           # Construct the URL of this run to include in the slack message
           GITHUB_ACTION_RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

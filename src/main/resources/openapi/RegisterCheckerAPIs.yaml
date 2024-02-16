@@ -5,7 +5,7 @@ info:
   description: -|
     Requests checks and responses from EMS systems to validate elector details exists within the EMS.
     For change history see
-    https://github.com/cabinetoffice/eip-ero-register-checker-api/blob/main/src/main/resources/openapi/RegisterCheckerAPIs.yaml
+    https://github.com/communitiesuk/eip-ero-register-checker-api/blob/main/src/main/resources/openapi/RegisterCheckerAPIs.yaml
   contact:
     name: Duncan Elder
     email: Duncan.Elder@levellingup.gov.uk

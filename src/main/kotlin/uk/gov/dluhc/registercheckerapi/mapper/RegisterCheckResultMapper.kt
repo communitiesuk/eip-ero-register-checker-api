@@ -8,6 +8,9 @@ import uk.gov.dluhc.registercheckerapi.dto.AddressDto
 import uk.gov.dluhc.registercheckerapi.dto.PersonalDetailDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckMatchDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
+import uk.gov.dluhc.registercheckerapi.dto.VotingArrangementDto
+import uk.gov.dluhc.registercheckerapi.models.PostalVote
+import uk.gov.dluhc.registercheckerapi.models.ProxyVote
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 import java.util.UUID
@@ -29,6 +32,8 @@ abstract class RegisterCheckResultMapper {
     @Mapping(target = "matchCount", source = "apiRequest.registerCheckMatchCount")
     abstract fun fromRegisterCheckResultRequestApiToDto(queryParamRequestId: UUID, apiRequest: RegisterCheckResultRequest): RegisterCheckResultDto
 
+    @Mapping(target = "postalVotingArrangement", source = "postalVote")
+    @Mapping(target = "proxyVotingArrangement", source = "proxyVote")
     abstract fun fromDtoToRegisterCheckMatchEntity(registerCheckMatchDto: RegisterCheckMatchDto): RegisterCheckMatchEntity
 
     @Mapping(target = "personalDetail", source = ".")
@@ -50,6 +55,18 @@ abstract class RegisterCheckResultMapper {
     @Mapping(target = "area", source = "regarea")
     @Mapping(target = "uprn", source = "reguprn")
     protected abstract fun toAddressDto(registerCheckMatchApi: RegisterCheckMatch): AddressDto
+
+    @Mapping(target = "untilFurtherNotice", source = "postalVoteUntilFurtherNotice")
+    @Mapping(target = "forSingleDate", source = "postalVoteForSingleDate")
+    @Mapping(target = "startDate", source = "postalVoteStartDate")
+    @Mapping(target = "endDate", source = "postalVoteEndDate")
+    protected abstract fun fromPostalVoteToVotingArrangementDto(postalVoteApi: PostalVote): VotingArrangementDto
+
+    @Mapping(target = "untilFurtherNotice", source = "proxyVoteUntilFurtherNotice")
+    @Mapping(target = "forSingleDate", source = "proxyVoteForSingleDate")
+    @Mapping(target = "startDate", source = "proxyVoteStartDate")
+    @Mapping(target = "endDate", source = "proxyVoteEndDate")
+    protected abstract fun fromProxyVoteToVotingArrangementDto(proxyVoteApi: ProxyVote): VotingArrangementDto
 
     @Named("trimAndToUppercase")
     fun trimAndToUppercase(source: String?): String? = StringUtils.toRootUpperCase(StringUtils.trim(source))

@@ -1,6 +1,8 @@
 package uk.gov.dluhc.registercheckerapi.testsupport.testdata.models
 
 import org.apache.commons.lang3.RandomStringUtils
+import uk.gov.dluhc.registercheckerapi.models.PostalVote
+import uk.gov.dluhc.registercheckerapi.models.ProxyVote
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.DataFaker.Companion.faker
@@ -44,7 +46,9 @@ fun buildRegisterCheckMatchRequest(
     registeredStartDate: LocalDate? = LocalDate.now().minusDays(2),
     registeredEndDate: LocalDate? = LocalDate.now().plusDays(2),
     applicationCreatedAt: OffsetDateTime? = OffsetDateTime.now(),
-    franchiseCode: String = "FRANCHISE123"
+    franchiseCode: String = "FRANCHISE123",
+    postalVote: PostalVote? = buildPostalVote(),
+    proxyVote: ProxyVote? = buildProxyVote(),
 ) = RegisterCheckMatch(
     emsElectorId = emsElectorId,
     fn = fn,
@@ -65,6 +69,33 @@ fun buildRegisterCheckMatchRequest(
     registeredEndDate = registeredEndDate,
     applicationCreatedAt = applicationCreatedAt,
     franchiseCode = franchiseCode,
-    postalVote = null,
-    proxyVote = null
+    postalVote = postalVote,
+    proxyVote = proxyVote
+)
+
+fun buildPostalVote(
+    postalVoteUntilFurtherNotice: Boolean = false,
+    postalVoteForSingleDate: LocalDate? = faker.date().birthday().toLocalDateTime().toLocalDate(),
+    postalVoteStartDate: LocalDate? = null,
+    postalVoteEndDate: LocalDate? = null,
+) = PostalVote(
+    postalVoteUntilFurtherNotice = postalVoteUntilFurtherNotice,
+    postalVoteForSingleDate = postalVoteForSingleDate,
+    postalVoteStartDate = postalVoteStartDate,
+    postalVoteEndDate = postalVoteEndDate,
+)
+
+fun buildProxyVote(
+    proxyVoteUntilFurtherNotice: Boolean = true,
+    proxyVoteForSingleDate: LocalDate? = null,
+    proxyVoteStartDate: LocalDate? = null,
+    proxyVoteEndDate: LocalDate? = null,
+) = ProxyVote(
+    proxyfn = faker.name().firstName(),
+    proxyln = faker.name().lastName(),
+    proxystreet = faker.address().streetName(),
+    proxyVoteUntilFurtherNotice = proxyVoteUntilFurtherNotice,
+    proxyVoteForSingleDate = proxyVoteForSingleDate,
+    proxyVoteStartDate = proxyVoteStartDate,
+    proxyVoteEndDate = proxyVoteEndDate,
 )

@@ -21,5 +21,6 @@ interface CheckStatusMapper {
     @ValueMapping(target = "EXPIRED", source = "EXPIRED")
     @ValueMapping(target = "NOT_MINUS_STARTED", source = "NOT_STARTED")
     @ValueMapping(target = MappingConstants.THROW_EXCEPTION, source = "PENDING")
+    @ValueMapping(target = MappingConstants.THROW_EXCEPTION, source = "ARCHIVED")
     fun toRegisterCheckResultEnum(checkStatus: CheckStatus): RegisterCheckResult
 }

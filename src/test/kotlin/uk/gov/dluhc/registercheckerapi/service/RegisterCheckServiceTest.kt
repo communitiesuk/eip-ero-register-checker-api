@@ -284,7 +284,7 @@ internal class RegisterCheckServiceTest {
         @ParameterizedTest
         @EnumSource(
             value = CheckStatus::class,
-            names = ["NO_MATCH", "EXACT_MATCH", "MULTIPLE_MATCH", "TOO_MANY_MATCHES"]
+            names = ["NO_MATCH", "EXACT_MATCH", "MULTIPLE_MATCH", "TOO_MANY_MATCHES", "ARCHIVED"]
         )
         fun `should throw RegisterCheckUnexpectedStatusException when existing register check status is not PENDING`(
             existingCheckStatusInDb: CheckStatus,

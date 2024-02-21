@@ -166,6 +166,7 @@ enum class SourceType {
 
 enum class CheckStatus {
     PENDING,
+    ARCHIVED, // A check can be manually archived if it is no longer needed and unable to be processed by a particular EMS
     NO_MATCH,
     EXACT_MATCH,
     PARTIAL_MATCH, // A single result from the EMS that differs slightly from our elector's details (e.g. different first name)

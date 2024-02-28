@@ -6,8 +6,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
-import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus.EXACT_MATCH
-import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus.PARTIAL_MATCH
+import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus.*
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildAddressDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPersonalDetailDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildRegisterCheckMatchDto
@@ -52,24 +51,12 @@ internal class MatchStatusResolverTest {
     }
 
     @ParameterizedTest
-    @CsvSource(
-        value = [
-            "'',          ,  , EXACT_MATCH", // no franchise code nor start nor end date
-            "' ',         , 2, EXACT_MATCH", // end date is in the future
-            "' ',       -2,  , EXACT_MATCH", // start date is in the past
-            "'   ',     -2, 2, EXACT_MATCH", // start/end dates in past/future means status is EXACT_MATCH
-            "G,         -2, 2, EXACT_MATCH", // franchise code is still not blank nor "PENDING"
-            "PENDING,   -2, 2, PENDING_DETERMINATION", // a franchise code of pending with valid dates means status is PENDING_DETERMINATION
-            "PENDING,     ,  , PENDING_DETERMINATION", // a franchise code of pending with null dates means status is PENDING_DETERMINATION
-            "'',         2, 2, NOT_STARTED", // start date in the future means status is NOT_STARTED
-            "' ',       -2,-2, EXPIRED", // end date in the past means status is EXPIRED
-            "'',         2,-2, NOT_STARTED", // start/end dates in future/past means status is NOT_STARTED
-        ]
-    )
-    fun `should map api to dto for a given registerCheckMatchCount when it is 1 and not a partial match`(
+    @MethodSource("matchDetails")
+    fun `should map api to dto given 1 match and exactly matching personal details`(
         franchiseCode: String,
         relativeRegisteredStartDate: Long?,
         relativeRegisteredEndDate: Long?,
+        isHistoricCheck: Boolean?,
         expectedStatus: RegisterCheckStatus
     ) {
         // Given
@@ -97,7 +84,8 @@ internal class MatchStatusResolverTest {
                     street = personalDetailDto.address.street,
                     postcode = personalDetailDto.address.postcode,
                 )
-            )
+            ),
+            historicalSearch = isHistoricCheck == true,
         )
 
         // When
@@ -251,6 +239,28 @@ internal class MatchStatusResolverTest {
     }
 
     companion object {
+        @JvmStatic
+        private fun matchDetails(): Stream<Arguments> {
+            val twoDaysAgo = -2L
+            val twoDaysFromNow = 2L
+            val emptyFranchiseCode = ""
+            val pendingFranchiseCode = "PENDING"
+            val isHistoricCheck = true
+            return Stream.of(
+                Arguments.of(emptyFranchiseCode, null, null, null, EXACT_MATCH),
+                Arguments.of(emptyFranchiseCode, null, twoDaysFromNow, null, EXACT_MATCH),
+                Arguments.of(emptyFranchiseCode, twoDaysAgo, null, null, EXACT_MATCH),
+                Arguments.of(emptyFranchiseCode, twoDaysAgo, twoDaysFromNow, null, EXACT_MATCH),
+                Arguments.of("G", twoDaysAgo, twoDaysFromNow, null, EXACT_MATCH),
+                Arguments.of(pendingFranchiseCode, twoDaysAgo, twoDaysFromNow, null, PENDING_DETERMINATION),
+                Arguments.of(pendingFranchiseCode, null, null, null, PENDING_DETERMINATION),
+                Arguments.of(emptyFranchiseCode, twoDaysFromNow, twoDaysFromNow, null, NOT_STARTED),
+                Arguments.of(emptyFranchiseCode, twoDaysAgo, twoDaysAgo, null, EXPIRED),
+                Arguments.of(emptyFranchiseCode, twoDaysAgo, twoDaysAgo, isHistoricCheck, EXACT_MATCH),
+                Arguments.of(emptyFranchiseCode, twoDaysFromNow, twoDaysFromNow, null, NOT_STARTED),
+            )
+        }
+
         @JvmStatic
         private fun personalDetails(): Stream<Arguments> {
             val firstName = "David"

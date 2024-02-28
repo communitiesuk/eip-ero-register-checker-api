@@ -38,7 +38,7 @@ class MatchStatusResolver {
     private fun evaluateRegisterCheckStatusWithOneMatch(
         registerCheckMatchDto: RegisterCheckMatchDto,
         personalDetailEntity: PersonalDetail,
-        isHistoricCheck: Boolean = false,
+        isHistoricalSearch: Boolean = false,
     ): RegisterCheckStatus =
         with(registerCheckMatchDto) {
             return if (equalsIgnoreCase(franchiseCode.trim(), "PENDING")) {
@@ -47,7 +47,7 @@ class MatchStatusResolver {
                 val now = LocalDate.now()
                 if (registeredStartDate?.isAfter(now) == true) {
                     RegisterCheckStatus.NOT_STARTED
-                } else if (!isHistoricCheck && registeredEndDate?.isBefore(now) == true) {
+                } else if (!isHistoricalSearch && registeredEndDate?.isBefore(now) == true) {
                     RegisterCheckStatus.EXPIRED
                 } else if (isPartialMatch(registerCheckMatchDto.personalDetail, personalDetailEntity)) {
                     RegisterCheckStatus.PARTIAL_MATCH

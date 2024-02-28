@@ -56,7 +56,7 @@ internal class MatchStatusResolverTest {
         franchiseCode: String,
         relativeRegisteredStartDate: Long?,
         relativeRegisteredEndDate: Long?,
-        isHistoricCheck: Boolean?,
+        isHistoricalSearch: Boolean?,
         expectedStatus: RegisterCheckStatus
     ) {
         // Given
@@ -85,7 +85,7 @@ internal class MatchStatusResolverTest {
                     postcode = personalDetailDto.address.postcode,
                 )
             ),
-            historicalSearch = isHistoricCheck == true,
+            historicalSearch = isHistoricalSearch == true,
         )
 
         // When
@@ -245,7 +245,7 @@ internal class MatchStatusResolverTest {
             val twoDaysFromNow = 2L
             val emptyFranchiseCode = ""
             val pendingFranchiseCode = "PENDING"
-            val isHistoricCheck = true
+            val isHistoricalSearch = true
             return Stream.of(
                 Arguments.of(emptyFranchiseCode, null, null, null, EXACT_MATCH),
                 Arguments.of(emptyFranchiseCode, null, twoDaysFromNow, null, EXACT_MATCH),
@@ -256,7 +256,7 @@ internal class MatchStatusResolverTest {
                 Arguments.of(pendingFranchiseCode, null, null, null, PENDING_DETERMINATION),
                 Arguments.of(emptyFranchiseCode, twoDaysFromNow, twoDaysFromNow, null, NOT_STARTED),
                 Arguments.of(emptyFranchiseCode, twoDaysAgo, twoDaysAgo, null, EXPIRED),
-                Arguments.of(emptyFranchiseCode, twoDaysAgo, twoDaysAgo, isHistoricCheck, EXACT_MATCH),
+                Arguments.of(emptyFranchiseCode, twoDaysAgo, twoDaysAgo, isHistoricalSearch, EXACT_MATCH),
                 Arguments.of(emptyFranchiseCode, twoDaysFromNow, twoDaysFromNow, null, NOT_STARTED),
             )
         }

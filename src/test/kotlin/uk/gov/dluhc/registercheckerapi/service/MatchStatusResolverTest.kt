@@ -8,9 +8,9 @@ import org.junit.jupiter.params.provider.MethodSource
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus.EXACT_MATCH
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus.EXPIRED
+import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus.NOT_STARTED
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus.PARTIAL_MATCH
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus.PENDING_DETERMINATION
-import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus.NOT_STARTED
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildAddressDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPersonalDetailDto
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildRegisterCheckMatchDto

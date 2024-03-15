@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet author="kirsty.land@softwire.com" id="0013_add_correlation_id_index_to_register_check_result_data"
+               context="ddl">
+        <createIndex tableName="register_check_result_data"
+                     indexName="register_check_result_data_correlation_id_idx">
+            <column name="correlation_id"/>
+        </createIndex>
+        <rollback>
+            <dropIndex tableName="register_check_result_data"
+                       indexName="register_check_result_data_correlation_id_idx"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Register Checker APIs
-  version: '2.0.2'
+  version: '2.0.3'
   description: -|
     Requests checks and responses from EMS systems to validate elector details exists within the EMS.
     For change history see
@@ -645,6 +645,7 @@ components:
           maxLength: 500
     ProxyVote:
       type: object
+      description: Details of existing proxy vote arrangement, all fields should be provided if suitable data is available.
       properties:
         proxyVoteUntilFurtherNotice:
           type: boolean
@@ -667,7 +668,6 @@ components:
         proxyfn:
           type: string
           description: First name of the chosen proxy.
-          minLength: 1
           maxLength: 35          
         proxymn:
           type: string
@@ -676,7 +676,6 @@ components:
         proxyln:
           type: string
           description: Last name of the chosen proxy.
-          minLength: 1
           maxLength: 35          
         proxyfamilyrelationship:
           type: string
@@ -706,7 +705,6 @@ components:
           type: string
           example: SW112DR
           description: (Mandatory if UK proxy) The postcode of the address of the chosen proxy as supplied by the applicant.
-          minLength: 1          
           maxLength: 10          
         proxyuprn:
           type: string
@@ -729,8 +727,6 @@ components:
             A free-form text value containing the applicant’s response to the question “please explain why you are not able to go to your polling station on polling day” for the primary form variant or other text for other form variants (see “Proxy Vote reasons” below) (max 500 utf-8 chars)
           maxLength: 500
       required:
-        - proxyfn
-        - proxyln
         - proxystreet
 
   #

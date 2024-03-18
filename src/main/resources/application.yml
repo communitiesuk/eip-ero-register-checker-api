@@ -43,3 +43,13 @@ caching.time-to-live: PT1H
 logging:
   pattern:
     level: "%X{correlationId} %5p"
+
+jobs:
+  enabled: true
+  lock-at-most-for: "PT100M" # Time Period of 100 Minutes
+  register-check-monitoring:
+    enabled: true
+    name: "PendingRegisterCheckMonitoring"
+    cron: "0 0 5 * * *" # Runs at 05:00 daily
+    expected-maximum-pending-period: 24H
+    excluded-gss-codes: "E99999999"

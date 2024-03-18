@@ -107,6 +107,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("com.github.ben-manes.caffeine:caffeine")
 
+    // Scheduling
+    implementation("net.javacrumbs.shedlock:shedlock-spring:4.43.0")
+    implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:4.43.0")
+
     // tests
     testImplementation("software.amazon.awssdk:sqs") // required to send messages to a queue, which we only need to do in test at the moment
     testImplementation("org.springframework.boot:spring-boot-starter-test")

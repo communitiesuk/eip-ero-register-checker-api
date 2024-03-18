@@ -17,6 +17,7 @@ import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckReposito
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckResultDataRepository
 import uk.gov.dluhc.registercheckerapi.database.repository.VotingArrangementRepository
 import uk.gov.dluhc.registercheckerapi.mapper.SourceTypeMapper
+import uk.gov.dluhc.registercheckerapi.testsupport.TestLogAppender
 import uk.gov.dluhc.registercheckerapi.testsupport.WiremockService
 import java.time.Duration
 import javax.sql.DataSource
@@ -95,5 +96,10 @@ internal abstract class IntegrationTest {
         registerCheckRepository.deleteAll()
         votingArrangementRepository.deleteAll()
         cacheManager.getCache(IER_ELECTORAL_REGISTRATION_OFFICES_CACHE)?.clear()
+    }
+
+    @BeforeEach
+    fun clearLogAppender() {
+        TestLogAppender.reset()
     }
 }

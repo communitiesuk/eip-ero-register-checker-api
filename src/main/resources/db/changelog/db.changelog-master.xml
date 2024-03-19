@@ -19,5 +19,6 @@
     <include relativeToChangelogFile="true" file="ddl/0011_add_historical_search_earliest_date_column.xml"/>
     <include relativeToChangelogFile="true" file="ddl/0012_voting_arrangement.xml"/>
     <include relativeToChangelogFile="true" file="ddl/0013_add_correlation_id_index_to_register_check_result_data.xml"/>
+    <include relativeToChangelogFile="true" file="ddl/0014_EROPSPT_207_add_shedlock_table.xml"/>
 
 </databaseChangeLog>

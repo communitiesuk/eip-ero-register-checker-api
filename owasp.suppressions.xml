@@ -1,19 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-    <suppress until="2023-09-07Z">
+    <suppress until="2024-05-03Z">
+        <notes>
+            <![CDATA[file name: jackson-databind-2.13.5.jar]]>
+
+            This vulnerability can cause an OOM error when trying to serialize an object that contains cyclic
+            dependencies. This is not a legitimate attack vector since the object must be crafted in memory by the
+            application itself; this can only arise as a result of developer error and would be caught by automated
+            testing.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
+        <cve>CVE-2023-35116</cve>
+    </suppress>
+    <suppress until="2024-05-03Z">
+        <notes>
+            <![CDATA[file name: spring-web-5.3.27.jar]]>
+
+            This vulnerability relates to parsing untrusted URLs using UriComponentsBuilder. All URLs that we parse
+            come from trusted sources.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-web@.*$</packageUrl>
+        <vulnerabilityName>CVE-2024-22243</vulnerabilityName>
+    </suppress>
+    <suppress until="2024-05-03Z">
+        <notes>
+            <![CDATA[file name: spring-security-core-5.8.5.jar]]>
+            We do not use the method in which the vulnerability exists, AuthenticatedVoter#vote.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security.*$</packageUrl>
+        <vulnerabilityName>CVE-2024-22257</vulnerabilityName>
+    </suppress>
+    <suppress until="2024-09-21Z">
         <notes>
             <![CDATA[ file name: spring-security-crypto-5.7.3.jar]]>
-            The method with the vulnerability is deprecated now, but not removed yet.
-            It will be removed as part of Spring 6.
-            The warning is suppressed until then.
+            This report will be fixed by an upgrade to Spring Boot 3.
+
+            The method with the vulnerability is deprecated now, but not removed yet, and we do not use it.
             https://github.com/spring-projects/spring-security/issues/8980
         </notes>
         <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-crypto@.*$</packageUrl>
         <vulnerabilityName>CVE-2020-5408</vulnerabilityName>
     </suppress>
-    <suppress until="2023-09-07Z">
+    <suppress until="2024-09-21Z">
         <notes>
             <![CDATA[file name: spring-web-5.3.22.jar]]>
+            This report will be fixed by an upgrade to Spring Boot 3.
+
             The vulnerability is on Spring HTTP Invoker, and it is deprecated by Spring, but not removed yet.
             It is not used in our code base and seen as a JVM deserialization issue rather than a Spring one by the Spring team.
             It doesn't look like it will be address any time soon, and since we don't use it, it is suppressed as well.
@@ -23,9 +55,11 @@
         <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-web@.*$</packageUrl>
         <cve>CVE-2016-1000027</cve>
     </suppress>
-    <suppress until="2023-09-07Z">
+    <suppress until="2024-09-21Z">
         <notes>
             <![CDATA[file name: snakeyaml-1.33.jar]]>
+            This report will be fixed by an upgrade to Spring Boot 3.
+
             This vulnerability is on Snakeyaml's Constructor class, where the advice is to use Snakeyaml's SafeConstructor class instead.
             Spring Boot already uses Snakeyaml's SafeConstructor class, and the content of the parsed yaml (application.yml)
             is considered trusted.
@@ -33,5 +67,200 @@
         </notes>
         <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
         <vulnerabilityName>CVE-2022-1471</vulnerabilityName>
+    </suppress>
+    <suppress until="2024-09-21Z">
+        <notes>
+            <![CDATA[file name: ion-java-1.0.2.jar]]>
+            This report will be fixed by an upgrade to Spring Boot 3.
+
+            This vulnerability is a potential denial-of-service attack for applications that use ion-java to deserialize
+            data encoded using the Ion encoding.
+            We do not use the Ion format anywhere in this application; this library is only included as a transitive
+            dependency of the AWS SDK.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/software\.amazon\.ion/ion\-java@.*$</packageUrl>
+        <cve>CVE-2024-21634</cve>
+    </suppress>
+    <suppress until="2024-09-21Z">
+        <notes>
+            <![CDATA[file name: logback-classic-1.2.12.jar]]>
+            This report will be fixed by an upgrade to Spring Boot 3.
+
+            This is a serialization vulnerability in logback-receiver. We do not use receivers or have any remote
+            appenders, so we are not subject to this vulnerability.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/ch\.qos\.logback/logback.*$</packageUrl>
+        <cve>CVE-2023-6378</cve>
+    </suppress>
+    <suppress until="2024-09-21Z">
+        <notes>
+            <![CDATA[file name: logback-classic-1.2.12.jar]]>
+            This report will be fixed by an upgrade to Spring Boot 3.
+
+            This is a serialization vulnerability in logback-receiver. We do not use receivers or have any remote
+            appenders, so we are not subject to this vulnerability.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/ch\.qos\.logback/logback.*$</packageUrl>
+        <cve>CVE-2023-6481</cve>
+    </suppress>
+    <suppress until="2024-09-21Z">
+        <notes>
+            <![CDATA[file name: mysql-connector-j-8.0.33.jar]]>
+            This report will be fixed by an upgrade to Spring Boot 3.
+
+            This vulnerability relies on the cooperation of an internal attacker to allow an external actor to take
+            over a MySQL connection. Any internal attacker with the access required to take part in such an attack
+            could already do much more significant damage without involving an external actor, making this point moot.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/com\.mysql/mysql\-connector\-j@.*$</packageUrl>
+        <cve>CVE-2023-22102</cve>
+    </suppress>
+    <suppress until="2024-09-21Z">
+        <notes>
+            <![CDATA[file name: netty-buffer-4.1.92.Final.jar]]>
+            This report will be fixed by an upgrade to Spring Boot 3.
+
+            This is the well-documented HTTP/2 Rapid Reset attack. Mitigations exist within AWS Shield to detect and
+            defend against this attack. Even so, the attack would be available only to someone with access to ERO
+            credentials and significant technical expertise and resource. Given all of the above, the risk of this
+            attack vector being exploitable is very low.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty.*$</packageUrl>
+        <cve>CVE-2023-44487</cve>
+    </suppress>
+    <suppress until="2024-09-21Z">
+        <notes>
+            <![CDATA[file name: tomcat-embed-core-9.0.75.jar]]>
+            This report will be fixed by an upgrade to Spring Boot 3.
+
+            This is the well-documented HTTP/2 Rapid Reset attack. Mitigations exist within AWS Shield to detect and
+            defend against this attack. Even so, the attack would be available only to someone with access to ERO
+            credentials and significant technical expertise and resource. Given all of the above, the risk of this
+            attack vector being exploitable is very low.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat.*$</packageUrl>
+        <cve>CVE-2023-44487</cve>
+    </suppress>
+    <suppress until="2024-09-21Z">
+        <notes>
+            <![CDATA[file name: reactor-netty-core-1.0.32.jar]]>
+            This report will be fixed by an upgrade to Spring Boot 3.
+
+            This vulnerability relates to Reactor Netty's integration with Micrometer, which we do not use.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/io\.projectreactor\.netty/reactor\-netty.*$</packageUrl>
+        <cve>CVE-2023-34054</cve>
+    </suppress>
+    <suppress until="2024-09-21Z">
+        <notes>
+            <![CDATA[file name: reactor-netty-core-1.0.32.jar]]>
+            This report will be fixed by an upgrade to Spring Boot 3.
+
+            This vulnerability only applies to Reactor Netty servers which are configured to serve static resources.
+            We do not serve static resources. Besides; valid requests are limited to configured API Gateway endpoints.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/io\.projectreactor\.netty/reactor\-netty.*$</packageUrl>
+        <cve>CVE-2023-34062</cve>
+    </suppress>
+    <suppress until="2024-09-21Z">
+        <notes>
+            <![CDATA[file name: spring-boot-2.7.12.jar]]>
+            This report will be fixed by an upgrade to Spring Boot 3.
+
+            This vulnerability has in fact been revoked; perhaps the scanner is not up-to-date.
+            https://security.snyk.io/vuln/SNYK-JAVA-ORGSPRINGFRAMEWORKBOOT-6091929
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework\.boot/spring\-boot.*$</packageUrl>
+        <cve>CVE-2023-34055</cve>
+    </suppress>
+    <suppress until="2024-09-21Z">
+        <notes>
+            <![CDATA[file name: spring-security-config-5.8.5.jar]]>
+            This report will be fixed by an upgrade to Spring Boot 3.
+
+            This vulnerability relates to a configuration file having overlay-lax permissions in the server's
+            filesystem. There are no known exploits taking advantage of this fact.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security.*$</packageUrl>
+        <cve>CVE-2023-34042</cve>
+    </suppress>
+    <suppress until="2024-09-21Z">
+        <notes>
+            <![CDATA[file name: tomcat-embed-core-9.0.75.jar]]>
+            This report will be fixed by an upgrade to Spring Boot 3.
+
+            This vulnerability is a potential request smuggling attack when a Tomcat server sits behind a reverse
+            proxy. It is caused by improper validation on HTTP trailer headers. This is mitigated in our architecture
+            by only allowing specific headers through API Gateway.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed.*$</packageUrl>
+        <cve>CVE-2023-46589</cve>
+    </suppress>
+    <suppress until="2024-09-21Z">
+        <notes>
+            <![CDATA[file name: tomcat-embed-core-9.0.75.jar]]>
+            This report will be fixed by an upgrade to Spring Boot 3.
+
+            This vulnerability only affects servers which use FORM authentication on the default web application. We do
+            not use FORM authentication.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed.*$</packageUrl>
+        <cve>CVE-2023-41080</cve>
+    </suppress>
+    <suppress until="2024-09-21Z">
+        <notes>
+            <![CDATA[file name: tomcat-embed-core-9.0.75.jar]]>
+            This report will be fixed by an upgrade to Spring Boot 3.
+
+            This vulnerability only affects Windows servers; our servers run in Linux containers.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed.*$</packageUrl>
+        <cve>CVE-2023-42794</cve>
+    </suppress>
+    <suppress until="2024-09-21Z">
+        <notes>
+            <![CDATA[file name: tomcat-embed-core-9.0.75.jar]]>
+            This report will be fixed by an upgrade to Spring Boot 3.
+
+            A bug in Tomcat may sometimes lead to data leaking between requests. This does not appear to be deliberately
+            exploitable by an attacker.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed.*$</packageUrl>
+        <cve>CVE-2023-42795</cve>
+    </suppress>
+    <suppress until="2024-09-21Z">
+        <notes>
+            <![CDATA[file name: tomcat-embed-core-9.0.75.jar]]>
+            This report will be fixed by an upgrade to Spring Boot 3.
+
+            This vulnerability is a potential request smuggling attack when a Tomcat server sits behind a reverse
+            proxy. It is caused by improper validation on HTTP trailer headers. This is mitigated in our architecture
+            by only allowing specific headers through API Gateway.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed.*$</packageUrl>
+        <cve>CVE-2023-45648</cve>
+    </suppress>
+    <suppress until="2024-09-21Z">
+        <notes>
+            <![CDATA[file name: netty-buffer-4.1.92.Final.jar]]>
+            This report will be fixed by an upgrade to Spring Boot 3.
+
+            This vulnerability can cause an OOM error; 16MB of memory is allocated for each TLS Handshake. If malicious
+            clients idle during the handshake this can cause the heap to be exhausted.
+            We are using API Gateway as a reverse proxy, so this attack is not possible in our architecture.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty.*$</packageUrl>
+        <cve>CVE-2023-34462</cve>
+    </suppress>
+    <suppress until="2024-09-21Z">
+        <notes>
+            <![CDATA[file name: spring-security-config-5.7.8.jar]]>
+            This report will be fixed by an upgrade to Spring Boot 3.
+
+            This vulnerability applies only to WebFlux applications which use "**" in the Spring Security
+            configuration; we do not use this pattern.
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security.*$</packageUrl>
+        <cve>CVE-2023-34034</cve>
     </suppress>
 </suppressions>

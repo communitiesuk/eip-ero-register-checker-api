@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet author="stephen.penney@softwire.com" id="0015_add_status_gss_code_index_to_register_check"
+               context="ddl">
+
+        <!-- While it looks like this index was added as part of 0001_register_check the yaml -->
+        <!-- is not correctly formatted and the createIndex lines were all ignored when ran   -->
+        <createIndex tableName="register_check"
+                     indexName="register_check_status_gss_code_idx">
+            <column name="status"/>
+            <column name="gss_code"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex tableName="register_check"
+                       indexName="register_check_status_gss_code_idx"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

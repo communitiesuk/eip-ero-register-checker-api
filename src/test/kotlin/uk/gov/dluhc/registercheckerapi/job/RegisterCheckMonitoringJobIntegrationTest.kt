@@ -78,31 +78,31 @@ internal class RegisterCheckMonitoringJobIntegrationTest : IntegrationTest() {
                 "A total of 3 register checks have been pending for more than PT24H.",
                 Level.INFO
             )
-        )
+        ).isTrue
         assertThat(
             TestLogAppender.hasLog(
                 "The gss code $GSS_CODE_1 has 2 register checks that have been pending for more than PT24H.",
                 Level.INFO
             )
-        )
+        ).isTrue
         assertThat(
             TestLogAppender.hasLog(
                 "The gss code $GSS_CODE_2 has 1 register checks that have been pending for more than PT24H.",
                 Level.INFO
             )
-        )
+        ).isTrue
         assertThat(
             TestLogAppender.hasNoLogMatchingRegex(
                 "The gss code $EXCLUDED_GSS_CODE *",
                 Level.INFO
             )
-        )
+        ).isTrue
         assertThat(
             TestLogAppender.hasNoLogMatchingRegex(
                 "The gss code $GSS_CODE_3 *",
                 Level.INFO
             )
-        )
+        ).isTrue
     }
 
     private fun List<RegisterCheck>.setDateCreatedBeforeOneDayAgo() {

@@ -3,6 +3,7 @@ package uk.gov.dluhc.registercheckerapi.rest
 import com.fasterxml.jackson.databind.ObjectMapper
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus.CREATED
+import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.CrossOrigin
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.dluhc.registercheckerapi.exception.OptimisticLockingFailureException
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMapper
 import uk.gov.dluhc.registercheckerapi.models.PendingRegisterChecksResponse
@@ -72,6 +74,13 @@ class RegisterCheckerController(
         registerCheckRequestValidator.validateRequestBody(certificateSerial, registerCheckResultDto)
 
         logger.debug("Post request body validation successful for EMS certificateSerial=[$certificateSerial] with requestId=[$requestId]")
-        registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto)
+
+        try {
+            registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto)
+        } catch (e: ObjectOptimisticLockingFailureException) {
+            throw (OptimisticLockingFailureException(registerCheckResultDto.correlationId)).also {
+                logger.warn { "Register check with correlationId:[${registerCheckResultDto.correlationId}] had an optimistic locking failure" }
+            }
+        }
     }
 }

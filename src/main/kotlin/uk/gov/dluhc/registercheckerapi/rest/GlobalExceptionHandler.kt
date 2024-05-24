@@ -17,6 +17,7 @@ import uk.gov.dluhc.registercheckerapi.client.IerApiException
 import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
 import uk.gov.dluhc.registercheckerapi.config.ApiRequestErrorAttributes
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
+import uk.gov.dluhc.registercheckerapi.exception.OptimisticLockingFailureException
 import uk.gov.dluhc.registercheckerapi.exception.PendingRegisterCheckNotFoundException
 import uk.gov.dluhc.registercheckerapi.exception.Pre1970EarliestSearchException
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckMatchCountMismatchException
@@ -75,8 +76,8 @@ class GlobalExceptionHandler(
         return populateErrorResponseAndHandleExceptionInternal(e, HttpStatus.BAD_REQUEST, request)
     }
 
-    @ExceptionHandler(value = [RegisterCheckUnexpectedStatusException::class])
-    fun handleRegisterCheckUnexpectedStatusException(
+    @ExceptionHandler(value = [RegisterCheckUnexpectedStatusException::class, OptimisticLockingFailureException::class])
+    fun handleExceptionReturnConflictResponse(
         e: RuntimeException,
         request: WebRequest
     ): ResponseEntity<Any?>? {

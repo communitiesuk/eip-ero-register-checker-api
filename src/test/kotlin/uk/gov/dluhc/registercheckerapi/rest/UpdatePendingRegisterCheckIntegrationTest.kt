@@ -10,7 +10,9 @@ import org.awaitility.kotlin.await
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType.APPLICATION_JSON
+import org.springframework.test.web.reactive.server.FluxExchangeResult
 import reactor.core.publisher.Mono
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
@@ -36,6 +38,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.UUID
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 private const val REQUEST_HEADER_NAME = "client-cert-serial"
@@ -442,6 +445,64 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             queueUrl = localStackContainerSettings.mappedQueueUrlConfirmRegisterCheckResult,
             sourceReferenceNotExpected = savedPendingRegisterCheckEntity.sourceReference
         )
+    }
+
+    @Test
+    fun `should return conflict given optimistic locking failure`() {
+        // Given
+        val requestId = UUID.fromString("14f66386-a86e-4dbc-af52-3327834f33d1")
+        val eroId = "camden-city-council"
+        val firstGssCode = "E12345678"
+        val secondGssCode = "E98764532"
+        val gssCodes = listOf(firstGssCode, secondGssCode)
+
+        wireMockService.stubIerApiGetEros(CERT_SERIAL_NUMBER_VALUE, eroId, gssCodes)
+
+        registerCheckRepository.save(
+            buildRegisterCheck(
+                correlationId = requestId,
+                gssCode = firstGssCode,
+                status = CheckStatus.PENDING,
+            )
+        )
+
+        val earliestExpectedTimeStamp = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
+
+        val responses = mutableListOf<FluxExchangeResult<ErrorResponse>>()
+
+        // When
+        // To force optimistic locking failure, two concurrent requests need to be run on separate threads
+        val executor = Executors.newFixedThreadPool(2)
+        for (i in 1..2) {
+            executor.execute {
+                responses.add(
+                    webTestClient.post()
+                        .uri(buildUri(requestId))
+                        .header(REQUEST_HEADER_NAME, CERT_SERIAL_NUMBER_VALUE)
+                        .contentType(APPLICATION_JSON)
+                        .body(
+                            Mono.just(buildRegisterCheckResultRequest(requestId = requestId, registerCheckMatchCount = 1)),
+                            RegisterCheckResultRequest::class.java
+                        )
+                        .exchange()
+                        .returnResult(ErrorResponse::class.java)
+                )
+            }
+        }
+        executor.shutdown()
+        executor.awaitTermination(1, TimeUnit.MINUTES)
+
+        // One should be created and the other should error. This filters to just get the error and ignore the request that succeeded
+        val notCreatedResponses = responses.filter { it.status != HttpStatus.CREATED }
+
+        // Then
+        assertThat(notCreatedResponses).hasSize(1)
+        val actual = notCreatedResponses.first().responseBody.blockFirst()
+        assertThat(actual)
+            .hasTimestampNotBefore(earliestExpectedTimeStamp)
+            .hasStatus(409)
+            .hasError("Conflict")
+            .hasMessage("Register check with requestid:[14f66386-a86e-4dbc-af52-3327834f33d1] has an optimistic locking failure")
     }
 
     @Test

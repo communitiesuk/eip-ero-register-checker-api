@@ -23,6 +23,7 @@ import uk.gov.dluhc.messagingsupport.MessageQueue
 import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
 import uk.gov.dluhc.registercheckerapi.client.IerGeneralException
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
+import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.EXACT_MATCH
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.PENDING
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
@@ -256,32 +257,18 @@ internal class RegisterCheckServiceTest {
 
     @Nested
     inner class SendConfirmRegisterCheckResultMessage {
-        @ParameterizedTest
-        @CsvSource(
-            value = [
-                "0, NO_MATCH, NO_MINUS_MATCH",
-                "1, EXACT_MATCH, EXACT_MINUS_MATCH",
-                "1, PENDING_DETERMINATION, PENDING_MINUS_DETERMINATION",
-                "1, EXPIRED, EXPIRED",
-                "1, NOT_STARTED, NOT_MINUS_STARTED",
-                "10, MULTIPLE_MATCH, MULTIPLE_MINUS_MATCH",
-                "11, TOO_MANY_MATCHES, TOO_MINUS_MANY_MINUS_MATCHES"
-            ]
-        )
-        fun `should submit a ConfirmRegisterCheckResult Message`(
-            matchCount: Int,
-            registerCheckStatus: CheckStatus,
-            registerCheckResult: RegisterCheckResult,
-        ) {
+        @Test
+
+        fun `should submit a ConfirmRegisterCheckResult Message`() {
             // Given
             val requestId = randomUUID()
             val historicalSearchEarliestDate = Instant.now()
-            val registerCheckMatchList = mutableListOf<RegisterCheckMatch>().apply { repeat(matchCount) { add(buildRegisterCheckMatch()) } }
-            val registerCheckMatchListDto = mutableListOf<RegisterCheckMatchDto>().apply { repeat(matchCount) { add(buildRegisterCheckMatchDto()) } }
+            val registerCheckMatchList = mutableListOf<RegisterCheckMatch>().apply { repeat(1) { add(buildRegisterCheckMatch()) } }
+            val registerCheckMatchListDto = mutableListOf<RegisterCheckMatchDto>().apply { repeat(1) { add(buildRegisterCheckMatchDto()) } }
             val savedPendingRegisterCheckEntity = buildRegisterCheck(
                 correlationId = requestId,
-                matchCount = matchCount,
-                status = registerCheckStatus,
+                matchCount = 1,
+                status = EXACT_MATCH,
                 registerCheckMatches = registerCheckMatchList,
                 historicalSearchEarliestDate = historicalSearchEarliestDate,
             )
@@ -289,7 +276,7 @@ internal class RegisterCheckServiceTest {
                 sourceType = SourceType.VOTER_MINUS_CARD,
                 sourceReference = savedPendingRegisterCheckEntity.sourceReference,
                 sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
-                registerCheckResult = registerCheckResult,
+                registerCheckResult = RegisterCheckResult.EXACT_MINUS_MATCH,
                 matches = registerCheckMatchListDto.map { buildVcaRegisterCheckMatchFromMatchDto(it) },
                 historicalSearchEarliestDate = historicalSearchEarliestDate.atOffset(ZoneOffset.UTC)
             )

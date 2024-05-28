@@ -65,15 +65,18 @@ class RegisterCheckService(
     }
 
     @Transactional
-    fun updatePendingRegisterCheck(certificateSerial: String, registerCheckResultDto: RegisterCheckResultDto) {
+    fun updatePendingRegisterCheck(certificateSerial: String, registerCheckResultDto: RegisterCheckResultDto): RegisterCheck {
         validateGssCodeMatch(certificateSerial, registerCheckResultDto.gssCode)
-        val registerCheck = getPendingRegisterCheck(registerCheckResultDto.correlationId).apply {
+        return getPendingRegisterCheck(registerCheckResultDto.correlationId).apply {
             when (status) {
                 CheckStatus.PENDING -> recordCheckResult(registerCheckResultDto, this)
                 else -> throw RegisterCheckUnexpectedStatusException(correlationId, status)
                     .also { logger.warn { "Register check with correlationId:[$correlationId] is in status [$status] and cannot be set to [${registerCheckResultDto.registerCheckStatus}]" } }
             }
         }
+    }
+
+    fun sendConfirmRegisterCheckResultMessage(registerCheck: RegisterCheck) {
         with(registerCheckResultMessageMapper.fromRegisterCheckEntityToRegisterCheckResultMessage(registerCheck)) {
             logger.info {
                 "Publishing ConfirmRegisterCheckResultMessage with sourceType:[$sourceType], sourceReferenceApplicationId:[$sourceReference], " +

@@ -503,6 +503,8 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .hasStatus(409)
             .hasError("Conflict")
             .hasMessage("Register check with requestid:[14f66386-a86e-4dbc-af52-3327834f33d1] has an optimistic locking failure")
+
+        assertExactlyOneMessageSentToSqs(localStackContainerSettings.mappedQueueUrlConfirmRegisterCheckResult)
     }
 
     @Test
@@ -945,6 +947,13 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             assertThat(sqsMessages).anyMatch {
                 assertRegisterCheckResultMessage(it, expectedMessageContent)
             }
+        }
+    }
+
+    private fun assertExactlyOneMessageSentToSqs(queueUrl: String) {
+        await.atMost(5, TimeUnit.SECONDS).untilAsserted {
+            val sqsMessages: List<Message> = getLatestSqsMessagesFromQueue(queueUrl)
+            assertThat(sqsMessages.size).isEqualTo(1)
         }
     }
 

@@ -23,7 +23,9 @@ import uk.gov.dluhc.messagingsupport.MessageQueue
 import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
 import uk.gov.dluhc.registercheckerapi.client.IerGeneralException
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
+import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.EXACT_MATCH
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.PENDING
+import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckResultDataRepository
@@ -254,6 +256,44 @@ internal class RegisterCheckServiceTest {
     }
 
     @Nested
+    inner class SendConfirmRegisterCheckResultMessage {
+        @Test
+
+        fun `should submit a ConfirmRegisterCheckResult Message`() {
+            // Given
+            val requestId = randomUUID()
+            val historicalSearchEarliestDate = Instant.now()
+            val registerCheckMatchList = mutableListOf<RegisterCheckMatch>().apply { repeat(1) { add(buildRegisterCheckMatch()) } }
+            val registerCheckMatchListDto = mutableListOf<RegisterCheckMatchDto>().apply { repeat(1) { add(buildRegisterCheckMatchDto()) } }
+            val savedPendingRegisterCheckEntity = buildRegisterCheck(
+                correlationId = requestId,
+                matchCount = 1,
+                status = EXACT_MATCH,
+                registerCheckMatches = registerCheckMatchList,
+                historicalSearchEarliestDate = historicalSearchEarliestDate,
+            )
+            val expectedMessage = buildRegisterCheckResultMessage(
+                sourceType = SourceType.VOTER_MINUS_CARD,
+                sourceReference = savedPendingRegisterCheckEntity.sourceReference,
+                sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
+                registerCheckResult = RegisterCheckResult.EXACT_MINUS_MATCH,
+                matches = registerCheckMatchListDto.map { buildVcaRegisterCheckMatchFromMatchDto(it) },
+                historicalSearchEarliestDate = historicalSearchEarliestDate.atOffset(ZoneOffset.UTC)
+            )
+
+            given(registerCheckResultMessageMapper.fromRegisterCheckEntityToRegisterCheckResultMessage(any())).willReturn(expectedMessage)
+            given(messageQueueResolver.getTargetQueueForSourceType(any())).willReturn(confirmRegisterCheckResultMessageQueue)
+
+            // When
+            registerCheckService.sendConfirmRegisterCheckResultMessage(savedPendingRegisterCheckEntity)
+
+            // Then
+            verify(registerCheckResultMessageMapper).fromRegisterCheckEntityToRegisterCheckResultMessage(savedPendingRegisterCheckEntity)
+            verify(confirmRegisterCheckResultMessageQueue).submit(expectedMessage)
+        }
+    }
+
+    @Nested
     inner class UpdatePendingRegisterCheck {
 
         @Test
@@ -329,7 +369,7 @@ internal class RegisterCheckServiceTest {
                 "11, TOO_MANY_MATCHES, TOO_MINUS_MANY_MINUS_MATCHES"
             ]
         )
-        fun `should update pending register check successfully and submit a ConfirmRegisterCheckResult Message`(
+        fun `should update pending register check successfully`(
             matchCount: Int,
             registerCheckStatus: RegisterCheckStatus,
             registerCheckResult: RegisterCheckResult,
@@ -355,31 +395,19 @@ internal class RegisterCheckServiceTest {
                 correlationId = requestId,
                 status = PENDING
             )
-            val expectedMessage = buildRegisterCheckResultMessage(
-                sourceType = SourceType.VOTER_MINUS_CARD,
-                sourceReference = savedPendingRegisterCheckEntity.sourceReference,
-                sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
-                registerCheckResult = registerCheckResult,
-                matches = registerCheckResultDto.registerCheckMatches!!.map { buildVcaRegisterCheckMatchFromMatchDto(it) },
-                historicalSearchEarliestDate = historicalSearchEarliestDate.atOffset(ZoneOffset.UTC)
-            )
 
             given(retrieveGssCodeService.getGssCodeFromCertificateSerial(any())).willReturn(listOf(matchingGssCode, otherGssCode))
             given(registerCheckRepository.findByCorrelationId(any())).willReturn(savedPendingRegisterCheckEntity)
             registerCheckMatchDtoList.forEach {
                 given(registerCheckResultMapper.fromDtoToRegisterCheckMatchEntity(it)).willReturn(buildRegisterCheckMatch())
             }
-            given(registerCheckResultMessageMapper.fromRegisterCheckEntityToRegisterCheckResultMessage(any())).willReturn(expectedMessage)
             given(matchStatusResolver.resolveStatus(any(), any())).willReturn(registerCheckStatus)
-            given(messageQueueResolver.getTargetQueueForSourceType(any())).willReturn(confirmRegisterCheckResultMessageQueue)
 
             // When
             registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto)
 
             // Then
             verify(registerCheckRepository).findByCorrelationId(requestId)
-            verify(registerCheckResultMessageMapper).fromRegisterCheckEntityToRegisterCheckResultMessage(savedPendingRegisterCheckEntity)
-            verify(confirmRegisterCheckResultMessageQueue).submit(expectedMessage)
             verify(matchStatusResolver).resolveStatus(registerCheckResultDto, savedPendingRegisterCheckEntity)
             registerCheckMatchDtoList.forEach { verify(registerCheckResultMapper).fromDtoToRegisterCheckMatchEntity(it) }
             verify(retrieveGssCodeService).getGssCodeFromCertificateSerial(certificateSerial)

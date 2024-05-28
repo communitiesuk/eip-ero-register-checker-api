@@ -76,7 +76,8 @@ class RegisterCheckerController(
         logger.debug("Post request body validation successful for EMS certificateSerial=[$certificateSerial] with requestId=[$requestId]")
 
         try {
-            registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto)
+            val registerCheck = registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto)
+            registerCheckService.sendConfirmRegisterCheckResultMessage(registerCheck)
         } catch (e: ObjectOptimisticLockingFailureException) {
             throw (OptimisticLockingFailureException(registerCheckResultDto.correlationId)).also {
                 logger.warn { "Register check with correlationId:[${registerCheckResultDto.correlationId}] had an optimistic locking failure" }

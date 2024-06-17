@@ -16,7 +16,8 @@ on:
         default: register-checker-api-repo
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    # Pin to ubuntu 22.04 for as long as we manually install a specific Docker version
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
 
@@ -37,6 +38,21 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+
+      # https://github.com/spring-projects/spring-boot/issues/39323
+      # Spring Boot 2 has a bug in the way it installs buildpacks which is
+      # not compatible with Docker versions >= 25.
+      - name: Install Docker version 24 for compatibility with Spring Boot 2
+        run: |
+          VERSION_STRING=5:24.0.9-1~ubuntu.22.04~jammy
+          sudo apt-get update
+          sudo apt-get install -y ca-certificates curl
+          sudo install -m 0755 -d /etc/apt/keyrings
+          sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+          sudo chmod a+r /etc/apt/keyrings/docker.asc
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install -y --allow-downgrades docker-ce=$VERSION_STRING docker-ce-cli=$VERSION_STRING containerd.io docker-buildx-plugin docker-compose-plugin      
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-image

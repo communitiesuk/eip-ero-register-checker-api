@@ -133,6 +133,7 @@ paths:
         uri: ${base_uri}/registerchecks
         requestParameters:
           integration.request.header.client-cert-serial: "context.authorizer.client-cert-serial"
+          integration.request.header.x-request-id: context.requestId
         connectionType: VPC_LINK
         connectionId: ${vpc_connection_id}
         httpMethod: GET
@@ -251,6 +252,7 @@ paths:
         requestParameters:
           integration.request.path.requestid: "method.request.path.requestid"
           integration.request.header.client-cert-serial: "context.authorizer.client-cert-serial"
+          integration.request.header.x-request-id: context.requestId
         connectionType: VPC_LINK
         connectionId: ${vpc_connection_id}
         httpMethod: POST

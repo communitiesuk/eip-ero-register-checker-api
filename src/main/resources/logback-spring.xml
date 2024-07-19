@@ -21,6 +21,8 @@
                     </stackTrace>
                     <mdc>
                         <includeMdcKeyName>correlationId</includeMdcKeyName>
+                        <includeMdcKeyName>requestId</includeMdcKeyName>
+                        <includeMdcKeyName>messageId</includeMdcKeyName>
                     </mdc>
                     <globalCustomFields>
                         <customFields>{"service": {"name":"${service_name}"}, "host_name":"${HOSTNAME}"}</customFields>

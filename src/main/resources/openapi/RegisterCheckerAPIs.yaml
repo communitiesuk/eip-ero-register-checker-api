@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Register Checker APIs
-  version: '2.0.3'
+  version: '2.0.4'
   description: -|
     Requests checks and responses from EMS systems to validate elector details exists within the EMS.
     For change history see
@@ -133,6 +133,7 @@ paths:
         uri: ${base_uri}/registerchecks
         requestParameters:
           integration.request.header.client-cert-serial: "context.authorizer.client-cert-serial"
+          integration.request.header.x-request-id: context.requestId
         connectionType: VPC_LINK
         connectionId: ${vpc_connection_id}
         httpMethod: GET
@@ -251,6 +252,7 @@ paths:
         requestParameters:
           integration.request.path.requestid: "method.request.path.requestid"
           integration.request.header.client-cert-serial: "context.authorizer.client-cert-serial"
+          integration.request.header.x-request-id: context.requestId
         connectionType: VPC_LINK
         connectionId: ${vpc_connection_id}
         httpMethod: POST

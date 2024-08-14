@@ -95,6 +95,8 @@ dependencies {
 
     // AWS dependencies (that are defined in the BOM "software.amazon.awssdk")
     implementation("software.amazon.awssdk:sts")
+    // email
+    implementation("software.amazon.awssdk:ses")
 
     // messaging
     implementation("org.springframework:spring-messaging")

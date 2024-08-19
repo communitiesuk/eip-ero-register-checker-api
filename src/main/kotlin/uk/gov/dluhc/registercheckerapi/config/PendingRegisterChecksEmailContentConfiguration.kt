@@ -10,7 +10,7 @@ import org.springframework.core.io.ClassPathResource
  */
 @ConfigurationProperties(prefix = "email.pending-register-checks-content")
 @ConstructorBinding
-class EmailContentConfiguration(
+class PendingRegisterChecksEmailContentConfiguration(
     val subject: String,
     emailBodyTemplate: String,
     val recipients: String

@@ -11,7 +11,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import uk.gov.dluhc.email.EmailClient
-import uk.gov.dluhc.registercheckerapi.config.EmailContentConfiguration
+import uk.gov.dluhc.registercheckerapi.config.PendingRegisterChecksEmailContentConfiguration
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckSummaryByGssCode
 
 @ExtendWith(MockitoExtension::class)
@@ -38,7 +38,10 @@ internal class EmailServiceTest {
         @Test
         fun `should successfully send a register check monitoring email`() {
             // Given
-            val expectedRecipients = setOf("test@email.com")
+            val expectedRecipients = setOf(
+                "test1@email.com",
+                "test2@email.com",
+            )
             val expectedSubject = "Register Check Monitoring"
 
             val expectedEmailBody = "<!DOCTYPE html>\n" +
@@ -72,10 +75,10 @@ internal class EmailServiceTest {
                 "</html>"
 
             // When
-            val emailContentConfiguration = buildEmailContentConfiguration(
+            val emailContentConfiguration = buildPendingRegisterChecksEmailContentConfiguration(
                 expectedSubject,
                 "email-templates/pending-register-checks.html",
-                "test@email.com"
+                "test1@email.com,test2@email.com"
             )
             emailService = EmailService(emailClient, emailContentConfiguration)
             emailService.sendRegisterCheckMonitoringEmail(
@@ -101,11 +104,11 @@ internal class EmailServiceTest {
             verifyNoMoreInteractions(emailClient)
         }
 
-        private fun buildEmailContentConfiguration(
+        private fun buildPendingRegisterChecksEmailContentConfiguration(
             subject: String,
             emailBodyTemplate: String,
             recipients: String
-        ) = EmailContentConfiguration(
+        ) = PendingRegisterChecksEmailContentConfiguration(
             subject,
             emailBodyTemplate,
             recipients

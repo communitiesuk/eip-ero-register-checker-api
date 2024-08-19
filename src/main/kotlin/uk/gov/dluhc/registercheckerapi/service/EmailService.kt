@@ -3,13 +3,13 @@ package uk.gov.dluhc.registercheckerapi.service
 import liquibase.repackaged.org.apache.commons.text.StringSubstitutor.replace
 import org.springframework.stereotype.Service
 import uk.gov.dluhc.email.EmailClient
-import uk.gov.dluhc.registercheckerapi.config.EmailContentConfiguration
+import uk.gov.dluhc.registercheckerapi.config.PendingRegisterChecksEmailContentConfiguration
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckSummaryByGssCode
 
 @Service
 class EmailService(
     private val emailClient: EmailClient,
-    private val emailContentConfiguration: EmailContentConfiguration
+    private val pendingRegisterChecksEmailContentConfiguration: PendingRegisterChecksEmailContentConfiguration
 ) {
     fun sendRegisterCheckMonitoringEmail(
         stuckRegisterCheckSummaries: List<RegisterCheckSummaryByGssCode>,
@@ -23,7 +23,7 @@ class EmailService(
             "pendingRegisterCheckResultsHtml" to pendingRegisterCheckResultsHtml,
         )
 
-        with(emailContentConfiguration) {
+        with(pendingRegisterChecksEmailContentConfiguration) {
             val emailToRecipients: Set<String> = recipients.split(",").map { it.trim() }.toSet()
             val emailHtmlBody = replace(emailBody, substitutionVariables)
 

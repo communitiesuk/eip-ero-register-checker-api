@@ -1,4 +1,4 @@
-package uk.gov.dluhc.votercardapplicationsapi.service
+package uk.gov.dluhc.registercheckerapi.service
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
@@ -10,9 +10,8 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
-import uk.gov.dluhc.emailnotifications.SesEmailClient
+import uk.gov.dluhc.email.EmailClient
 import uk.gov.dluhc.registercheckerapi.config.EmailContentConfiguration
-import uk.gov.dluhc.registercheckerapi.service.EmailService
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckSummaryByGssCode
 
 @ExtendWith(MockitoExtension::class)
@@ -20,7 +19,7 @@ internal class EmailServiceTest {
     private lateinit var emailService: EmailService
 
     @Mock
-    private lateinit var sesEmailClient: SesEmailClient
+    private lateinit var emailClient: EmailClient
 
     companion object {
         private const val GSS_CODE_1 = "E00000001"
@@ -78,7 +77,7 @@ internal class EmailServiceTest {
                 "email-templates/pending-register-checks.html",
                 "test@email.com"
             )
-            emailService = EmailService(sesEmailClient, emailContentConfiguration)
+            emailService = EmailService(emailClient, emailContentConfiguration)
             emailService.sendRegisterCheckMonitoringEmail(
                 stuckRegisterCheckSummaries = EXPECTED_STUCK_REGISTER_CHECK_SUMMARIES,
                 totalStuck = EXPECTED_TOTAL_STUCK_APPLICATIONS,
@@ -87,7 +86,7 @@ internal class EmailServiceTest {
 
             // Then
             argumentCaptor<String>().apply {
-                verify(sesEmailClient).send(
+                verify(emailClient).send(
                     eq(expectedRecipients),
                     eq(emptySet()),
                     eq(expectedSubject),
@@ -99,7 +98,7 @@ internal class EmailServiceTest {
                 assertThat(capturedEmailBody).matches(expectedBody)
             }
 
-            verifyNoMoreInteractions(sesEmailClient)
+            verifyNoMoreInteractions(emailClient)
         }
 
         private fun buildEmailContentConfiguration(

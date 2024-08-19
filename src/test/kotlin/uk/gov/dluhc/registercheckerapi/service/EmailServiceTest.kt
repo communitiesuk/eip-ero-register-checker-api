@@ -10,7 +10,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
-import uk.gov.dluhc.email.SesEmailClient
+import uk.gov.dluhc.emailnotifications.SesEmailClient
 import uk.gov.dluhc.registercheckerapi.config.EmailContentConfiguration
 import uk.gov.dluhc.registercheckerapi.service.EmailService
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckSummaryByGssCode

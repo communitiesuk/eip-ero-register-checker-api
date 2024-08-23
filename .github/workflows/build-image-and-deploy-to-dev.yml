@@ -32,7 +32,7 @@ jobs:
           tag=${{ steps.bump-semver.outputs.new_version }}
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          git tag -a "${tag}" -m "${{ github.event.head_commit.message }}"
+          git tag "${tag}"
           git push origin "${tag}"
 
   build-and-push:

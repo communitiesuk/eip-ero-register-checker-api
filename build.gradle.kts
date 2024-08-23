@@ -69,6 +69,7 @@ dependencies {
     // internal libs
     implementation("uk.gov.dluhc:logging-library:2.3.1")
     implementation("uk.gov.dluhc:messaging-support-library:1.0.0")
+    implementation("uk.gov.dluhc:email-client:1.0.0")
 
     // api
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -95,6 +96,8 @@ dependencies {
 
     // AWS dependencies (that are defined in the BOM "software.amazon.awssdk")
     implementation("software.amazon.awssdk:sts")
+    // email
+    implementation("software.amazon.awssdk:ses")
 
     // messaging
     implementation("org.springframework:spring-messaging")

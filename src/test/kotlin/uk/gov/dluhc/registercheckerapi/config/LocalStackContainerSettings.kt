@@ -17,6 +17,7 @@ data class LocalStackContainerSettings(
     val mappedQueueUrlProxyVoteConfirmRegisterCheckResult: String = toMappedUrl(queueUrlProxyVoteConfirmRegisterCheckResult, apiUrl)
     val mappedQueueUrlOverseasVoteConfirmRegisterCheckResult: String = toMappedUrl(queueUrlOverseasVoteConfirmRegisterCheckResult, apiUrl)
     val mappedQueueUrlRemoveRegisterCheckData: String = toMappedUrl(queueUrlRemoveRegisterCheckData, apiUrl)
+    val sesMessagesUrl = "$apiUrl/_localstack/ses"
 
     private fun toMappedUrl(rawUrlString: String, apiUrlString: String): String {
         val rawUrl = URI.create(rawUrlString)

@@ -47,3 +47,13 @@ jobs:
   register-check-monitoring:
     expected-maximum-pending-period: 24H
     excluded-gss-codes: "E99999999"
+    send-email: true
+
+email:
+  client:
+    sender: sender@domain.com
+  pending-register-checks-content:
+    subject: "Register Check Monitoring"
+    email-body-template: email-templates/pending-register-checks.html
+    recipients: recipient1@domain.com,recipient2@domain.com
+

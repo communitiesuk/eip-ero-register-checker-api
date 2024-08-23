@@ -53,3 +53,12 @@ jobs:
     cron: "0 0 5 * * *" # Runs at 05:00 daily
     expected-maximum-pending-period: 24H
     excluded-gss-codes: "E99999999"
+    send-email: true
+
+email:
+  client:
+    sender: ${REGISTER_CHECK_MONITORING_SENDING_EMAIL_ADDRESS}
+  pending-register-checks-content:
+    subject: "Register Check Monitoring"
+    email-body-template: email-templates/pending-register-checks.html
+    recipients: ${REGISTER_CHECK_MONITORING_RECIPIENTS}

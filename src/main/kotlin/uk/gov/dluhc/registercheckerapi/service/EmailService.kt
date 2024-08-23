@@ -39,10 +39,10 @@ class EmailService(
 fun generatePendingRegisterCheckResultsHtml(stuckRegisterCheckSummaries: List<RegisterCheckSummaryByGssCode>): String {
     return stuckRegisterCheckSummaries.joinToString(separator = "\n") { summary ->
         """
-        <tr>
-            <td>${summary.gssCode}</td>
-            <td>${summary.registerCheckCount}</td>
-        </tr>
-        """.trimIndent()
+            <tr>
+                <td>${summary.gssCode}</td>
+                <td>${summary.registerCheckCount}</td>
+            </tr>
+        """.trimMargin()
     }
 }

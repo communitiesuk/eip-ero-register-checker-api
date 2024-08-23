@@ -2,48 +2,25 @@ package uk.gov.dluhc.registercheckerapi.job
 
 import ch.qos.logback.classic.Level
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.testcontainers.shaded.org.apache.commons.lang3.RandomUtils
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
-import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckSummaryByGssCode
-import uk.gov.dluhc.registercheckerapi.service.EmailService
-import uk.gov.dluhc.registercheckerapi.service.RegisterCheckMonitoringService
 import uk.gov.dluhc.registercheckerapi.testsupport.TestLogAppender
+import uk.gov.dluhc.registercheckerapi.testsupport.emails.buildLocalstackEmailMessage
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
-import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckSummaryByGssCode
-import java.time.Duration
 import java.time.Instant
+import java.time.OffsetDateTime
 import java.time.Period
+import java.time.ZoneOffset.UTC
+import java.time.temporal.ChronoUnit
 
 internal class RegisterCheckMonitoringJobIntegrationTest : IntegrationTest() {
 
     @Autowired
     protected lateinit var registerCheckMonitoringJob: RegisterCheckMonitoringJob
-
-    @Mock
-    private lateinit var emailService: EmailService
-
-    @BeforeEach
-    fun setupMocks() {
-        val service = RegisterCheckMonitoringService(
-            registerCheckRepository,
-            emailService,
-            Duration.ofHours(24),
-            listOf(EXCLUDED_GSS_CODE),
-            true
-        )
-        registerCheckMonitoringJob = RegisterCheckMonitoringJob(service)
-    }
 
     companion object {
         private const val EXCLUDED_GSS_CODE = "E99999999"
@@ -52,6 +29,45 @@ internal class RegisterCheckMonitoringJobIntegrationTest : IntegrationTest() {
         private const val GSS_CODE_3 = "E00000003"
         private const val EXPECTED_TOTAL_STUCK_APPLICATIONS = "3"
         private const val EXPECTED_MAXIMUM_PENDING_PERIOD = "PT24H"
+
+        private const val SENDERS_EMAIL_ADDRESS = "sender@domain.com"
+        private const val EMAIL_SUBJECT = "Register Check Monitoring"
+        private val RECIPIENTS = setOf(
+            "recipient1@domain.com",
+            "recipient2@domain.com"
+        )
+
+        private const val EMAIL_BODY = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pending register checks</title>
+</head>
+<body>
+    <p>A total of $EXPECTED_TOTAL_STUCK_APPLICATIONS register checks have been pending for more than $EXPECTED_MAXIMUM_PENDING_PERIOD.</p>
+    <br>
+    <table>
+        <thead>
+        <tr>
+            <th>GSS code</th>
+            <th>Register check count</th>
+        </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>$GSS_CODE_1</td>
+                <td>2</td>
+            </tr>
+            <tr>
+                <td>$GSS_CODE_2</td>
+                <td>1</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
+"""
     }
 
     @Test
@@ -73,8 +89,6 @@ internal class RegisterCheckMonitoringJobIntegrationTest : IntegrationTest() {
             setDateCreatedAfterOneDayAgo()
             registerCheckRepository.saveAll(this)
         }
-
-        Mockito.doNothing().`when`(emailService).sendRegisterCheckMonitoringEmail(any(), any(), any())
 
         // When
         registerCheckMonitoringJob.monitorPendingRegisterChecks()
@@ -132,24 +146,17 @@ internal class RegisterCheckMonitoringJobIntegrationTest : IntegrationTest() {
             registerCheckRepository.saveAll(this)
         }
 
-        val captor = argumentCaptor<List<RegisterCheckSummaryByGssCode>>()
-        Mockito.doNothing().`when`(emailService).sendRegisterCheckMonitoringEmail(any(), any(), any())
-
-        // When
-        registerCheckMonitoringJob.monitorPendingRegisterChecks()
-
-        // Assert
-        verify(emailService).sendRegisterCheckMonitoringEmail(
-            captor.capture(),
-            eq(EXPECTED_TOTAL_STUCK_APPLICATIONS),
-            eq(EXPECTED_MAXIMUM_PENDING_PERIOD)
+        val expectedEmailRequest = buildLocalstackEmailMessage(
+            emailSender = SENDERS_EMAIL_ADDRESS,
+            toAddresses = RECIPIENTS,
+            subject = EMAIL_SUBJECT,
+            htmlBody = EMAIL_BODY.trimIndent(),
+            timestamp = OffsetDateTime.now(UTC).toLocalDateTime().truncatedTo(ChronoUnit.SECONDS)
         )
 
-        val actualPendingChecks = captor.firstValue
-        assertThat(actualPendingChecks)
-            .usingRecursiveComparison()
-            .ignoringCollectionOrder()
-            .isEqualTo(expectedPendingChecks)
+        registerCheckMonitoringJob.monitorPendingRegisterChecks()
+
+        assertEmailSent(expectedEmailRequest)
     }
 
     private fun List<RegisterCheck>.setDateCreatedBeforeOneDayAgo() {
@@ -194,10 +201,5 @@ internal class RegisterCheckMonitoringJobIntegrationTest : IntegrationTest() {
         buildRegisterCheck(gssCode = GSS_CODE_2, status = CheckStatus.PENDING),
         buildRegisterCheck(gssCode = GSS_CODE_3, status = CheckStatus.PENDING),
         buildRegisterCheck(gssCode = GSS_CODE_3, status = CheckStatus.EXACT_MATCH),
-    )
-
-    val expectedPendingChecks: List<RegisterCheckSummaryByGssCode> = listOf(
-        buildRegisterCheckSummaryByGssCode(gssCode = GSS_CODE_1, registerCheckCount = 2),
-        buildRegisterCheckSummaryByGssCode(gssCode = GSS_CODE_2, registerCheckCount = 1),
     )
 }

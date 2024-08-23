@@ -3,6 +3,8 @@ package uk.gov.dluhc.registercheckerapi.config
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.zaxxer.hikari.HikariDataSource
+import org.apache.commons.lang3.StringUtils.deleteWhitespace
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -19,6 +21,8 @@ import uk.gov.dluhc.registercheckerapi.database.repository.VotingArrangementRepo
 import uk.gov.dluhc.registercheckerapi.mapper.SourceTypeMapper
 import uk.gov.dluhc.registercheckerapi.testsupport.TestLogAppender
 import uk.gov.dluhc.registercheckerapi.testsupport.WiremockService
+import uk.gov.dluhc.registercheckerapi.testsupport.emails.EmailMessagesSentClient
+import uk.gov.dluhc.registercheckerapi.testsupport.emails.LocalstackEmailMessage
 import java.time.Duration
 import javax.sql.DataSource
 
@@ -38,6 +42,9 @@ internal abstract class IntegrationTest {
 
     @Autowired
     protected lateinit var wireMockService: WiremockService
+
+    @Autowired
+    protected lateinit var emailMessagesSentClient: EmailMessagesSentClient
 
     @Autowired
     protected lateinit var registerCheckRepository: RegisterCheckRepository
@@ -101,5 +108,21 @@ internal abstract class IntegrationTest {
     @BeforeEach
     fun clearLogAppender() {
         TestLogAppender.reset()
+    }
+
+    protected fun assertEmailSent(expected: LocalstackEmailMessage) {
+        with(emailMessagesSentClient.getEmailMessagesSent(localStackContainerSettings.sesMessagesUrl)) {
+            val foundMessage = messages.any {
+                !it.timestamp.isBefore(expected.timestamp) &&
+                    it.destination.toAddresses.toSet() == expected.destination.toAddresses.toSet() &&
+                    it.subject == expected.subject &&
+                    deleteWhitespace(it.body.htmlPart) == deleteWhitespace(expected.body.htmlPart) &&
+                    it.body.textPart == expected.body.textPart &&
+                    it.source == expected.source
+            }
+            assertThat(foundMessage)
+                .`as` { "failed to find expectedEmailMessage[$expected], in list of messages[$messages]" }
+                .isTrue
+        }
     }
 }

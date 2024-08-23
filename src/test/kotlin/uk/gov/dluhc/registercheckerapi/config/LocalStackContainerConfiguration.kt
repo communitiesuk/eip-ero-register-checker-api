@@ -1,6 +1,7 @@
 package uk.gov.dluhc.registercheckerapi.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.util.TestPropertyValues
@@ -14,8 +15,12 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.ses.SesClient
 import software.amazon.awssdk.services.sts.StsClient
+import java.net.InetAddress
 import java.net.URI
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * Configuration class exposing beans for the LocalStack (AWS) environment.
@@ -46,10 +51,12 @@ class LocalStackContainerConfiguration {
             DockerImageName.parse("localstack/localstack:1.1.0")
         ).withEnv(
             mapOf(
-                "SERVICES" to "sqs,sts",
+                "SERVICES" to "sqs,sts,ses",
                 "AWS_DEFAULT_REGION" to region
             )
         ).withExposedPorts(DEFAULT_PORT)
+            .withReuse(true)
+            .withCreateContainerCmdModifier { it.withName("register-checker-api-integration-test-localstack") }
             .apply {
                 start()
             }
@@ -59,13 +66,14 @@ class LocalStackContainerConfiguration {
     @Primary
     fun localStackStsClient(
         @Qualifier("localstackContainer") localStackContainer: GenericContainer<*>,
+        @Value("\${cloud.aws.region.static}") region: String,
         awsCredentialsProvider: AwsCredentialsProvider
     ): StsClient {
 
         val uri = URI.create("http://${localStackContainer.host}:${localStackContainer.getMappedPort(DEFAULT_PORT)}")
         return StsClient.builder()
             .credentialsProvider(awsCredentialsProvider)
-            .region(Region.EU_WEST_2)
+            .region(Region.of(region))
             .endpointOverride(uri)
             .build()
     }
@@ -117,6 +125,43 @@ class LocalStackContainerConfiguration {
             objectMapper.readValue(it, Map::class.java)
         }.let {
             it["QueueUrl"] as String
+        }
+    }
+
+    fun GenericContainer<*>.getEndpointOverride(): URI? {
+        // resolve IP address and use that as the endpoint so that path-style access is automatically used for S3/SES
+        val ipAddress = InetAddress.getByName(host).hostAddress
+        val mappedPort = getMappedPort(DEFAULT_PORT)
+        return URI("http://$ipAddress:$mappedPort")
+    }
+
+    @Bean
+    @Primary
+    fun configureEmailIdentityAndExposeEmailClient(
+        @Qualifier("localstackContainer") localStackContainer: GenericContainer<*>,
+        @Value("\${cloud.aws.region.static}") region: String,
+        awsBasicCredentialsProvider: AwsCredentialsProvider,
+        emailClientProperties: EmailClientProperties,
+    ): SesClient {
+        localStackContainer.verifyEmailIdentity(emailClientProperties.sender)
+
+        return SesClient.builder()
+            .region(Region.of(region))
+            .credentialsProvider(awsBasicCredentialsProvider)
+            .applyMutation { builder -> builder.endpointOverride(localStackContainer.getEndpointOverride()) }
+            .build()
+    }
+
+    private fun GenericContainer<*>.verifyEmailIdentity(emailAddress: String) {
+        val execInContainer = execInContainer(
+            "awslocal", "ses", "verify-email-identity", "--email-address", emailAddress
+        )
+        if (execInContainer.exitCode == 0) {
+            logger.info { "verified email identity: $emailAddress" }
+        } else {
+            logger.error { "failed to create email identity: $emailAddress" }
+            logger.error { "failed to create email identity[stdout]: ${execInContainer.stdout}" }
+            logger.error { "failed to create email identity[stderr]: ${execInContainer.stderr}" }
         }
     }
 }

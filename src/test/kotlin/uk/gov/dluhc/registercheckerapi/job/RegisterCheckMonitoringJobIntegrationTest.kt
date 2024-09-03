@@ -29,6 +29,7 @@ internal class RegisterCheckMonitoringJobIntegrationTest : IntegrationTest() {
         private const val GSS_CODE_3 = "E00000003"
         private const val EXPECTED_TOTAL_STUCK_APPLICATIONS = "3"
         private const val EXPECTED_MAXIMUM_PENDING_PERIOD = "PT24H"
+        private const val EXPECTED_MAXIMUM_PENDING_HOURS = "24"
 
         private const val SENDERS_EMAIL_ADDRESS = "sender@domain.com"
         private const val EMAIL_SUBJECT = "Register Check Monitoring"
@@ -45,7 +46,7 @@ internal class RegisterCheckMonitoringJobIntegrationTest : IntegrationTest() {
     <title>Pending register checks</title>
 </head>
 <body>
-    <p>A total of $EXPECTED_TOTAL_STUCK_APPLICATIONS register checks have been pending for more than $EXPECTED_MAXIMUM_PENDING_PERIOD.</p>
+    <p>A total of $EXPECTED_TOTAL_STUCK_APPLICATIONS register checks have been pending for more than $EXPECTED_MAXIMUM_PENDING_HOURS hours.</p>
     <br>
     <table>
         <thead>

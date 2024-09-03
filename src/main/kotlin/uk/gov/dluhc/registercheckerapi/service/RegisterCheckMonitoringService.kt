@@ -37,10 +37,12 @@ class RegisterCheckMonitoringService(
         }
 
         if (sendEmail) {
+            val expectedMaximumPendingHours = expectedMaximumPendingPeriod.toHours().toString()
+
             emailService.sendRegisterCheckMonitoringEmail(
                 stuckRegisterCheckSummaries,
                 totalStuck = totalStuck.toString(),
-                expectedMaximumPendingPeriod = expectedMaximumPendingPeriod.toString(),
+                expectedMaximumPendingPeriod = "$expectedMaximumPendingHours hours",
             )
         }
     }

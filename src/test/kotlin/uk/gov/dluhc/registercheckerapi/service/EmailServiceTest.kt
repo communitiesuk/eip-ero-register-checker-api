@@ -25,7 +25,7 @@ internal class EmailServiceTest {
         private const val GSS_CODE_1 = "E00000001"
         private const val GSS_CODE_2 = "E00000002"
         private const val EXPECTED_TOTAL_STUCK_APPLICATIONS = "3"
-        private const val EXPECTED_MAXIMUM_PENDING_PERIOD = "PT24H"
+        private const val EXPECTED_MAXIMUM_PENDING_PERIOD = "24 hours"
         private val EXPECTED_STUCK_REGISTER_CHECK_SUMMARIES = listOf(
             buildRegisterCheckSummaryByGssCode(gssCode = GSS_CODE_1, registerCheckCount = 2),
             buildRegisterCheckSummaryByGssCode(gssCode = GSS_CODE_2, registerCheckCount = 1),

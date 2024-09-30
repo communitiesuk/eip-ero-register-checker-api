@@ -6,16 +6,16 @@ import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 import java.lang.ProcessBuilder.Redirect
 
 plugins {
-    id("org.springframework.boot") version "2.7.12"
-    id("io.spring.dependency-management") version "1.1.0"
-    kotlin("jvm") version "1.8.22"
-    kotlin("kapt") version "1.8.22"
-    kotlin("plugin.spring") version "1.8.22"
-    kotlin("plugin.jpa") version "1.8.22"
-    kotlin("plugin.allopen") version "1.8.22"
+    id("org.springframework.boot") version "3.3.4"
+    id("io.spring.dependency-management") version "1.1.3"
+    kotlin("jvm") version "1.9.24"
+    kotlin("kapt") version "1.9.24"
+    kotlin("plugin.spring") version "1.9.24"
+    kotlin("plugin.jpa") version "1.9.24"
+    kotlin("plugin.allopen") version "1.9.24"
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
     id("org.jlleitschuh.gradle.ktlint-idea") version "11.0.0"
-    id("org.openapi.generator") version "6.2.1"
+    id("org.openapi.generator") version "7.0.1"
     id("org.owasp.dependencycheck") version "8.2.1"
 }
 
@@ -23,9 +23,8 @@ group = "uk.gov.dluhc"
 version = "latest"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
-ext["snakeyaml.version"] = "1.33"
-extra["awsSdkVersion"] = "2.18.9"
-extra["springCloudVersion"] = "2.4.2"
+extra["awsSdkVersion"] = "2.26.20"
+extra["springCloudAwsVersion"] = "3.1.1"
 
 allOpen {
     annotations("javax.persistence.Entity", "javax.persistence.MappedSuperclass", "javax.persistence.Embedabble")
@@ -62,19 +61,19 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
     implementation("org.apache.commons:commons-lang3:3.12.0")
-    implementation("org.apache.httpcomponents:httpclient:4.5.14")
-    implementation("org.mapstruct:mapstruct:1.5.3.Final")
-    kapt("org.mapstruct:mapstruct-processor:1.5.3.Final")
+    implementation("org.mapstruct:mapstruct:1.5.5.Final")
+    kapt("org.mapstruct:mapstruct-processor:1.5.5.Final")
 
     // internal libs
-    implementation("uk.gov.dluhc:logging-library:2.3.1")
-    implementation("uk.gov.dluhc:messaging-support-library:1.0.0")
+    implementation("uk.gov.dluhc:logging-library:3.0.3")
+    implementation("uk.gov.dluhc:messaging-support-library:2.2.0")
     implementation("uk.gov.dluhc:email-client:1.0.0")
 
     // api
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springdoc:springdoc-openapi-ui:1.6.14")
+    implementation("io.swagger.core.v3:swagger-annotations:2.2.7")
+    implementation("org.springframework:spring-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
     // Logging
@@ -87,11 +86,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.liquibase:liquibase-core")
-    implementation("com.vladmihalcea:hibernate-types-55:2.21.1")
 
     // mysql
     runtimeOnly("com.mysql:mysql-connector-j")
-    runtimeOnly("software.aws.rds:aws-mysql-jdbc:1.1.1")
+    runtimeOnly("software.aws.rds:aws-mysql-jdbc:1.1.10")
     runtimeOnly("software.amazon.awssdk:rds")
 
     // AWS dependencies (that are defined in the BOM "software.amazon.awssdk")
@@ -101,10 +99,13 @@ dependencies {
 
     // messaging
     implementation("org.springframework:spring-messaging")
-    implementation("io.awspring.cloud:spring-cloud-starter-aws-messaging")
+    implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:${property("springCloudAwsVersion")}"))
+    implementation("io.awspring.cloud:spring-cloud-aws-starter")
+    implementation("io.awspring.cloud:spring-cloud-aws-starter-sqs")
+    implementation("io.awspring.cloud:spring-cloud-aws-starter-s3")
 
     // AWS signer using SDK V2 library is available at https://mvnrepository.com/artifact/io.github.acm19/aws-request-signing-apache-interceptor/2.1.1
-    implementation("io.github.acm19:aws-request-signing-apache-interceptor:2.1.1")
+    implementation("io.github.acm19:aws-request-signing-apache-interceptor:2.3.1")
 
     // caching
     implementation("org.springframework.boot:spring-boot-starter-cache")
@@ -118,20 +119,13 @@ dependencies {
     testImplementation("software.amazon.awssdk:sqs") // required to send messages to a queue, which we only need to do in test at the moment
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
-    testImplementation("com.github.tomakehurst:wiremock-jre8:2.35.0")
+    testImplementation("org.wiremock:wiremock-standalone:3.9.1")
     testImplementation("net.datafaker:datafaker:1.7.0")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.17.6")
-    testImplementation("org.testcontainers:testcontainers:1.17.6")
-    testImplementation("org.testcontainers:mysql:1.17.6")
+    testImplementation("org.testcontainers:junit-jupiter:1.19.8")
+    testImplementation("org.testcontainers:testcontainers:1.19.8")
+    testImplementation("org.testcontainers:mysql:1.19.8")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
-}
-
-dependencyManagement {
-    imports {
-        mavenBom("software.amazon.awssdk:bom:${property("awsSdkVersion")}")
-        mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:${property("springCloudVersion")}")
-    }
 }
 
 tasks.withType<KotlinCompile> {
@@ -164,9 +158,9 @@ tasks.withType<GenerateTask> {
     configOptions.set(
         mapOf(
             "dateLibrary" to "java8",
-            "serializationLibrary" to "jackson",
             "enumPropertyNaming" to "UPPERCASE",
             "useBeanValidation" to "true",
+            "useSpringBoot3" to "true",
         )
     )
 }
@@ -201,10 +195,12 @@ tasks.withType<KtLintCheckTask> {
 }
 
 tasks.withType<BootBuildImage> {
-    environment = mapOf("BP_HEALTH_CHECKER_ENABLED" to "true")
-    buildpacks = listOf(
-        "urn:cnb:builder:paketo-buildpacks/java",
-        "gcr.io/paketo-buildpacks/health-checker",
+    environment.set(mapOf("BP_HEALTH_CHECKER_ENABLED" to "true"))
+    buildpacks.set(
+        listOf(
+            "urn:cnb:builder:paketo-buildpacks/java",
+            "gcr.io/paketo-buildpacks/health-checker",
+        )
     )
 }
 
@@ -220,6 +216,7 @@ kapt {
         arg("mapstruct.defaultComponentModel", "spring")
         arg("mapstruct.unmappedTargetPolicy", "IGNORE")
     }
+    correctErrorTypes = true
 }
 
 fun String.runCommand(): String {

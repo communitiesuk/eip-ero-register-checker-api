@@ -1,11 +1,15 @@
 package uk.gov.dluhc.registercheckerapi.config
 
-import com.amazonaws.services.sqs.AmazonSQSAsync
-import com.fasterxml.jackson.databind.ObjectMapper
-import io.awspring.cloud.messaging.core.QueueMessagingTemplate
+import io.awspring.cloud.sqs.operations.SqsTemplate
+import io.awspring.cloud.sqs.support.converter.SqsMessagingMessageConverter
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.DependsOn
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
+import uk.gov.dluhc.messagingsupport.MessageQueue
+import uk.gov.dluhc.messagingsupport.MessagingConfigurationHelper
+import uk.gov.dluhc.registercheckerapi.messaging.stubs.TestSqsMessage
 
 @Configuration
 class SqsSenderConfiguration {
@@ -23,8 +27,13 @@ class SqsSenderConfiguration {
     @Bean
     @DependsOn("localStackContainerSqsSettings")
     fun sqsMessagingTemplate(
-        amazonSQSAsync: AmazonSQSAsync,
-        objectMapper: ObjectMapper
-    ): QueueMessagingTemplate =
-        QueueMessagingTemplate(amazonSQSAsync, null, objectMapper)
+        sqsAsyncClient: SqsAsyncClient,
+        sqsMessagingMessageConverter: SqsMessagingMessageConverter,
+    ): SqsTemplate = MessagingConfigurationHelper.sqsTemplate(sqsAsyncClient, sqsMessagingMessageConverter)
+
+    @Bean
+    fun testSqsQueue(
+        sqsTemplate: SqsTemplate,
+        @Value("correlation-id-test-queue") queueName: String,
+    ) = MessageQueue<TestSqsMessage>(queueName, sqsTemplate)
 }

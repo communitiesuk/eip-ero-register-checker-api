@@ -1,5 +1,20 @@
 package uk.gov.dluhc.registercheckerapi.database.entity
 
+import jakarta.persistence.CascadeType
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.OneToMany
+import jakarta.persistence.OneToOne
+import jakarta.persistence.Table
+import jakarta.persistence.Version
+import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Size
 import org.hibernate.Hibernate
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.GenericGenerator
@@ -12,21 +27,6 @@ import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.NO_MATCH
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.TOO_MANY_MATCHES
 import java.time.Instant
 import java.util.UUID
-import javax.persistence.CascadeType
-import javax.persistence.Entity
-import javax.persistence.EnumType
-import javax.persistence.Enumerated
-import javax.persistence.FetchType
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
-import javax.persistence.Id
-import javax.persistence.JoinColumn
-import javax.persistence.OneToMany
-import javax.persistence.OneToOne
-import javax.persistence.Table
-import javax.persistence.Version
-import javax.validation.constraints.NotNull
-import javax.validation.constraints.Size
 
 @Table
 @Entity

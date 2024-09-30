@@ -27,7 +27,7 @@ extra["awsSdkVersion"] = "2.26.20"
 extra["springCloudAwsVersion"] = "3.1.1"
 
 allOpen {
-    annotations("javax.persistence.Entity", "javax.persistence.MappedSuperclass", "javax.persistence.Embedabble")
+    annotations("jakarta.persistence.Entity", "jakarta.persistence.MappedSuperclass", "jakarta.persistence.Embedabble")
 }
 
 val awsProfile = System.getenv("AWS_PROFILE_ARG") ?: "--profile code-artifact"

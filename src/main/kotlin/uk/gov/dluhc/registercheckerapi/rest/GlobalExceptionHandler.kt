@@ -1,5 +1,7 @@
 package uk.gov.dluhc.registercheckerapi.rest
 
+import jakarta.servlet.RequestDispatcher.ERROR_MESSAGE
+import jakarta.servlet.RequestDispatcher.ERROR_STATUS_CODE
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.FORBIDDEN
@@ -23,8 +25,6 @@ import uk.gov.dluhc.registercheckerapi.exception.Pre1970EarliestSearchException
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckMatchCountMismatchException
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckUnexpectedStatusException
 import uk.gov.dluhc.registercheckerapi.exception.RequestIdMismatchException
-import javax.servlet.RequestDispatcher.ERROR_MESSAGE
-import javax.servlet.RequestDispatcher.ERROR_STATUS_CODE
 
 @ControllerAdvice
 class GlobalExceptionHandler(

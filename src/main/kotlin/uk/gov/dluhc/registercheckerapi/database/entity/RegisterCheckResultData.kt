@@ -30,7 +30,7 @@ class RegisterCheckResultData(
     @Column(columnDefinition = "json")
     var requestBody: String? = null,
 
-    @NotNull
+    @Column(updatable = false)
     @CreationTimestamp
     var dateCreated: Instant? = null,
 ) {

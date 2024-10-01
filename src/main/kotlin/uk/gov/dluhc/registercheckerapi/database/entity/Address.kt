@@ -1,5 +1,6 @@
 package uk.gov.dluhc.registercheckerapi.database.entity
 
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
@@ -9,9 +10,7 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import org.hibernate.Hibernate
 import org.hibernate.annotations.CreationTimestamp
-import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.JdbcTypeCode
-import org.hibernate.annotations.Type
 import java.sql.Types
 import java.time.Instant
 import java.util.UUID
@@ -47,7 +46,7 @@ class Address(
     @Size(max = 12)
     var uprn: String? = null,
 
-    @NotNull
+    @Column(updatable = false)
     @CreationTimestamp
     var dateCreated: Instant? = null
 ) {

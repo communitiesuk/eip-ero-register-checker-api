@@ -1,6 +1,7 @@
 package uk.gov.dluhc.registercheckerapi.database.entity
 
 import jakarta.persistence.CascadeType
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -17,11 +18,9 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import org.hibernate.Hibernate
 import org.hibernate.annotations.CreationTimestamp
-import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.NotFound
 import org.hibernate.annotations.NotFoundAction
-import org.hibernate.annotations.Type
 import org.hibernate.annotations.UpdateTimestamp
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.MULTIPLE_MATCH
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus.NO_MATCH
@@ -92,7 +91,7 @@ class RegisterCheck(
     @Size(max = 255)
     var createdBy: String,
 
-    @NotNull
+    @Column(updatable = false)
     @CreationTimestamp
     var dateCreated: Instant? = null,
 

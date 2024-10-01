@@ -7,9 +7,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
 import org.hibernate.Hibernate
-import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.JdbcTypeCode
-import org.hibernate.annotations.Type
 import java.sql.Types
 import java.time.LocalDate
 import java.util.UUID

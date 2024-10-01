@@ -14,9 +14,11 @@ import jakarta.validation.constraints.Size
 import org.hibernate.Hibernate
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.GenericGenerator
+import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.NotFound
 import org.hibernate.annotations.NotFoundAction
 import org.hibernate.annotations.Type
+import java.sql.Types
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
@@ -25,9 +27,8 @@ import java.util.UUID
 @Entity
 class PersonalDetail(
     @Id
-    @Type(type = UUIDCharType)
-    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = UseExistingOrGenerateUUID.NAME)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @JdbcTypeCode(Types.CHAR)
     var id: UUID? = null,
 
     @NotNull

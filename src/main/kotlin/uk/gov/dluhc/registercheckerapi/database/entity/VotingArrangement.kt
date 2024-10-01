@@ -8,7 +8,9 @@ import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
 import org.hibernate.Hibernate
 import org.hibernate.annotations.GenericGenerator
+import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.Type
+import java.sql.Types
 import java.time.LocalDate
 import java.util.UUID
 
@@ -16,9 +18,8 @@ import java.util.UUID
 @Entity
 class VotingArrangement(
     @Id
-    @Type(type = UUIDCharType)
-    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = UseExistingOrGenerateUUID.NAME)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @JdbcTypeCode(Types.CHAR)
     var id: UUID? = null,
 
     @NotNull

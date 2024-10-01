@@ -1,6 +1,6 @@
 package uk.gov.dluhc.registercheckerapi.messaging
 
-import io.awspring.cloud.messaging.listener.annotation.SqsListener
+import io.awspring.cloud.sqs.annotation.SqsListener
 import jakarta.validation.Valid
 import mu.KotlinLogging
 import org.springframework.messaging.handler.annotation.Payload

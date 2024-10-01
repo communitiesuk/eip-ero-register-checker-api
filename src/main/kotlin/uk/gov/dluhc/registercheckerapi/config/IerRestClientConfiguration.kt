@@ -1,13 +1,17 @@
 package uk.gov.dluhc.registercheckerapi.config
 
-import io.github.acm19.aws.interceptor.http.AwsRequestSigningApacheInterceptor
-import org.apache.http.impl.client.HttpClientBuilder
+import com.fasterxml.jackson.databind.ObjectMapper
+import io.github.acm19.aws.interceptor.http.AwsRequestSigningApacheV5Interceptor
+import org.apache.hc.client5.http.impl.classic.HttpClients
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.client.ClientHttpRequestFactory
+import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
+import org.springframework.http.converter.HttpMessageConverter
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
+import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestTemplate
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
 import software.amazon.awssdk.auth.signer.Aws4Signer
@@ -22,7 +26,7 @@ import uk.gov.dluhc.logging.rest.CorrelationIdRestTemplateClientHttpRequestInter
  * This uses AWS SDK v2 for signing http requests
  */
 @Configuration
-class IerRestTemplateConfiguration(
+class IerRestClientConfiguration(
     @Value("\${api.ier.base.url}") private val ierApiBaseUrl: String,
     @Value("\${api.ier.sts.assume.role}") private val ierStsAssumeRole: String,
     private val correlationIdRestTemplateClientHttpRequestInterceptor: CorrelationIdRestTemplateClientHttpRequestInterceptor,
@@ -34,13 +38,25 @@ class IerRestTemplateConfiguration(
     }
 
     @Bean
-    fun ierRestTemplate(ierClientHttpRequestFactory: ClientHttpRequestFactory): RestTemplate {
-        return RestTemplateBuilder()
-            .requestFactory { ierClientHttpRequestFactory }
-            .interceptors(correlationIdRestTemplateClientHttpRequestInterceptor)
-            .rootUri(ierApiBaseUrl)
+    fun ierRestClient(
+        ierClientHttpRequestFactory: ClientHttpRequestFactory,
+        httpMessageConverters: List<HttpMessageConverter<*>>,
+    ): RestClient =
+        RestClient.builder()
+            .baseUrl(ierApiBaseUrl)
+            .requestFactory(ierClientHttpRequestFactory)
+            .messageConverters { converters: MutableList<HttpMessageConverter<*>> ->
+                converters.removeAll { it is MappingJackson2HttpMessageConverter }
+                converters.addAll(httpMessageConverters)
+            }
+            .requestInterceptors { interceptors: MutableList<ClientHttpRequestInterceptor> ->
+                interceptors.add(correlationIdRestTemplateClientHttpRequestInterceptor)
+            }
             .build()
-    }
+
+    @Bean
+    fun httpMessageConverters(objectMapper: ObjectMapper): List<HttpMessageConverter<*>> =
+        listOf(MappingJackson2HttpMessageConverter(objectMapper))
 
     @Bean
     fun ierClientHttpRequestFactory(stsClient: StsClient): ClientHttpRequestFactory {
@@ -54,19 +70,18 @@ class IerRestTemplateConfiguration(
             .stsClient(stsClient)
             .build()
 
-        val httpClientBuilder = HttpClientBuilder.create()
-        httpClientBuilder.addInterceptorLast(
-            AwsRequestSigningApacheInterceptor(
-                API_GATEWAY_SERVICE_NAME,
-                Aws4Signer.create(),
-                ierApiSecurityTokenProvider,
-                DefaultAwsRegionProviderChain().region
+        val httpClient = HttpClients.custom()
+            .addRequestInterceptorLast(
+                AwsRequestSigningApacheV5Interceptor(
+                    API_GATEWAY_SERVICE_NAME,
+                    Aws4Signer.create(),
+                    ierApiSecurityTokenProvider,
+                    DefaultAwsRegionProviderChain().region,
+                )
             )
-        )
+            .build()
 
-        return HttpComponentsClientHttpRequestFactory().apply {
-            httpClient = httpClientBuilder.build()
-        }
+        return HttpComponentsClientHttpRequestFactory(httpClient)
     }
 
     @Bean

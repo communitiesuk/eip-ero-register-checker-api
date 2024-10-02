@@ -1,12 +1,11 @@
-cloud:
-  aws:
-    region:
-      static: eu-west-2
-    credentials:
-      access-key: test
-      secret-key: test
-
 spring:
+  cloud:
+    aws:
+      region:
+        static: us-east-1
+      credentials:
+        access-key: test
+        secret-key: test
   datasource:
     username: root
     password: password
@@ -29,7 +28,7 @@ api:
     url: http://replaced-by-wireMockServer-bean
   ier:
     base.url: http://replaced-by-wireMockServer-bean
-    sts.assume.role: arn:aws:iam::1234567890987:role/grant-me-access-to-ier
+    sts.assume.role: arn:aws:iam::123456789098:role/grant-me-access-to-ier
 
 sqs:
   ems-cidr-update-queue-name: unknown-queue-yet-to-be-configured

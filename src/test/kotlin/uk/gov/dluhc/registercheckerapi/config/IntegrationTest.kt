@@ -1,10 +1,10 @@
 package uk.gov.dluhc.registercheckerapi.config
 
-import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.zaxxer.hikari.HikariDataSource
 import org.apache.commons.lang3.StringUtils.deleteWhitespace
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -14,6 +14,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.cache.CacheManager
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.SqsClient
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckResultDataRepository
@@ -59,7 +60,7 @@ internal abstract class IntegrationTest {
     protected lateinit var sqsClient: SqsClient
 
     @Autowired
-    protected lateinit var amazonSQSAsync: AmazonSQSAsync
+    protected lateinit var sqsAsyncClient: SqsAsyncClient
 
     @Autowired
     protected lateinit var objectMapper: ObjectMapper
@@ -89,7 +90,11 @@ internal abstract class IntegrationTest {
     protected lateinit var timeToLive: Duration
 
     companion object {
-        val mysqlContainerConfiguration: MySQLContainerConfiguration = MySQLContainerConfiguration.getInstance()
+        @JvmStatic
+        @BeforeAll
+        fun setup() {
+            MySQLContainerConfiguration.getInstance()
+        }
     }
 
     @BeforeEach

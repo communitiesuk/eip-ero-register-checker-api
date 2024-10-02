@@ -46,21 +46,20 @@ class LocalStackContainerConfiguration {
     @Bean
     fun localstackContainer(
         @Value("\${cloud.aws.region.static}") region: String
-    ): GenericContainer<*> {
-        return GenericContainer(
-            DockerImageName.parse("localstack/localstack:1.1.0")
-        ).withEnv(
-            mapOf(
-                "SERVICES" to "sqs,sts,ses",
-                "AWS_DEFAULT_REGION" to region
+    ): GenericContainer<*> =
+        GenericContainer(
+            DockerImageName.parse("localstack/localstack:3.0.2")
+        )
+            .withEnv(
+                mapOf(
+                    "SERVICES" to "sqs,sts,ses",
+                    "AWS_DEFAULT_REGION" to region,
+                )
             )
-        ).withExposedPorts(DEFAULT_PORT)
+            .withExposedPorts(DEFAULT_PORT)
             .withReuse(true)
             .withCreateContainerCmdModifier { it.withName("register-checker-api-integration-test-localstack") }
-            .apply {
-                start()
-            }
-    }
+            .apply { start() }
 
     @Bean
     @Primary
@@ -69,7 +68,6 @@ class LocalStackContainerConfiguration {
         @Value("\${cloud.aws.region.static}") region: String,
         awsCredentialsProvider: AwsCredentialsProvider
     ): StsClient {
-
         val uri = URI.create("http://${localStackContainer.host}:${localStackContainer.getMappedPort(DEFAULT_PORT)}")
         return StsClient.builder()
             .credentialsProvider(awsCredentialsProvider)

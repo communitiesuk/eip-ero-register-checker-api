@@ -1,3 +1,14 @@
+logging:
+  wiremock: false
+# Uncomment the below for detailed SQL logs
+#  level:
+#    org:
+#      hibernate:
+#        SQL: TRACE
+#        orm:
+#          jdbc:
+#            bind: TRACE
+
 spring:
   cloud:
     aws:

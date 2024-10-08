@@ -88,7 +88,7 @@ internal class InitiateRegisterCheckMessageListenerIntegrationTest : Integration
     }
 
     private fun getActualRegisterCheckJpaEntity(message: InitiateRegisterCheckMessage): List<RegisterCheck> =
-        registerCheckRepository.findAll { root: Root<RegisterCheck>, _: CriteriaQuery<*>, cb: CriteriaBuilder ->
+        registerCheckRepository.findAll { root: Root<RegisterCheck>, _: CriteriaQuery<*>?, cb: CriteriaBuilder ->
             cb.equal(root.get<UUID>("sourceCorrelationId"), message.sourceCorrelationId)
         }
 }

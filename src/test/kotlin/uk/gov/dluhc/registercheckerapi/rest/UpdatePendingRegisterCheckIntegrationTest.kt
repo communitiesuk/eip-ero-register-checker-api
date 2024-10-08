@@ -1,7 +1,5 @@
 package uk.gov.dluhc.registercheckerapi.rest
 
-import com.amazonaws.services.sqs.model.Message
-import com.amazonaws.services.sqs.model.ReceiveMessageRequest
 import org.apache.commons.lang3.StringUtils.toRootUpperCase
 import org.apache.commons.lang3.StringUtils.trim
 import org.assertj.core.api.Assertions.assertThat
@@ -14,6 +12,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.web.reactive.server.FluxExchangeResult
 import reactor.core.publisher.Mono
+import software.amazon.awssdk.services.sqs.model.Message
+import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
@@ -962,7 +962,10 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             await.atMost(5, TimeUnit.SECONDS).until {
                 val sqsMessages: List<Message> = getLatestSqsMessagesFromQueue(queueUrl)
                 assertThat(sqsMessages).noneMatch {
-                    val actualRegisterCheckResultMessage = objectMapper.readValue(it.body, RegisterCheckResultMessage::class.java)
+                    val actualRegisterCheckResultMessage = objectMapper.readValue(
+                        it.body(),
+                        RegisterCheckResultMessage::class.java,
+                    )
                     actualRegisterCheckResultMessage.sourceReference == sourceReferenceNotExpected
                 }
                 false
@@ -973,18 +976,24 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     }
 
     private fun getLatestSqsMessagesFromQueue(queueUrl: String): List<Message> {
-        val receiveMessageRequest =
-            ReceiveMessageRequest(queueUrl)
-                .withMaxNumberOfMessages(10)
+        val receiveMessageRequest = ReceiveMessageRequest.builder()
+            .queueUrl(queueUrl)
+            .maxNumberOfMessages(10)
+            .build()
 
-        return amazonSQSAsync.receiveMessage(receiveMessageRequest).messages
+        return sqsAsyncClient.receiveMessage(receiveMessageRequest)
+            .get()
+            .messages()
     }
 
     private fun assertRegisterCheckResultMessage(
         actualMessage: Message,
         expectedMessage: RegisterCheckResultMessage
     ): Boolean {
-        val actualRegisterCheckResultMessage = objectMapper.readValue(actualMessage.body, RegisterCheckResultMessage::class.java)
+        val actualRegisterCheckResultMessage = objectMapper.readValue(
+            actualMessage.body(),
+            RegisterCheckResultMessage::class.java,
+        )
 
         assertThat(actualRegisterCheckResultMessage)
             .usingRecursiveComparison()

@@ -13,9 +13,12 @@ class MySQLContainerConfiguration : MySQLContainer<MySQLContainerConfiguration>(
 
         fun getInstance(): MySQLContainerConfiguration {
             if (container == null) {
-                container = MySQLContainerConfiguration().withDatabaseName(DATABASE)
+                container = MySQLContainerConfiguration()
+                    .withDatabaseName(DATABASE)
                     .withUsername(USER)
                     .withPassword(PASSWORD)
+                    .withReuse(true)
+                    .withCreateContainerCmdModifier { it.withName("register-checker-api-integration-test-mysql") }
                     .also {
                         it.start()
                         System.setProperty(DATASOURCE_URL, it.jdbcUrl)

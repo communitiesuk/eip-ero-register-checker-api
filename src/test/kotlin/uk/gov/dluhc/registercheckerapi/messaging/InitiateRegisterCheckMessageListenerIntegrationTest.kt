@@ -1,11 +1,13 @@
 package uk.gov.dluhc.registercheckerapi.messaging
 
+import jakarta.persistence.criteria.CriteriaBuilder
+import jakarta.persistence.criteria.CriteriaQuery
+import jakarta.persistence.criteria.Root
 import mu.KotlinLogging
 import org.apache.commons.lang3.time.StopWatch
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.testcontainers.shaded.org.awaitility.Awaitility.await
-import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.Address
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
@@ -18,9 +20,6 @@ import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildIniti
 import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-import javax.persistence.criteria.CriteriaBuilder
-import javax.persistence.criteria.CriteriaQuery
-import javax.persistence.criteria.Root
 
 private val logger = KotlinLogging.logger {}
 
@@ -30,7 +29,6 @@ internal class InitiateRegisterCheckMessageListenerIntegrationTest : Integration
     fun `should process message received on queue`() {
         // Given
         val message = buildInitiateRegisterCheckMessage()
-        val payload = objectMapper.writeValueAsString(message)
         val earliestDateCreated = Instant.now()
         val expected = RegisterCheck(
             correlationId = UUID.randomUUID(),
@@ -63,12 +61,7 @@ internal class InitiateRegisterCheckMessageListenerIntegrationTest : Integration
         )
 
         // When
-        sqsClient.sendMessage(
-            SendMessageRequest.builder()
-                .queueUrl(initiateApplicantRegisterCheckQueueName)
-                .messageBody(payload)
-                .build()
-        )
+        sqsMessagingTemplate.send(initiateApplicantRegisterCheckQueueName, message)
 
         // Then
         val stopWatch = StopWatch.createStarted()
@@ -88,7 +81,7 @@ internal class InitiateRegisterCheckMessageListenerIntegrationTest : Integration
     }
 
     private fun getActualRegisterCheckJpaEntity(message: InitiateRegisterCheckMessage): List<RegisterCheck> =
-        registerCheckRepository.findAll { root: Root<RegisterCheck>, _: CriteriaQuery<*>, cb: CriteriaBuilder ->
+        registerCheckRepository.findAll { root: Root<RegisterCheck>, _: CriteriaQuery<*>?, cb: CriteriaBuilder ->
             cb.equal(root.get<UUID>("sourceCorrelationId"), message.sourceCorrelationId)
         }
 }

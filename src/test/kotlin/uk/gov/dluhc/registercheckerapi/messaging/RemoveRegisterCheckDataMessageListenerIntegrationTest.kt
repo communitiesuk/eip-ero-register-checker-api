@@ -3,7 +3,6 @@ package uk.gov.dluhc.registercheckerapi.messaging
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.testcontainers.shaded.org.awaitility.Awaitility.await
-import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.VOTER_CARD
 import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType.VOTER_MINUS_CARD
@@ -52,12 +51,7 @@ internal class RemoveRegisterCheckDataMessageListenerIntegrationTest : Integrati
         )
 
         // When
-        sqsClient.sendMessage(
-            SendMessageRequest.builder()
-                .queueUrl(removeApplicantRegisterCheckDataQueueName)
-                .messageBody(objectMapper.writeValueAsString(message))
-                .build()
-        )
+        sqsMessagingTemplate.send(removeApplicantRegisterCheckDataQueueName, message)
 
         // Then
         await().atMost(5, TimeUnit.SECONDS).untilAsserted {

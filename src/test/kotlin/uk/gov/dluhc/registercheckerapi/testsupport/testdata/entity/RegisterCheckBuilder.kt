@@ -12,7 +12,6 @@ import java.time.Instant
 import java.util.UUID
 
 fun buildRegisterCheck(
-    id: UUID = UUID.randomUUID(),
     correlationId: UUID = UUID.randomUUID(),
     sourceReference: String = UUID.randomUUID().toString(),
     sourceCorrelationId: UUID = UUID.randomUUID(),
@@ -25,9 +24,9 @@ fun buildRegisterCheck(
     emsElectorId: String = randomAlphanumeric(30),
     historicalSearch: Boolean = false,
     historicalSearchEarliestDate: Instant? = Instant.now(),
-    createdBy: String = "system"
+    createdBy: String = "system",
 ) = RegisterCheck(
-    id = id,
+    id = UUID.randomUUID(),
     correlationId = correlationId,
     sourceReference = sourceReference,
     sourceCorrelationId = sourceCorrelationId,
@@ -40,5 +39,5 @@ fun buildRegisterCheck(
     emsElectorId = emsElectorId,
     historicalSearch = historicalSearch,
     historicalSearchEarliestDate = historicalSearchEarliestDate,
-    createdBy = createdBy
+    createdBy = createdBy,
 )

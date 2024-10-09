@@ -8,7 +8,6 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
-import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckMatch
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.VOTER_CARD
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomGssCode
@@ -42,10 +41,11 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         @Test
         fun `should retrieve pending register checks by multiple gss codes`() {
             // Given
-            val registerCheck1 = buildRegisterCheck(gssCode = "E09000020")
-            val registerCheck2 = buildRegisterCheck(gssCode = "E09000021")
-            val registerCheck3 = buildRegisterCheck(gssCode = "E09000022")
-            registerCheckRepository.saveAll(listOf(registerCheck1, registerCheck2, registerCheck3))
+            val (registerCheck1, _, registerCheck3) = listOf(
+                buildRegisterCheck(gssCode = "E09000020"),
+                buildRegisterCheck(gssCode = "E09000021"),
+                buildRegisterCheck(gssCode = "E09000022"),
+            ).let(registerCheckRepository::saveAll)
 
             // When
             val actual = registerCheckRepository.findPendingEntriesByGssCodes(listOf("E09000020", "E09000022"))
@@ -65,15 +65,12 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         @Test
         fun `should retrieve limited number of pending register checks by gss code`() {
             // Given
-            val registerCheck1 = buildRegisterCheck(gssCode = "E09000020")
-            registerCheckRepository.save(registerCheck1)
+            val registerCheck1 = buildRegisterCheck(gssCode = "E09000020").let(registerCheckRepository::save)
             // sleep to guarantee order by date_created asc
             Thread.sleep(1000)
-            val registerCheck2 = buildRegisterCheck(gssCode = "E09000020")
-            registerCheckRepository.save(registerCheck2)
+            val registerCheck2 = buildRegisterCheck(gssCode = "E09000020").let(registerCheckRepository::save)
             Thread.sleep(1000)
-            val registerCheck3 = buildRegisterCheck(gssCode = "E09000020")
-            registerCheckRepository.save(registerCheck3)
+            buildRegisterCheck(gssCode = "E09000020").let(registerCheckRepository::save)
 
             // When
             val actual = registerCheckRepository.findPendingEntriesByGssCodes(listOf("E09000020"), 2)
@@ -104,9 +101,10 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         @Test
         fun `should get pending register check by correlation id`() {
             // Given
-            val registerCheck1 = buildRegisterCheck(gssCode = "E09000020")
-            val registerCheck2 = buildRegisterCheck(gssCode = "E09000021")
-            registerCheckRepository.saveAll(listOf(registerCheck1, registerCheck2))
+            val (registerCheck1) = listOf(
+                buildRegisterCheck(gssCode = "E09000020"),
+                buildRegisterCheck(gssCode = "E09000021")
+            ).let(registerCheckRepository::saveAll)
 
             // When
             val actual = registerCheckRepository.findByCorrelationId(registerCheck1.correlationId)
@@ -119,9 +117,10 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         @Test
         fun `should not get register check by unknown correlation id`() {
             // Given
-            val registerCheck1 = buildRegisterCheck(gssCode = "E09000020")
-            val registerCheck2 = buildRegisterCheck(gssCode = "E09000021")
-            registerCheckRepository.saveAll(listOf(registerCheck1, registerCheck2))
+            listOf(
+                buildRegisterCheck(gssCode = "E09000020"),
+                buildRegisterCheck(gssCode = "E09000021"),
+            ).let(registerCheckRepository::saveAll)
 
             // When
             val actual = registerCheckRepository.findByCorrelationId(randomUUID())
@@ -145,9 +144,10 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         )
         fun `should record exact match`(checkStatus: CheckStatus) {
             // Given
-            val registerCheckToSearch = buildRegisterCheck()
-            val registerCheckAnother = buildRegisterCheck()
-            registerCheckRepository.saveAll(listOf(registerCheckToSearch, registerCheckAnother))
+            val (registerCheckToSearch, registerCheckAnother) = listOf(
+                buildRegisterCheck(),
+                buildRegisterCheck(),
+            ).let(registerCheckRepository::saveAll)
             registerCheckToSearch.recordExactMatch(
                 checkStatus,
                 Instant.now(),
@@ -178,9 +178,8 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         fun `should record no match`() {
             // Given
             val registerCheck = buildRegisterCheck()
-            registerCheckRepository.save(registerCheck)
-            registerCheck.recordNoMatch(Instant.now())
-            registerCheckRepository.save(registerCheck)
+                .apply { recordNoMatch(Instant.now()) }
+                .let(registerCheckRepository::save)
 
             // When
             val actual = registerCheckRepository.findByCorrelationId(registerCheck.correlationId)
@@ -198,13 +197,12 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         @ValueSource(ints = [2, 3, 4, 5, 6, 7, 8, 9, 10])
         fun `should record multiple matches`(matchCount: Int) {
             // Given
-            val registerCheck = buildRegisterCheck()
             val historicalSearchEarliestDate = Instant.now()
-            registerCheckRepository.save(registerCheck)
-            val matches =
-                mutableListOf<RegisterCheckMatch>().apply { repeat(matchCount) { add(buildRegisterCheckMatch()) } }
-            registerCheck.recordMultipleMatches(Instant.now(), matchCount, matches, historicalSearchEarliestDate)
-            registerCheckRepository.save(registerCheck)
+            val matches = mutableListOf<RegisterCheckMatch>()
+                .apply { repeat(matchCount) { add(buildRegisterCheckMatch()) } }
+            val registerCheck = buildRegisterCheck()
+                .apply { recordMultipleMatches(Instant.now(), matchCount, matches, historicalSearchEarliestDate) }
+                .let(registerCheckRepository::save)
 
             // When
             val actual = registerCheckRepository.findByCorrelationId(registerCheck.correlationId)
@@ -227,13 +225,12 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         @ValueSource(ints = [11, 100, 102])
         fun `should record too many matches`(matchCount: Int) {
             // Given
-            val registerCheck = buildRegisterCheck()
             val historicalSearchEarliestDate = Instant.now()
-            registerCheckRepository.save(registerCheck)
-            val matches =
-                mutableListOf<RegisterCheckMatch>().apply { repeat(matchCount) { add(buildRegisterCheckMatch()) } }
-            registerCheck.recordTooManyMatches(Instant.now(), matchCount, matches, historicalSearchEarliestDate)
-            registerCheckRepository.save(registerCheck)
+            val matches = mutableListOf<RegisterCheckMatch>()
+                .apply { repeat(matchCount) { add(buildRegisterCheckMatch()) } }
+            val registerCheck = buildRegisterCheck()
+                .apply { recordTooManyMatches(Instant.now(), matchCount, matches, historicalSearchEarliestDate) }
+                .let(registerCheckRepository::save)
 
             // When
             val actual = registerCheckRepository.findByCorrelationId(registerCheck.correlationId)
@@ -260,24 +257,21 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         fun `should get register check by sourceReference and sourceType`() {
             // Given
             val sourceReference = randomUUID().toString()
+            val otherSourceReference = randomUUID().toString()
             val gssCode = getRandomGssCode()
-            val matchingRegisterCheck1 = buildRegisterCheck(sourceReference = sourceReference, gssCode = gssCode)
-            val matchingRegisterCheck2 = buildRegisterCheck(sourceReference = sourceReference, gssCode = gssCode)
-            val matchingRegisterCheck3 =
-                buildRegisterCheck(sourceReference = sourceReference, gssCode = getRandomGssCode())
-            val unMatchedRegisterCheck1 = buildRegisterCheck(sourceReference = randomUUID().toString())
-            val unMatchedRegisterCheck2 = buildRegisterCheck()
             val expectedMatchingResults = 3
 
-            registerCheckRepository.saveAll(
-                listOf(
-                    matchingRegisterCheck1,
-                    matchingRegisterCheck2,
-                    matchingRegisterCheck3,
-                    unMatchedRegisterCheck1,
-                    unMatchedRegisterCheck2
-                )
-            )
+            val (
+                matchingRegisterCheck1,
+                matchingRegisterCheck2,
+                matchingRegisterCheck3,
+            ) = listOf(
+                buildRegisterCheck(sourceReference = sourceReference, gssCode = gssCode),
+                buildRegisterCheck(sourceReference = sourceReference, gssCode = gssCode),
+                buildRegisterCheck(sourceReference = sourceReference, gssCode = getRandomGssCode()),
+                buildRegisterCheck(sourceReference = otherSourceReference),
+                buildRegisterCheck(),
+            ).let(registerCheckRepository::saveAll)
 
             // When
             val actual = registerCheckRepository.findBySourceReferenceAndSourceType(sourceReference, VOTER_CARD)
@@ -314,21 +308,19 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         @Test
         fun `should get group counts of pending register checks by gss code`() {
             // Given
-            registerCheckRepository.saveAll(
-                listOf(
-                    buildRegisterCheck(gssCode = "E09000020", status = CheckStatus.PENDING),
-                    buildRegisterCheck(gssCode = "E09000021", status = CheckStatus.PENDING),
-                    buildRegisterCheck(gssCode = "E09000021", status = CheckStatus.PENDING),
-                )
-            ).run {
-                setDateCreatedToOneHundredSecondsAgo()
-                registerCheckRepository.saveAll(this)
-            }
+            listOf(
+                buildRegisterCheck(gssCode = "E09000020", status = CheckStatus.PENDING),
+                buildRegisterCheck(gssCode = "E09000021", status = CheckStatus.PENDING),
+                buildRegisterCheck(gssCode = "E09000021", status = CheckStatus.PENDING),
+            ).let(registerCheckRepository::saveAll)
 
             val expected = listOf(
                 buildRegisterCheckSummaryByGssCode(gssCode = "E09000020", registerCheckCount = 1),
                 buildRegisterCheckSummaryByGssCode(gssCode = "E09000021", registerCheckCount = 2),
             )
+
+            // Sleep to guarantee date_created in past
+            Thread.sleep(1000)
 
             // When
             val actual = registerCheckRepository.summarisePendingRegisterChecksByGssCode(Instant.now())
@@ -343,25 +335,13 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         @Test
         fun `should exclude register checks with statuses other than pending`() {
             // Given
-            val otherStatuses = listOf(
-                CheckStatus.ARCHIVED,
-                CheckStatus.NO_MATCH,
-                CheckStatus.EXACT_MATCH,
-                CheckStatus.PARTIAL_MATCH,
-                CheckStatus.MULTIPLE_MATCH,
-                CheckStatus.TOO_MANY_MATCHES,
-                CheckStatus.PENDING_DETERMINATION,
-                CheckStatus.EXPIRED,
-                CheckStatus.NOT_STARTED,
-            )
-            registerCheckRepository.saveAll(
-                otherStatuses.map { status ->
-                    buildRegisterCheck(status = status)
-                }
-            ).run {
-                setDateCreatedToOneHundredSecondsAgo()
-                registerCheckRepository.saveAll(this)
-            }
+            CheckStatus.entries
+                .filterNot { it == CheckStatus.PENDING }
+                .map { status -> buildRegisterCheck(status = status) }
+                .let(registerCheckRepository::saveAll)
+
+            // Sleep to guarantee date_created in past
+            Thread.sleep(1000)
 
             // When
             val actual = registerCheckRepository.summarisePendingRegisterChecksByGssCode(Instant.now())
@@ -373,16 +353,12 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
         @Test
         fun `should exclude register checks created after the datetime given`() {
             // Given
-            registerCheckRepository.saveAll(
-                listOf(
-                    buildRegisterCheck(gssCode = "E09000020", status = CheckStatus.PENDING),
-                    buildRegisterCheck(gssCode = "E09000021", status = CheckStatus.PENDING),
-                    buildRegisterCheck(gssCode = "E09000021", status = CheckStatus.PENDING),
-                )
-            ).run {
-                setDateCreatedToOneHundredSecondsAgo()
-                registerCheckRepository.saveAll(this)
-            }
+            listOf(
+                buildRegisterCheck(gssCode = "E09000020", status = CheckStatus.PENDING),
+                buildRegisterCheck(gssCode = "E09000021", status = CheckStatus.PENDING),
+                buildRegisterCheck(gssCode = "E09000021", status = CheckStatus.PENDING),
+            ).let(registerCheckRepository::saveAll)
+
             val dateCreatedBefore = Instant.now().minusSeconds(200)
 
             // When
@@ -390,12 +366,6 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
 
             // Then
             assertThat(actual).isEmpty()
-        }
-
-        private fun List<RegisterCheck>.setDateCreatedToOneHundredSecondsAgo() {
-            forEach { registerCheck ->
-                registerCheck.dateCreated = Instant.now().minusSeconds(100)
-            }
         }
     }
 }

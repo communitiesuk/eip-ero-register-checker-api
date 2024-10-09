@@ -1,14 +1,13 @@
-cloud:
-  aws:
-    region:
-      auto: true
-      use-default-aws-region-chain: true
-    credentials:
-      use-default-aws-credentials-chain: true
-
 spring:
   application:
     name: 'eip-ero-register-checker-api'
+  cloud:
+    aws:
+      region:
+        auto: true
+        use-default-aws-region-chain: true
+      credentials:
+        use-default-aws-credentials-chain: true
   datasource:
     url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/register_checker
     readOnlyUrl: ${spring.datasource.url}

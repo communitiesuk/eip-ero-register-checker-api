@@ -15,9 +15,8 @@ class RetrieveGssCodeService(
         val eros = ierApiClient.getEros()
         val ero = eros.find { it.activeClientCertificateSerials.contains(certificateSerial) }
         if (ero == null) {
-            throw IerEroNotFoundException(certificateSerial).apply {
-                logger.warn { "Certificate serial not found" }
-            }
+            throw IerEroNotFoundException(certificateSerial)
+                .also { logger.warn { "Certificate serial not found" } }
         }
         return ero.localAuthorities.map { it.gssCode }
     }

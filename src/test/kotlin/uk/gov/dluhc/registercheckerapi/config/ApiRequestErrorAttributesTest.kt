@@ -1,5 +1,7 @@
 package uk.gov.dluhc.registercheckerapi.config
 
+import jakarta.servlet.RequestDispatcher
+import jakarta.validation.constraints.Size
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus.BAD_REQUEST
@@ -11,8 +13,6 @@ import org.springframework.web.context.request.ServletWebRequest
 import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.models.ErrorResponseAssert.Companion.assertThat
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
-import javax.servlet.RequestDispatcher
-import javax.validation.constraints.Size
 
 internal class ApiRequestErrorAttributesTest {
 

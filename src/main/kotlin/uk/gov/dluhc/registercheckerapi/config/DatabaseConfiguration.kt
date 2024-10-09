@@ -1,6 +1,7 @@
 package uk.gov.dluhc.registercheckerapi.config
 
 import com.zaxxer.hikari.HikariDataSource
+import jakarta.persistence.EntityManagerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties
@@ -12,7 +13,6 @@ import org.springframework.orm.jpa.JpaTransactionManager
 import org.springframework.transaction.PlatformTransactionManager
 import uk.gov.dluhc.registercheckerapi.config.database.ReplicaAwareTransactionManager
 import uk.gov.dluhc.registercheckerapi.config.database.TransactionRoutingDataSource
-import javax.persistence.EntityManagerFactory
 import javax.sql.DataSource
 
 /**

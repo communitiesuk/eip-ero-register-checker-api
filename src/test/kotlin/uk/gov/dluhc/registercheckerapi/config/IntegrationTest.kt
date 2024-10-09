@@ -2,6 +2,7 @@ package uk.gov.dluhc.registercheckerapi.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.zaxxer.hikari.HikariDataSource
+import io.awspring.cloud.sqs.operations.SqsTemplate
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,7 +14,6 @@ import org.springframework.cache.CacheManager
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import software.amazon.awssdk.services.sqs.SqsClient
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckResultDataRepository
 import uk.gov.dluhc.registercheckerapi.database.repository.VotingArrangementRepository
@@ -54,9 +54,6 @@ internal abstract class IntegrationTest {
     protected lateinit var votingArrangementRepository: VotingArrangementRepository
 
     @Autowired
-    protected lateinit var sqsClient: SqsClient
-
-    @Autowired
     protected lateinit var sqsAsyncClient: SqsAsyncClient
 
     @Autowired
@@ -82,6 +79,9 @@ internal abstract class IntegrationTest {
 
     @Value("\${sqs.remove-applicant-register-check-data-queue-name}")
     protected lateinit var removeApplicantRegisterCheckDataQueueName: String
+
+    @Autowired
+    protected lateinit var sqsMessagingTemplate: SqsTemplate
 
     @Value("\${caching.time-to-live}")
     protected lateinit var timeToLive: Duration

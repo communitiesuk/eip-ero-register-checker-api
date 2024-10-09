@@ -8,7 +8,6 @@ import org.apache.commons.lang3.time.StopWatch
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.testcontainers.shaded.org.awaitility.Awaitility.await
-import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.Address
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
@@ -30,7 +29,6 @@ internal class InitiateRegisterCheckMessageListenerIntegrationTest : Integration
     fun `should process message received on queue`() {
         // Given
         val message = buildInitiateRegisterCheckMessage()
-        val payload = objectMapper.writeValueAsString(message)
         val earliestDateCreated = Instant.now()
         val expected = RegisterCheck(
             correlationId = UUID.randomUUID(),
@@ -63,12 +61,7 @@ internal class InitiateRegisterCheckMessageListenerIntegrationTest : Integration
         )
 
         // When
-        sqsClient.sendMessage(
-            SendMessageRequest.builder()
-                .queueUrl(initiateApplicantRegisterCheckQueueName)
-                .messageBody(payload)
-                .build()
-        )
+        sqsMessagingTemplate.send(initiateApplicantRegisterCheckQueueName, message)
 
         // Then
         val stopWatch = StopWatch.createStarted()

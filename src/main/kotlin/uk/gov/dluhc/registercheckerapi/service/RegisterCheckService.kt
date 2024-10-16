@@ -40,17 +40,16 @@ class RegisterCheckService(
 ) {
 
     @Transactional(readOnly = true)
-    fun getPendingRegisterChecks(certificateSerial: String, pageSize: Int): List<PendingRegisterCheckDto> =
-        retrieveGssCodeService.getGssCodeFromCertificateSerial(certificateSerial).let {
-            registerCheckRepository.findPendingEntriesByGssCodes(it, pageSize)
-                .map(pendingRegisterCheckMapper::registerCheckEntityToPendingRegisterCheckDto)
-        }
+    fun getPendingRegisterChecks(certificateSerial: String, pageSize: Int): List<PendingRegisterCheckDto> {
+        val gssCodes = retrieveGssCodeService.getGssCodeFromCertificateSerial(certificateSerial)
+        return registerCheckRepository.findPendingEntriesByGssCodes(gssCodes, pageSize)
+            .map(pendingRegisterCheckMapper::registerCheckEntityToPendingRegisterCheckDto)
+    }
 
     @Transactional
     fun save(pendingRegisterCheckDto: PendingRegisterCheckDto) {
-        with(pendingRegisterCheckMapper.pendingRegisterCheckDtoToRegisterCheckEntity(pendingRegisterCheckDto)) {
-            registerCheckRepository.save(this)
-        }
+        pendingRegisterCheckMapper.pendingRegisterCheckDtoToRegisterCheckEntity(pendingRegisterCheckDto)
+            .let(registerCheckRepository::save)
     }
 
     @Transactional

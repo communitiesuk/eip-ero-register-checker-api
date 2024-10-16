@@ -1,10 +1,9 @@
 package uk.gov.dluhc.registercheckerapi.config
 
-import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.zaxxer.hikari.HikariDataSource
-import org.apache.commons.lang3.StringUtils.deleteWhitespace
-import org.assertj.core.api.Assertions.assertThat
+import io.awspring.cloud.sqs.operations.SqsTemplate
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -14,7 +13,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.cache.CacheManager
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
-import software.amazon.awssdk.services.sqs.SqsClient
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckResultDataRepository
 import uk.gov.dluhc.registercheckerapi.database.repository.VotingArrangementRepository
@@ -22,7 +21,6 @@ import uk.gov.dluhc.registercheckerapi.mapper.SourceTypeMapper
 import uk.gov.dluhc.registercheckerapi.testsupport.TestLogAppender
 import uk.gov.dluhc.registercheckerapi.testsupport.WiremockService
 import uk.gov.dluhc.registercheckerapi.testsupport.emails.EmailMessagesSentClient
-import uk.gov.dluhc.registercheckerapi.testsupport.emails.LocalstackEmailMessage
 import java.time.Duration
 import javax.sql.DataSource
 
@@ -56,10 +54,7 @@ internal abstract class IntegrationTest {
     protected lateinit var votingArrangementRepository: VotingArrangementRepository
 
     @Autowired
-    protected lateinit var sqsClient: SqsClient
-
-    @Autowired
-    protected lateinit var amazonSQSAsync: AmazonSQSAsync
+    protected lateinit var sqsAsyncClient: SqsAsyncClient
 
     @Autowired
     protected lateinit var objectMapper: ObjectMapper
@@ -85,11 +80,18 @@ internal abstract class IntegrationTest {
     @Value("\${sqs.remove-applicant-register-check-data-queue-name}")
     protected lateinit var removeApplicantRegisterCheckDataQueueName: String
 
+    @Autowired
+    protected lateinit var sqsMessagingTemplate: SqsTemplate
+
     @Value("\${caching.time-to-live}")
     protected lateinit var timeToLive: Duration
 
     companion object {
-        val mysqlContainerConfiguration: MySQLContainerConfiguration = MySQLContainerConfiguration.getInstance()
+        @JvmStatic
+        @BeforeAll
+        fun setup() {
+            MySQLContainerConfiguration.getInstance()
+        }
     }
 
     @BeforeEach
@@ -108,21 +110,5 @@ internal abstract class IntegrationTest {
     @BeforeEach
     fun clearLogAppender() {
         TestLogAppender.reset()
-    }
-
-    protected fun assertEmailSent(expected: LocalstackEmailMessage) {
-        with(emailMessagesSentClient.getEmailMessagesSent(localStackContainerSettings.sesMessagesUrl)) {
-            val foundMessage = messages.any {
-                !it.timestamp.isBefore(expected.timestamp) &&
-                    it.destination.toAddresses.toSet() == expected.destination.toAddresses.toSet() &&
-                    it.subject == expected.subject &&
-                    deleteWhitespace(it.body.htmlPart) == deleteWhitespace(expected.body.htmlPart) &&
-                    it.body.textPart == expected.body.textPart &&
-                    it.source == expected.source
-            }
-            assertThat(foundMessage)
-                .`as` { "failed to find expectedEmailMessage[$expected], in list of messages[$messages]" }
-                .isTrue
-        }
     }
 }

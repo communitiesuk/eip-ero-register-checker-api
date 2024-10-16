@@ -1,18 +1,14 @@
 package uk.gov.dluhc.registercheckerapi.config
 
-import io.awspring.cloud.messaging.config.QueueMessageHandlerFactory
-import io.awspring.cloud.messaging.core.QueueMessagingTemplate
-import io.awspring.cloud.messaging.listener.support.AcknowledgmentHandlerMethodArgumentResolver
-import io.awspring.cloud.messaging.listener.support.VisibilityHandlerMethodArgumentResolver
-import io.awspring.cloud.messaging.support.NotificationSubjectArgumentResolver
+import com.fasterxml.jackson.databind.ObjectMapper
+import io.awspring.cloud.sqs.operations.SqsTemplate
+import io.awspring.cloud.sqs.support.converter.SqsMessagingMessageConverter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.messaging.converter.MappingJackson2MessageConverter
-import org.springframework.messaging.handler.annotation.support.HeadersMethodArgumentResolver
-import org.springframework.messaging.handler.annotation.support.PayloadMethodArgumentResolver
-import org.springframework.validation.Validator
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.gov.dluhc.messagingsupport.MessageQueue
+import uk.gov.dluhc.messagingsupport.MessagingConfigurationHelper
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
 
 @Configuration
@@ -31,35 +27,34 @@ class MessagingConfiguration {
     private lateinit var overseasVoteConfirmRegisterCheckResultQueueName: String
 
     @Bean(name = ["confirmRegisterCheckResultQueue"])
-    fun confirmRegisterCheckResultQueue(queueMessagingTemplate: QueueMessagingTemplate) =
-        MessageQueue<RegisterCheckResultMessage>(confirmRegisterCheckResultQueueName, queueMessagingTemplate)
+    fun confirmRegisterCheckResultQueue(sqsTemplate: SqsTemplate) =
+        MessageQueue<RegisterCheckResultMessage>(confirmRegisterCheckResultQueueName, sqsTemplate)
 
     @Bean(name = ["postalVoteConfirmRegisterCheckResultQueue"])
-    fun postalVoteConfirmRegisterCheckResultQueue(queueMessagingTemplate: QueueMessagingTemplate) =
-        MessageQueue<RegisterCheckResultMessage>(postalVoteConfirmRegisterCheckResultQueueName, queueMessagingTemplate)
+    fun postalVoteConfirmRegisterCheckResultQueue(sqsTemplate: SqsTemplate) =
+        MessageQueue<RegisterCheckResultMessage>(postalVoteConfirmRegisterCheckResultQueueName, sqsTemplate)
 
     @Bean(name = ["proxyVoteConfirmRegisterCheckResultQueue"])
-    fun proxyVoteConfirmRegisterCheckResultQueue(queueMessagingTemplate: QueueMessagingTemplate) =
-        MessageQueue<RegisterCheckResultMessage>(proxyVoteConfirmRegisterCheckResultQueueName, queueMessagingTemplate)
+    fun proxyVoteConfirmRegisterCheckResultQueue(sqsTemplate: SqsTemplate) =
+        MessageQueue<RegisterCheckResultMessage>(proxyVoteConfirmRegisterCheckResultQueueName, sqsTemplate)
 
     @Bean(name = ["overseasVoteConfirmRegisterCheckResultQueue"])
-    fun overseasVoteConfirmRegisterCheckResultQueue(queueMessagingTemplate: QueueMessagingTemplate) =
-        MessageQueue<RegisterCheckResultMessage>(overseasVoteConfirmRegisterCheckResultQueueName, queueMessagingTemplate)
+    fun overseasVoteConfirmRegisterCheckResultQueue(sqsTemplate: SqsTemplate) =
+        MessageQueue<RegisterCheckResultMessage>(overseasVoteConfirmRegisterCheckResultQueueName, sqsTemplate)
 
     @Bean
-    fun queueMessageHandlerFactory(
-        jacksonMessageConverter: MappingJackson2MessageConverter,
-        hibernateValidator: Validator
-    ): QueueMessageHandlerFactory =
-        QueueMessageHandlerFactory().apply {
-            setArgumentResolvers(
-                listOf(
-                    HeadersMethodArgumentResolver(),
-                    NotificationSubjectArgumentResolver(),
-                    AcknowledgmentHandlerMethodArgumentResolver("Acknowledgment"),
-                    VisibilityHandlerMethodArgumentResolver("Visibility"),
-                    PayloadMethodArgumentResolver(jacksonMessageConverter, hibernateValidator)
-                )
-            )
-        }
+    fun sqsMessagingMessageConverter(
+        objectMapper: ObjectMapper,
+    ) = MessagingConfigurationHelper.sqsMessagingMessageConverter(objectMapper)
+
+    @Bean
+    fun defaultSqsListenerContainerFactory(
+        objectMapper: ObjectMapper,
+        sqsAsyncClient: SqsAsyncClient,
+        sqsMessagingMessageConverter: SqsMessagingMessageConverter,
+    ) = MessagingConfigurationHelper.defaultSqsListenerContainerFactory(
+        sqsAsyncClient = sqsAsyncClient,
+        sqsMessagingMessageConverter = sqsMessagingMessageConverter,
+        maximumNumberOfConcurrentMessages = null,
+    )
 }

@@ -19,7 +19,8 @@ class RegisterCheckRemovalService(
 ) {
 
     fun removeRegisterCheckData(dto: RegisterCheckRemovalDto) {
-        removeRegisterCheck(dto).also { removeRegisterCheckResult(it) }
+        val correlationIds = removeRegisterCheck(dto)
+        removeRegisterCheckResult(correlationIds)
     }
 
     private fun removeRegisterCheck(dto: RegisterCheckRemovalDto): Set<UUID> {

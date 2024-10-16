@@ -1,6 +1,7 @@
 package uk.gov.dluhc.registercheckerapi.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import jakarta.validation.Valid
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus.CREATED
 import org.springframework.orm.ObjectOptimisticLockingFailureException
@@ -22,7 +23,6 @@ import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 import uk.gov.dluhc.registercheckerapi.service.RegisterCheckService
 import uk.gov.dluhc.registercheckerapi.validator.RegisterCheckRequestValidator
 import java.util.UUID
-import javax.validation.Valid
 
 private val logger = KotlinLogging.logger {}
 private const val DEFAULT_PAGE_SIZE = 100

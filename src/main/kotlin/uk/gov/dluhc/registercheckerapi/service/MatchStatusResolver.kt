@@ -21,8 +21,8 @@ import java.time.LocalDate
 @Component
 class MatchStatusResolver {
 
-    fun resolveStatus(registerCheckResultDto: RegisterCheckResultDto, registerCheckEntity: RegisterCheck): RegisterCheckStatus {
-        return when (registerCheckResultDto.matchCount) {
+    fun resolveStatus(registerCheckResultDto: RegisterCheckResultDto, registerCheckEntity: RegisterCheck): RegisterCheckStatus =
+        when (registerCheckResultDto.matchCount) {
             0 -> RegisterCheckStatus.NO_MATCH
             1 -> evaluateRegisterCheckStatusWithOneMatch(
                 registerCheckResultDto.registerCheckMatches!!.first(),
@@ -33,7 +33,6 @@ class MatchStatusResolver {
             in 2..10 -> RegisterCheckStatus.MULTIPLE_MATCH
             else -> RegisterCheckStatus.TOO_MANY_MATCHES
         }
-    }
 
     private fun evaluateRegisterCheckStatusWithOneMatch(
         registerCheckMatchDto: RegisterCheckMatchDto,
@@ -88,7 +87,6 @@ class MatchStatusResolver {
             .replace(Regex(" {2,}"), " ")
             .trim()
 
-    private fun sanitizePostcode(postcode: String): String {
-        return postcode.uppercase().replace(Regex(" +"), "").trim()
-    }
+    private fun sanitizePostcode(postcode: String): String =
+        postcode.uppercase().replace(Regex(" +"), "").trim()
 }

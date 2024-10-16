@@ -9,7 +9,6 @@ import java.util.UUID
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckMatch as RegisterCheckMatchApi
 
 fun buildRegisterCheckMatch(
-    id: UUID = UUID.randomUUID(),
     emsElectorId: String = UUID.randomUUID().toString(),
     attestationCount: Int = 0,
     personalDetail: PersonalDetail = buildPersonalDetail(),
@@ -20,7 +19,7 @@ fun buildRegisterCheckMatch(
     postalVotingArrangement: VotingArrangement? = buildVotingArrangement(),
     proxyVotingArrangement: VotingArrangement? = null,
 ) = RegisterCheckMatch(
-    id = id,
+    id = UUID.randomUUID(),
     emsElectorId = emsElectorId,
     attestationCount = attestationCount,
     personalDetail = personalDetail,

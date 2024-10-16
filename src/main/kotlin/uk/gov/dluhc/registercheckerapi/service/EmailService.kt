@@ -1,6 +1,6 @@
 package uk.gov.dluhc.registercheckerapi.service
 
-import liquibase.repackaged.org.apache.commons.text.StringSubstitutor.replace
+import org.apache.commons.text.StringSubstitutor.replace
 import org.springframework.stereotype.Service
 import uk.gov.dluhc.email.EmailClient
 import uk.gov.dluhc.registercheckerapi.config.PendingRegisterChecksEmailContentConfiguration

@@ -94,6 +94,7 @@ class LocalStackContainerConfiguration {
         @Value("\${sqs.postal-vote-confirm-applicant-register-check-result-queue-name}") postalVoteConfirmRegisterCheckResultMessageQueueName: String,
         @Value("\${sqs.proxy-vote-confirm-applicant-register-check-result-queue-name}") proxyVoteConfirmRegisterCheckResultMessageQueueName: String,
         @Value("\${sqs.overseas-vote-confirm-applicant-register-check-result-queue-name}") overseasVoteConfirmRegisterCheckResultMessageQueueName: String,
+        @Value("\${sqs.register-check-result-response-queue-name}") registerCheckResultResponseQueueName: String,
         @Value("\${sqs.remove-applicant-register-check-data-queue-name}") removeRegisterCheckDataMessageQueueName: String,
         objectMapper: ObjectMapper,
     ): LocalStackContainerSettings {
@@ -102,6 +103,7 @@ class LocalStackContainerConfiguration {
         val queueUrlPostalVoteConfirmRegisterCheckResult = localStackContainer.createSqsQueue(postalVoteConfirmRegisterCheckResultMessageQueueName, objectMapper)
         val queueUrlProxyVoteConfirmRegisterCheckResult = localStackContainer.createSqsQueue(proxyVoteConfirmRegisterCheckResultMessageQueueName, objectMapper)
         val queueUrlOverseasVoteConfirmRegisterCheckResult = localStackContainer.createSqsQueue(overseasVoteConfirmRegisterCheckResultMessageQueueName, objectMapper)
+        val queueUrlRegisterCheckResultResponse = localStackContainer.createSqsQueue(registerCheckResultResponseQueueName, objectMapper)
         val queueUrlRemoveRegisterCheckData = localStackContainer.createSqsQueue(removeRegisterCheckDataMessageQueueName, objectMapper)
 
         val apiUrl = "http://${localStackContainer.host}:${localStackContainer.getMappedPort(DEFAULT_PORT)}"
@@ -116,6 +118,7 @@ class LocalStackContainerConfiguration {
             queueUrlProxyVoteConfirmRegisterCheckResult = queueUrlProxyVoteConfirmRegisterCheckResult,
             queueUrlOverseasVoteConfirmRegisterCheckResult = queueUrlOverseasVoteConfirmRegisterCheckResult,
             queueUrlRemoveRegisterCheckData = queueUrlRemoveRegisterCheckData,
+            queueUrlRegisterCheckResultResponse = queueUrlRegisterCheckResultResponse
         )
     }
 

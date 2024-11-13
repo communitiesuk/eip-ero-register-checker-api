@@ -53,6 +53,7 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.util.UUID
 import java.util.UUID.randomUUID
+import uk.gov.dluhc.registercheckerapi.database.entity.SourceType as SourceTypeEntity
 
 @ExtendWith(MockitoExtension::class)
 internal class RegisterCheckServiceTest {
@@ -257,9 +258,21 @@ internal class RegisterCheckServiceTest {
 
     @Nested
     inner class SendConfirmRegisterCheckResultMessage {
-        @Test
 
-        fun `should submit a ConfirmRegisterCheckResult Message`() {
+        @ParameterizedTest
+        @CsvSource(
+            value = [
+                "VOTER_CARD, VOTER_MINUS_CARD",
+                "POSTAL_VOTE, POSTAL_MINUS_VOTE",
+                "PROXY_VOTE, PROXY_MINUS_VOTE",
+                "OVERSEAS_VOTE, OVERSEAS_MINUS_VOTE",
+                "APPLICATIONS_API, APPLICATIONS_MINUS_API"
+            ]
+        )
+        fun `should submit a ConfirmRegisterCheckResult Message for all services`(
+            sourceTypeDto: SourceTypeEntity,
+            sourceType: SourceType
+        ) {
             // Given
             val requestId = randomUUID()
             val historicalSearchEarliestDate = Instant.now()
@@ -271,6 +284,7 @@ internal class RegisterCheckServiceTest {
                 status = EXACT_MATCH,
                 registerCheckMatches = registerCheckMatchList,
                 historicalSearchEarliestDate = historicalSearchEarliestDate,
+                sourceType = sourceTypeDto
             )
             val expectedMessage = buildRegisterCheckResultMessage(
                 sourceType = SourceType.VOTER_MINUS_CARD,

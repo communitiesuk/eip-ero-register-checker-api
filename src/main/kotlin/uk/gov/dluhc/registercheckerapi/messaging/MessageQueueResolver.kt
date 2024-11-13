@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component
 import uk.gov.dluhc.messagingsupport.MessageQueue
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType
+import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType.APPLICATIONS_MINUS_API
 import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType.OVERSEAS_MINUS_VOTE
 import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType.POSTAL_MINUS_VOTE
 import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType.PROXY_MINUS_VOTE
@@ -16,6 +17,7 @@ class MessageQueueResolver(
     @Qualifier("postalVoteConfirmRegisterCheckResultQueue") private val postalVoteConfirmRegisterCheckResultQueue: MessageQueue<RegisterCheckResultMessage>,
     @Qualifier("proxyVoteConfirmRegisterCheckResultQueue") private val proxyVoteConfirmRegisterCheckResultQueue: MessageQueue<RegisterCheckResultMessage>,
     @Qualifier("overseasVoteConfirmRegisterCheckResultQueue") private val overseasVoteConfirmRegisterCheckResultQueue: MessageQueue<RegisterCheckResultMessage>,
+    @Qualifier("registerCheckResultResponseQueue") private val registerCheckResultResponseQueue: MessageQueue<RegisterCheckResultMessage>,
 ) {
 
     fun getTargetQueueForSourceType(sourceType: SourceType) =
@@ -24,5 +26,6 @@ class MessageQueueResolver(
             POSTAL_MINUS_VOTE -> postalVoteConfirmRegisterCheckResultQueue
             PROXY_MINUS_VOTE -> proxyVoteConfirmRegisterCheckResultQueue
             OVERSEAS_MINUS_VOTE -> overseasVoteConfirmRegisterCheckResultQueue
+            APPLICATIONS_MINUS_API -> registerCheckResultResponseQueue
         }
 }

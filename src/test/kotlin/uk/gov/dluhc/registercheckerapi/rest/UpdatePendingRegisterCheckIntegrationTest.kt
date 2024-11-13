@@ -17,7 +17,6 @@ import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
-import uk.gov.dluhc.registercheckerapi.database.entity.SourceType.POSTAL_VOTE
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType
@@ -40,6 +39,7 @@ import java.time.temporal.ChronoUnit
 import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import uk.gov.dluhc.registercheckerapi.database.entity.SourceType as SourceTypeEntity
 
 private const val REQUEST_HEADER_NAME = "client-cert-serial"
 const val CERT_SERIAL_NUMBER_VALUE = "543212222"
@@ -877,8 +877,20 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         )
     }
 
-    @Test
-    fun `should submit the POSTAL_VOTE result message to the postal vote queue`() {
+    @ParameterizedTest
+    @CsvSource(
+        value = [
+            "VOTER_CARD, VOTER_MINUS_CARD,",
+            "POSTAL_VOTE, POSTAL_MINUS_VOTE,",
+            "PROXY_VOTE, PROXY_MINUS_VOTE,",
+            "OVERSEAS_VOTE, OVERSEAS_MINUS_VOTE,",
+            "APPLICATIONS_API, APPLICATIONS_MINUS_API"
+        ]
+    )
+    fun `should submit the different service result messages to the correct queues`(
+        sourceTypeEntity: SourceTypeEntity,
+        sourceType: SourceType
+    ) {
         // Given
         val requestId = UUID.randomUUID()
         val eroId = "camden-city-council"
@@ -891,7 +903,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
         val savedPendingRegisterCheckEntity = registerCheckRepository.save(
             buildRegisterCheck(
-                sourceType = POSTAL_VOTE,
+                sourceType = sourceTypeEntity,
                 correlationId = requestId,
                 gssCode = gssCode,
                 status = CheckStatus.PENDING,
@@ -905,7 +917,7 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         val matches = listOf(buildRegisterCheckMatchRequest(), buildRegisterCheckMatchRequest())
 
         val expectedMessageContent = RegisterCheckResultMessage(
-            sourceType = sourceTypeMapper.fromEntityToVcaSqsEnum(POSTAL_VOTE),
+            sourceType = sourceType,
             sourceReference = savedPendingRegisterCheckEntity.sourceReference,
             sourceCorrelationId = savedPendingRegisterCheckEntity.sourceCorrelationId,
             registerCheckResult = RegisterCheckResult.MULTIPLE_MINUS_MATCH,
@@ -935,10 +947,28 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .isCreated
 
         // Then
-        assertMessageSubmittedToSqs(
-            queueUrl = localStackContainerSettings.mappedQueueUrlPostalVoteConfirmRegisterCheckResult,
-            expectedMessageContent = expectedMessageContent
-        )
+        when (sourceType) {
+            SourceType.APPLICATIONS_MINUS_API -> assertMessageSubmittedToSqs(
+                queueUrl = localStackContainerSettings.mappedQueueUrlRegisterCheckResultResponse,
+                expectedMessageContent = expectedMessageContent
+            )
+            SourceType.VOTER_MINUS_CARD -> assertMessageSubmittedToSqs(
+                queueUrl = localStackContainerSettings.mappedQueueUrlConfirmRegisterCheckResult,
+                expectedMessageContent = expectedMessageContent
+            )
+            SourceType.PROXY_MINUS_VOTE -> assertMessageSubmittedToSqs(
+                queueUrl = localStackContainerSettings.mappedQueueUrlProxyVoteConfirmRegisterCheckResult,
+                expectedMessageContent = expectedMessageContent
+            )
+            SourceType.POSTAL_MINUS_VOTE -> assertMessageSubmittedToSqs(
+                queueUrl = localStackContainerSettings.mappedQueueUrlPostalVoteConfirmRegisterCheckResult,
+                expectedMessageContent = expectedMessageContent
+            )
+            SourceType.OVERSEAS_MINUS_VOTE -> assertMessageSubmittedToSqs(
+                queueUrl = localStackContainerSettings.mappedQueueUrlOverseasVoteConfirmRegisterCheckResult,
+                expectedMessageContent = expectedMessageContent
+            )
+        }
     }
 
     private fun assertMessageSubmittedToSqs(queueUrl: String, expectedMessageContent: RegisterCheckResultMessage) {

@@ -16,12 +16,14 @@ interface SourceTypeMapper {
     @ValueMapping(target = "POSTAL_VOTE", source = "POSTAL_MINUS_VOTE")
     @ValueMapping(target = "PROXY_VOTE", source = "PROXY_MINUS_VOTE")
     @ValueMapping(target = "OVERSEAS_VOTE", source = "OVERSEAS_MINUS_VOTE")
+    @ValueMapping(target = "APPLICATIONS_API", source = "APPLICATIONS_MINUS_API")
     fun fromSqsToDtoEnum(sqsSourceType: SourceTypeSqsEnum): SourceTypeDtoEnum
 
     @ValueMapping(target = "VOTER_MINUS_CARD", source = "VOTER_CARD")
     @ValueMapping(target = "POSTAL_MINUS_VOTE", source = "POSTAL_VOTE")
     @ValueMapping(target = "PROXY_MINUS_VOTE", source = "PROXY_VOTE")
     @ValueMapping(target = "OVERSEAS_MINUS_VOTE", source = "OVERSEAS_VOTE")
+    @ValueMapping(target = "APPLICATIONS_MINUS_API", source = "APPLICATIONS_API")
     fun fromEntityToVcaSqsEnum(entitySourceType: SourceTypeEntityEnum): SourceTypeSqsEnum
 
     fun fromEntityToDtoEnum(entitySourceType: SourceTypeEntityEnum): SourceTypeDtoEnum
@@ -33,5 +35,6 @@ interface SourceTypeMapper {
     @ValueMapping(target = "EROP", source = "POSTAL_VOTE")
     @ValueMapping(target = "EROP", source = "PROXY_VOTE")
     @ValueMapping(target = "EROP", source = "OVERSEAS_VOTE")
+    @ValueMapping(target = "EROP", source = "APPLICATIONS_API")
     fun sourceTypeDtoToSourceSystem(sourceType: SourceType): SourceSystem
 }

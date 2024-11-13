@@ -35,6 +35,7 @@ sqs:
   postal-vote-confirm-applicant-register-check-result-queue-name: ${SQS_POSTAL_VOTE_CONFIRM_APPLICANT_REGISTER_CHECK_RESULT_QUEUE_NAME}
   proxy-vote-confirm-applicant-register-check-result-queue-name: ${SQS_PROXY_VOTE_CONFIRM_APPLICANT_REGISTER_CHECK_RESULT_QUEUE_NAME}
   overseas-vote-confirm-applicant-register-check-result-queue-name: ${SQS_OVERSEAS_VOTE_CONFIRM_APPLICANT_REGISTER_CHECK_RESULT_QUEUE_NAME}
+  register-check-result-response-queue-name: ${SQS_REGISTER_CHECK_RESULT_RESPONSE_QUEUE_NAME}
   remove-applicant-register-check-data-queue-name: ${SQS_REMOVE_APPLICANT_REGISTER_CHECK_DATA_QUEUE_NAME}
 
 caching.time-to-live: PT1H

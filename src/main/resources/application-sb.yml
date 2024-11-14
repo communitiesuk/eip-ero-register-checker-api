@@ -1,3 +1,0 @@
-jobs:
-  register-check-monitoring:
-    send-email: false

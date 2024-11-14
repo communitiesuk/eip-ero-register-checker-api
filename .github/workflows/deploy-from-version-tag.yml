@@ -8,8 +8,6 @@ on:
         required: true
         type: choice
         options:
-          - sb
-          - dev
           - int
           - pvt
           - test

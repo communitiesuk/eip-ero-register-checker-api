@@ -954,7 +954,6 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             queueUrl = queueUrl,
             expectedMessageContent = expectedMessageContent
         )
-
     }
 
     private fun assertMessageSubmittedToSqs(queueUrl: String, expectedMessageContent: RegisterCheckResultMessage) {

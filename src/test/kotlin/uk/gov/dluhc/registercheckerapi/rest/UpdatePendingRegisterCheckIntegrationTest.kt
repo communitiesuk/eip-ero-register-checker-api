@@ -880,17 +880,16 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
     @ParameterizedTest
     @CsvSource(
         value = [
-            "VOTER_CARD, VOTER_MINUS_CARD, 000000000000/confirm-applicant-register-check-result",
-            "POSTAL_VOTE, POSTAL_MINUS_VOTE, 000000000000/postal-vote-confirm-applicant-register-check-result",
-            "PROXY_VOTE, PROXY_MINUS_VOTE, 000000000000/proxy-vote-confirm-applicant-register-check-result",
-            "OVERSEAS_VOTE, OVERSEAS_MINUS_VOTE, 000000000000/overseas-vote-confirm-applicant-register-check-result",
-            "APPLICATIONS_API, APPLICATIONS_MINUS_API, 000000000000/register-check-result-response-queue-name",
+            "VOTER_CARD, VOTER_MINUS_CARD,",
+            "POSTAL_VOTE, POSTAL_MINUS_VOTE,",
+            "PROXY_VOTE, PROXY_MINUS_VOTE,",
+            "OVERSEAS_VOTE, OVERSEAS_MINUS_VOTE,",
+            "APPLICATIONS_API, APPLICATIONS_MINUS_API"
         ]
     )
     fun `should submit the different service result messages to the correct queues`(
         sourceTypeEntity: SourceTypeEntity,
-        sourceType: SourceType,
-        rawUrlString: String
+        sourceType: SourceType
     ) {
         // Given
         val requestId = UUID.randomUUID()
@@ -948,10 +947,9 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             .isCreated
 
         // Then
-        val queueUrl = "${localStackContainerSettings.apiUrl}/$rawUrlString"
-
+        val queueUrlForSourceType = getQueueUrlForSourceType(sourceType)
         assertMessageSubmittedToSqs(
-            queueUrl = queueUrl,
+            queueUrl = queueUrlForSourceType,
             expectedMessageContent = expectedMessageContent
         )
     }
@@ -1067,4 +1065,14 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
     private fun buildUri(requestId: UUID = UUID.randomUUID()) =
         "/registerchecks/$requestId"
+
+    private fun getQueueUrlForSourceType(sourceType: SourceType): String {
+        return when (sourceType) {
+            SourceType.APPLICATIONS_MINUS_API -> localStackContainerSettings.mappedQueueUrlRegisterCheckResultResponse
+            SourceType.VOTER_MINUS_CARD -> localStackContainerSettings.mappedQueueUrlConfirmRegisterCheckResult
+            SourceType.PROXY_MINUS_VOTE -> localStackContainerSettings.mappedQueueUrlProxyVoteConfirmRegisterCheckResult
+            SourceType.POSTAL_MINUS_VOTE -> localStackContainerSettings.mappedQueueUrlPostalVoteConfirmRegisterCheckResult
+            SourceType.OVERSEAS_MINUS_VOTE -> localStackContainerSettings.mappedQueueUrlOverseasVoteConfirmRegisterCheckResult
+        }
+    }
 }

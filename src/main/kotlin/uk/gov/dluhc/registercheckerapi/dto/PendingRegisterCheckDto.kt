@@ -20,5 +20,6 @@ enum class SourceType {
     VOTER_CARD,
     POSTAL_VOTE,
     PROXY_VOTE,
-    OVERSEAS_VOTE
+    OVERSEAS_VOTE,
+    APPLICATIONS_API
 }

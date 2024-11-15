@@ -26,6 +26,9 @@ class MessagingConfiguration {
     @Value("\${sqs.overseas-vote-confirm-applicant-register-check-result-queue-name}")
     private lateinit var overseasVoteConfirmRegisterCheckResultQueueName: String
 
+    @Value("\${sqs.register-check-result-response-queue-name}")
+    private lateinit var registerCheckResultResponseQueueName: String
+
     @Bean(name = ["confirmRegisterCheckResultQueue"])
     fun confirmRegisterCheckResultQueue(sqsTemplate: SqsTemplate) =
         MessageQueue<RegisterCheckResultMessage>(confirmRegisterCheckResultQueueName, sqsTemplate)
@@ -41,6 +44,10 @@ class MessagingConfiguration {
     @Bean(name = ["overseasVoteConfirmRegisterCheckResultQueue"])
     fun overseasVoteConfirmRegisterCheckResultQueue(sqsTemplate: SqsTemplate) =
         MessageQueue<RegisterCheckResultMessage>(overseasVoteConfirmRegisterCheckResultQueueName, sqsTemplate)
+
+    @Bean(name = ["registerCheckResultResponseQueue"])
+    fun registerCheckResultResponseQueue(sqsTemplate: SqsTemplate) =
+        MessageQueue<RegisterCheckResultMessage>(registerCheckResultResponseQueueName, sqsTemplate)
 
     @Bean
     fun sqsMessagingMessageConverter(

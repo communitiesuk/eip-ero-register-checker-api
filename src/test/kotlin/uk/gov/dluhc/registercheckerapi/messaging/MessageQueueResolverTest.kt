@@ -26,6 +26,9 @@ internal class MessageQueueResolverTest {
     @Mock
     private lateinit var overseasVoteConfirmRegisterCheckResultMockQueue: MessageQueue<RegisterCheckResultMessage>
 
+    @Mock
+    private lateinit var registerCheckResultResponseQueue: MessageQueue<RegisterCheckResultMessage>
+
     private lateinit var messageQueueResolver: MessageQueueResolver
 
     @BeforeEach
@@ -36,6 +39,8 @@ internal class MessageQueueResolverTest {
             proxyVoteConfirmRegisterCheckResultQueue = proxyVoteConfirmRegisterCheckResultMockQueue,
             overseasVoteConfirmRegisterCheckResultQueue = overseasVoteConfirmRegisterCheckResultMockQueue,
             confirmRegisterCheckResultQueue = confirmRegisterCheckResultMockQueue,
+            registerCheckResultResponseQueue = registerCheckResultResponseQueue
+
         )
     }
 
@@ -44,7 +49,8 @@ internal class MessageQueueResolverTest {
         SourceType.VOTER_MINUS_CARD to confirmRegisterCheckResultMockQueue,
         SourceType.POSTAL_MINUS_VOTE to postalVoteConfirmRegisterCheckResultMockQueue,
         SourceType.PROXY_MINUS_VOTE to proxyVoteConfirmRegisterCheckResultMockQueue,
-        SourceType.OVERSEAS_MINUS_VOTE to overseasVoteConfirmRegisterCheckResultMockQueue
+        SourceType.OVERSEAS_MINUS_VOTE to overseasVoteConfirmRegisterCheckResultMockQueue,
+        SourceType.APPLICATIONS_MINUS_API to registerCheckResultResponseQueue
     ).map { (sourceType, expectedTargetQueue) ->
         dynamicTest("for $sourceType return $expectedTargetQueue") {
 

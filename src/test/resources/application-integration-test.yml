@@ -49,6 +49,7 @@ sqs:
   postal-vote-confirm-applicant-register-check-result-queue-name: postal-vote-confirm-applicant-register-check-result
   proxy-vote-confirm-applicant-register-check-result-queue-name: proxy-vote-confirm-applicant-register-check-result
   overseas-vote-confirm-applicant-register-check-result-queue-name: overseas-vote-confirm-applicant-register-check-result
+  register-check-result-response-queue-name: register-check-result-response-queue-name
 
 caching.time-to-live: PT2S
 

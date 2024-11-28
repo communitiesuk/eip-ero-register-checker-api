@@ -28,7 +28,7 @@ jobs:
           cache: gradle
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1-node16
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.DEV2_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.DEV2_AWS_SECRET_ACCESS_KEY }}
@@ -36,7 +36,7 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
@@ -50,10 +50,9 @@ jobs:
           IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker tag ${{ inputs.app }}:latest $IMAGE
           docker push $IMAGE
-          echo "::set-output name=image::$IMAGE"
 
       - name: Configure AWS credentials (live env)
-        uses: aws-actions/configure-aws-credentials@v1-node16
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.LIVE_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.LIVE_AWS_SECRET_ACCESS_KEY }}
@@ -61,7 +60,7 @@ jobs:
 
       - name: Login to Amazon ECR (live env)
         id: login-ecr-live
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Tag and push image to Amazon ECR (live env)
         id: build-image-live
@@ -73,4 +72,3 @@ jobs:
           IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker tag ${{ inputs.app }}:latest $IMAGE
           docker push $IMAGE
-          echo "::set-output name=image::$IMAGE"

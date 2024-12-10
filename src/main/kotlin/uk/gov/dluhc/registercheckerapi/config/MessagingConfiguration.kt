@@ -9,7 +9,10 @@ import org.springframework.context.annotation.Configuration
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.gov.dluhc.messagingsupport.MessageQueue
 import uk.gov.dluhc.messagingsupport.MessagingConfigurationHelper
+import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckMessage
+import uk.gov.dluhc.registercheckerapi.messaging.models.PendingRegisterCheckArchiveMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
+import uk.gov.dluhc.registercheckerapi.messaging.models.RemoveRegisterCheckDataMessage
 
 @Configuration
 class MessagingConfiguration {
@@ -28,6 +31,15 @@ class MessagingConfiguration {
 
     @Value("\${sqs.register-check-result-response-queue-name}")
     private lateinit var registerCheckResultResponseQueueName: String
+
+    @Value("\${sqs.forward-initiate-register-check-queue-name}")
+    private lateinit var forwardInitiateRegisterCheckQueueName: String
+
+    @Value("\${sqs.send-register-check-archive-message-queue-name}")
+    private lateinit var sendRegisterCheckArchiveMessageQueueName: String
+
+    @Value("\${sqs.forward-remove-register-check-data-message-queue-name}")
+    private lateinit var forwardRemoveRegisterCheckDataMessageQueueName: String
 
     @Bean(name = ["confirmRegisterCheckResultQueue"])
     fun confirmRegisterCheckResultQueue(sqsTemplate: SqsTemplate) =
@@ -48,6 +60,18 @@ class MessagingConfiguration {
     @Bean(name = ["registerCheckResultResponseQueue"])
     fun registerCheckResultResponseQueue(sqsTemplate: SqsTemplate) =
         MessageQueue<RegisterCheckResultMessage>(registerCheckResultResponseQueueName, sqsTemplate)
+
+    @Bean(name = ["forwardInitiateRegisterCheckQueue"])
+    fun forwardInitiateRegisterCheckQueue(sqsTemplate: SqsTemplate) =
+        MessageQueue<InitiateRegisterCheckMessage>(forwardInitiateRegisterCheckQueueName, sqsTemplate)
+
+    @Bean(name = ["sendRegisterCheckArchiveMessageQueue"])
+    fun sendRegisterCheckArchiveMessageQueue(sqsTemplate: SqsTemplate) =
+        MessageQueue<PendingRegisterCheckArchiveMessage>(sendRegisterCheckArchiveMessageQueueName, sqsTemplate)
+
+    @Bean(name = ["forwardRemoveRegisterCheckDataMessageQueue"])
+    fun forwardRemoveRegisterCheckDataMessageQueue(sqsTemplate: SqsTemplate) =
+        MessageQueue<RemoveRegisterCheckDataMessage>(forwardRemoveRegisterCheckDataMessageQueueName, sqsTemplate)
 
     @Bean
     fun sqsMessagingMessageConverter(

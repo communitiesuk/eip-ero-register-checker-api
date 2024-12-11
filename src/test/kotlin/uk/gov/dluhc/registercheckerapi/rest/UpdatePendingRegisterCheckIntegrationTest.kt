@@ -1,5 +1,6 @@
 package uk.gov.dluhc.registercheckerapi.rest
 
+import mu.KotlinLogging
 import org.apache.commons.lang3.StringUtils.toRootUpperCase
 import org.apache.commons.lang3.StringUtils.trim
 import org.assertj.core.api.Assertions.assertThat
@@ -17,6 +18,7 @@ import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.CheckStatus
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
+import uk.gov.dluhc.registercheckerapi.messaging.models.PendingRegisterCheckArchiveMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResult
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType
@@ -43,6 +45,8 @@ import uk.gov.dluhc.registercheckerapi.database.entity.SourceType as SourceTypeE
 
 private const val REQUEST_HEADER_NAME = "client-cert-serial"
 const val CERT_SERIAL_NUMBER_VALUE = "543212222"
+
+private val logger = KotlinLogging.logger {}
 
 internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
 
@@ -952,6 +956,17 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
             queueUrl = queueUrlForSourceType,
             expectedMessageContent = expectedMessageContent
         )
+
+        await.atMost(5, TimeUnit.SECONDS).untilAsserted {
+            val sqsMessages: List<Message> =
+                getLatestSqsMessagesFromQueue(localStackContainerSettings.mappedQueueUrlSendRegisterCheckArchiveMessageData)
+            assertThat(sqsMessages).anyMatch {
+                assertPendingRegisterCheckArchiveMessage(
+                    it,
+                    PendingRegisterCheckArchiveMessage(correlationId = requestId)
+                )
+            }
+        }
     }
 
     private fun assertMessageSubmittedToSqs(queueUrl: String, expectedMessageContent: RegisterCheckResultMessage) {
@@ -1009,6 +1024,22 @@ internal class UpdatePendingRegisterCheckIntegrationTest : IntegrationTest() {
         )
 
         assertThat(actualRegisterCheckResultMessage)
+            .usingRecursiveComparison()
+            .ignoringCollectionOrder()
+            .isEqualTo(expectedMessage)
+        return true
+    }
+
+    private fun assertPendingRegisterCheckArchiveMessage(
+        actualMessage: Message,
+        expectedMessage: PendingRegisterCheckArchiveMessage
+    ): Boolean {
+        val actualPendingRegisterCheckArchiveMessage = objectMapper.readValue(
+            actualMessage.body(),
+            PendingRegisterCheckArchiveMessage::class.java,
+        )
+
+        assertThat(actualPendingRegisterCheckArchiveMessage)
             .usingRecursiveComparison()
             .ignoringCollectionOrder()
             .isEqualTo(expectedMessage)

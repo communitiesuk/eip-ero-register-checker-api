@@ -161,6 +161,20 @@ components:
         - registerCheckResult
         - matches
 
+    PendingRegisterCheckArchiveMessage:
+      title: PendingRegisterCheckArchiveMessage
+      type: object
+      description: SQS message containing a request to archive all data related to a register check
+      properties:
+        correlationId:
+          type: string
+          format: uuid
+          description: The id to allow the response from rca to be associated with the correct register status e.g. `VoterCardApplicationRegisterStatus.id`
+          example: c73bcdcc-2669-4bf6-81d3-e4ae73fb11fd
+
+      required:
+        - correlationId
+
     RegisterCheckResult:
       title: RegisterCheckResult
       description: Enum containing the possible values for a register check match outcome.

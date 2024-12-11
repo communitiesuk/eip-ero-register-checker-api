@@ -1,11 +1,13 @@
 package uk.gov.dluhc.registercheckerapi.messaging
 
+import ch.qos.logback.classic.Level
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.CriteriaQuery
 import jakarta.persistence.criteria.Root
 import mu.KotlinLogging
 import org.apache.commons.lang3.time.StopWatch
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.testcontainers.shaded.org.awaitility.Awaitility.await
@@ -16,6 +18,8 @@ import uk.gov.dluhc.registercheckerapi.database.entity.PersonalDetail
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType
 import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckMessage
+import uk.gov.dluhc.registercheckerapi.testsupport.MessagingTestHelper
+import uk.gov.dluhc.registercheckerapi.testsupport.TestLogAppender
 import uk.gov.dluhc.registercheckerapi.testsupport.assertj.assertions.entity.RegisterCheckAssert
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildInitiateRegisterCheckMessage
 import java.time.Instant
@@ -26,6 +30,13 @@ import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType as SourceType
 private val logger = KotlinLogging.logger {}
 
 internal class InitiateRegisterCheckMessageListenerIntegrationTest : IntegrationTest() {
+
+    private var messagingTestHelper: MessagingTestHelper? = null
+
+    @BeforeEach
+    fun setup() {
+        messagingTestHelper = MessagingTestHelper(sqsAsyncClient)
+    }
 
     @ParameterizedTest
     @CsvSource(
@@ -81,13 +92,24 @@ internal class InitiateRegisterCheckMessageListenerIntegrationTest : Integration
         val stopWatch = StopWatch.createStarted()
         await().atMost(5, TimeUnit.SECONDS).untilAsserted {
             val actualRegisterCheckJpaEntity = getActualRegisterCheckJpaEntity(message)
-            Assertions.assertThat(actualRegisterCheckJpaEntity).hasSize(1)
+            assertThat(actualRegisterCheckJpaEntity).hasSize(1)
 
             RegisterCheckAssert.assertThat(actualRegisterCheckJpaEntity.first())
                 .ignoringIdFields()
                 .ignoringDateFields()
                 .isRecursivelyEqual(expected)
                 .hasIdAndDbAuditFieldsAfter(earliestDateCreated)
+
+            assertThat(
+                TestLogAppender.hasLog(
+                    "New InitiateRegisterCheckMessage received with " +
+                        "sourceReference: ${message.sourceReference} and " +
+                        "sourceCorrelationId: ${message.sourceCorrelationId}",
+                    Level.INFO
+                )
+            ).isTrue()
+
+            messagingTestHelper?.assertMessagesEnqueued(localStackContainerSettings.mappedQueueUrlForwardInitiateRegisterCheckData, 1)
 
             stopWatch.stop()
             logger.info("completed assertions in $stopWatch")

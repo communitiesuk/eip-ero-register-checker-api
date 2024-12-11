@@ -49,7 +49,10 @@ sqs:
   postal-vote-confirm-applicant-register-check-result-queue-name: postal-vote-confirm-applicant-register-check-result
   proxy-vote-confirm-applicant-register-check-result-queue-name: proxy-vote-confirm-applicant-register-check-result
   overseas-vote-confirm-applicant-register-check-result-queue-name: overseas-vote-confirm-applicant-register-check-result
-  register-check-result-response-queue-name: register-check-result-response-queue-name
+  register-check-result-response-queue-name: register-check-result-response
+  forward-initiate-register-check-queue-name: forward-initiate-register-check
+  send-register-check-archive-message-queue-name: send-register-check-archive-message
+  forward-remove-register-check-data-message-queue-name: forward-remove-register-check-data-message
 
 caching.time-to-live: PT2S
 

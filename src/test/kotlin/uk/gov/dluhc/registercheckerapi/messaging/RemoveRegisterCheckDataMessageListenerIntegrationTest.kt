@@ -1,11 +1,15 @@
 package uk.gov.dluhc.registercheckerapi.messaging
 
+import ch.qos.logback.classic.Level
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.testcontainers.shaded.org.awaitility.Awaitility.await
 import uk.gov.dluhc.registercheckerapi.config.IntegrationTest
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType
+import uk.gov.dluhc.registercheckerapi.testsupport.MessagingTestHelper
+import uk.gov.dluhc.registercheckerapi.testsupport.TestLogAppender
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomGssCode
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheckResultData
@@ -16,6 +20,13 @@ import java.util.concurrent.TimeUnit
 import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType as SourceTypeModel
 
 internal class RemoveRegisterCheckDataMessageListenerIntegrationTest : IntegrationTest() {
+
+    private var messagingTestHelper: MessagingTestHelper? = null
+
+    @BeforeEach
+    fun setup() {
+        messagingTestHelper = MessagingTestHelper(sqsAsyncClient)
+    }
 
     @ParameterizedTest
     @CsvSource(
@@ -73,6 +84,16 @@ internal class RemoveRegisterCheckDataMessageListenerIntegrationTest : Integrati
 
             assertThat(registerCheckRepository.findByCorrelationId(correlationIdForOtherSourceRef)).isNotNull
             assertThat(registerCheckResultDataRepository.findByCorrelationIdIn(setOf(correlationIdForOtherSourceRef))).isNotEmpty.hasSize(1)
+
+            assertThat(
+                TestLogAppender.hasLog(
+                    "RemoveRegisterCheckDataMessage received with " +
+                        "sourceType: [${message.sourceType}] and " +
+                        "sourceReference: [${message.sourceReference}]",
+                    Level.INFO
+                )
+            )
+            messagingTestHelper?.assertMessagesEnqueued(localStackContainerSettings.mappedQueueUrlForwardRemoveRegisterCheckData, 1)
         }
     }
 }

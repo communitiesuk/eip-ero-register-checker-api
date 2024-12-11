@@ -10,7 +10,10 @@ data class LocalStackContainerSettings(
     val queueUrlProxyVoteConfirmRegisterCheckResult: String,
     val queueUrlOverseasVoteConfirmRegisterCheckResult: String,
     val queueUrlRemoveRegisterCheckData: String,
-    val queueUrlRegisterCheckResultResponse: String
+    val queueUrlRegisterCheckResultResponse: String,
+    val queueUrlForwardInitiateRegisterCheckData: String,
+    val queueUrlSendRegisterCheckArchiveMessageData: String,
+    val queueUrlForwardRemoveRegisterCheckData: String
 ) {
     val mappedQueueUrlInitiateApplicantRegisterCheck: String = toMappedUrl(queueUrlInitiateApplicantRegisterCheck, apiUrl)
     val mappedQueueUrlConfirmRegisterCheckResult: String = toMappedUrl(queueUrlConfirmRegisterCheckResult, apiUrl)
@@ -19,6 +22,9 @@ data class LocalStackContainerSettings(
     val mappedQueueUrlOverseasVoteConfirmRegisterCheckResult: String = toMappedUrl(queueUrlOverseasVoteConfirmRegisterCheckResult, apiUrl)
     val mappedQueueUrlRegisterCheckResultResponse: String = toMappedUrl(queueUrlRegisterCheckResultResponse, apiUrl)
     val mappedQueueUrlRemoveRegisterCheckData: String = toMappedUrl(queueUrlRemoveRegisterCheckData, apiUrl)
+    val mappedQueueUrlForwardInitiateRegisterCheckData: String = toMappedUrl(queueUrlForwardInitiateRegisterCheckData, apiUrl)
+    val mappedQueueUrlSendRegisterCheckArchiveMessageData: String = toMappedUrl(queueUrlSendRegisterCheckArchiveMessageData, apiUrl)
+    val mappedQueueUrlForwardRemoveRegisterCheckData: String = toMappedUrl(queueUrlForwardRemoveRegisterCheckData, apiUrl)
     val sesMessagesUrl = "$apiUrl/_aws/ses"
 
     private fun toMappedUrl(rawUrlString: String, apiUrlString: String): String {

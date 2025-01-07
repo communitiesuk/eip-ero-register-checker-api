@@ -29,6 +29,7 @@ import uk.gov.dluhc.logging.rest.CorrelationIdRestTemplateClientHttpRequestInter
 class IerRestClientConfiguration(
     @Value("\${api.ier.base.url}") private val ierApiBaseUrl: String,
     @Value("\${api.ier.sts.assume.role}") private val ierStsAssumeRole: String,
+    @Value("\${api.ier.sts.assume.role.external-id}") private val ierStsAssumeRoleExternalId: String,
     private val correlationIdRestTemplateClientHttpRequestInterceptor: CorrelationIdRestTemplateClientHttpRequestInterceptor,
 ) {
 
@@ -65,6 +66,7 @@ class IerRestClientConfiguration(
                 AssumeRoleRequest.builder()
                     .roleArn(ierStsAssumeRole)
                     .roleSessionName(STS_SESSION_NAME)
+                    .externalId(ierStsAssumeRoleExternalId)
                     .build()
             )
             .stsClient(stsClient)

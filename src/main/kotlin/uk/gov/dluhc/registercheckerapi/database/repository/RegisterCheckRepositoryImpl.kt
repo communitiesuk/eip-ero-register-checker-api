@@ -5,8 +5,6 @@ import jakarta.persistence.PersistenceContext
 import org.springframework.stereotype.Repository
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 
-private const val ADMIN_MAX_RESULTS = 1000
-
 @Repository
 class RegisterCheckRepositoryImpl(@PersistenceContext val entityManager: EntityManager) : CustomRegisterCheckRepository {
 
@@ -22,14 +20,14 @@ class RegisterCheckRepositoryImpl(@PersistenceContext val entityManager: EntityM
             .resultList
     }
 
-    override fun adminFindPendingEntriesByGssCodes(gssCodes: List<String>): List<RegisterCheck> {
+    override fun adminFindPendingEntriesByGssCodes(gssCodes: List<String>, limit: Int): List<RegisterCheck> {
         val query = """SELECT rc FROM RegisterCheck rc
             WHERE rc.status = 'PENDING' AND rc.gssCode IN (:gssCodes)
             ORDER BY rc.dateCreated
         """
         return entityManager.createQuery(query, RegisterCheck::class.java)
             .setParameter("gssCodes", gssCodes)
-            .setMaxResults(ADMIN_MAX_RESULTS)
+            .setMaxResults(limit)
             .resultList
     }
 }

@@ -139,6 +139,112 @@ paths:
         httpMethod: GET
 
   #
+  # Admin Register Checks
+  # --------------------------------------------------------------------------------
+  /admin/pending-checks/{eroId}:
+    parameters:
+      - name: eroId
+        description: The ID of the Electoral Registration Office whose checks to query
+        schema:
+          type: string
+        example: 100
+        in: path
+        required: true
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - Register Checks
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: { }
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+            responseTemplates:
+              application/json: |
+                {}
+    get:
+      summary: Admin Get Pending Register Checks
+      description: Retrieve list of pending register check requests for a particular ERO.
+      operationId: admin-get-pending-register-checks
+      tags:
+        - Register Checks
+      responses:
+        '200':
+          $ref: '#/components/responses/AdminPendingRegisterChecks'
+        '404':
+          description: Error response describing the resource not found.
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: '2022-09-28T18:01:42.105Z'
+                  status:
+                    type: integer
+                    example: 404
+                  error:
+                    type: string
+                    example: 'Not Found'
+                    maxLength: 500
+                  message:
+                    type: string
+                    example: 'ERO ero-id not found'
+                    maxLength: 500
+                required:
+                  - timestamp
+                  - status
+                  - error
+                  - message
+      security:
+        - awsIamAuthorizer: [ ]
+      x-amazon-apigateway-integration:
+        type: HTTP_PROXY
+        uri: ${base_uri}/admin/pending-checks/{eroId}
+        requestParameters:
+          integration.request.path.eroId: method.request.path.eroId
+          integration.request.header.x-request-id: context.requestId
+        connectionType: VPC_LINK
+        connectionId: ${vpc_connection_id}
+        httpMethod: GET
+
+  #
   # Single Register Check
   # --------------------------------------------------------------------------------
   '/registerchecks/{requestid}':
@@ -312,6 +418,18 @@ components:
         - pageSize
         - registerCheckRequests
 
+    AdminPendingRegisterChecksResponse:
+      title: AdminPendingRegisterChecksResponse
+      description: Response containing pending Register Checks for a particular ERO.
+      properties:
+        pendingRegisterChecks:
+          description: The list of Pending Register Checks
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminPendingRegisterCheck'
+      required:
+        - pendingRegisterChecks
+
     PendingRegisterCheck:
       title: PendingRegisterCheck
       type: object
@@ -431,11 +549,58 @@ components:
         - regstreet
         - regpostcode
 
+    AdminPendingRegisterCheck:
+      title: AdminPendingRegisterCheck
+      type: object
+      description: |-
+        An object describing a pending request for a check against the Electoral Register.
+        Intended for viewing by EROP admins, and does not include personal information.
+      properties:
+        applicationId:
+          type: string
+          description: The ID of the application that this check has been created for.
+          format: string
+          example: 1f0f76a9a66f438b9bb33070
+        gssCode:
+          type: string
+          pattern: '^[a-zA-Z]\d{8}$'
+          description: The Local Authority GSS Code that manages the Electoral Register.
+          example: E06000001
+        sourceType:
+          $ref: '#/components/schemas/SourceType'
+        createdAt:
+          type: string
+          description: The date and time this request to check the Electoral Register was generated
+          format: date-time
+          example: 2022-09-07T14:14:55.123Z
+        historicalSearch:
+          type: boolean
+          default: false
+          description: |-
+            Indicated the search is in relation to an Overseas elector application.
+            For ERO's to determine Overseas applications, they need to know if the applicant is already on the current register as an Overseas elector, or 
+            if they existed on any historical registers, therefore current and historical registers must be searched.
+      required:
+        - applicationId
+        - gssCode
+        - sourceType
+        - createdAt
+
     SourceSystem:
       title: SourceSystem
       description: The source system of the Application
       enum:
         - EROP
+
+    SourceType:
+      title: SourceType
+      description: The source type of the Application
+      enum:
+        - VOTER_CARD
+        - POSTAL_VOTE
+        - PROXY_VOTE
+        - OVERSEAS_VOTE
+        - APPLICATIONS_API
 
     RegisterCheckResultRequest:
       title: RegisterCheckResultRequest
@@ -751,6 +916,23 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/PendingRegisterChecksResponse'
+
+    AdminPendingRegisterChecks:
+      description: Contains pending Register Checks requested by an EROP admin.
+      headers:
+        Access-Control-Allow-Origin:
+          schema:
+            type: string
+        Access-Control-Allow-Methods:
+          schema:
+            type: string
+        Access-Control-Allow-Headers:
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AdminPendingRegisterChecksResponse'
   #
   # Request Body Definitions
   # --------------------------------------------------------------------------------
@@ -773,3 +955,8 @@ components:
         authorizerCredentials: '${ems_certificate_authorizer_role}'
         authorizerPayloadFormatVersion: '1.0'
         authorizerResultTtlInSeconds: 0
+    awsIamAuthorizer:
+      type: apiKey
+      name: Authorization
+      in: header
+      x-amazon-apigateway-authtype: awsSigv4

@@ -37,4 +37,11 @@ interface SourceTypeMapper {
     @ValueMapping(target = "EROP", source = "OVERSEAS_VOTE")
     @ValueMapping(target = "EROP", source = "APPLICATIONS_API")
     fun sourceTypeDtoToSourceSystem(sourceType: SourceType): SourceSystem
+
+    @ValueMapping(target = "VOTER_CARD", source = "VOTER_CARD")
+    @ValueMapping(target = "POSTAL_VOTE", source = "POSTAL_VOTE")
+    @ValueMapping(target = "PROXY_VOTE", source = "PROXY_VOTE")
+    @ValueMapping(target = "OVERSEAS_VOTE", source = "OVERSEAS_VOTE")
+    @ValueMapping(target = "APPLICATIONS_API", source = "APPLICATIONS_API")
+    fun sourceTypeDtoToSourceTypeModel(sourceType: SourceType): uk.gov.dluhc.registercheckerapi.models.SourceType
 }

@@ -5,6 +5,8 @@ import jakarta.persistence.PersistenceContext
 import org.springframework.stereotype.Repository
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 
+private const val ADMIN_MAX_RESULTS = 1000
+
 @Repository
 class RegisterCheckRepositoryImpl(@PersistenceContext val entityManager: EntityManager) : CustomRegisterCheckRepository {
 
@@ -27,6 +29,7 @@ class RegisterCheckRepositoryImpl(@PersistenceContext val entityManager: EntityM
         """
         return entityManager.createQuery(query, RegisterCheck::class.java)
             .setParameter("gssCodes", gssCodes)
+            .setMaxResults(ADMIN_MAX_RESULTS)
             .resultList
     }
 }

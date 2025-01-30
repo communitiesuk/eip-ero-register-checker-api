@@ -272,7 +272,7 @@ internal class RegisterCheckServiceTest {
             val gssCodeFromEroApi = getRandomGssCode()
 
             given(retrieveGssCodeService.getGssCodesFromEroId(eq(eroId))).willReturn(listOf(gssCodeFromEroApi))
-            given(registerCheckRepository.adminFindPendingEntriesByGssCodes(eq(listOf(gssCodeFromEroApi)))).willReturn(emptyList())
+            given(registerCheckRepository.adminFindPendingEntriesByGssCodes(eq(listOf(gssCodeFromEroApi)), any())).willReturn(emptyList())
 
             // When
             val actualPendingRegisterChecks = registerCheckService.adminGetPendingRegisterChecks(eroId)
@@ -304,7 +304,7 @@ internal class RegisterCheckServiceTest {
             )
 
             given(retrieveGssCodeService.getGssCodesFromEroId(eq(eroId))).willReturn(listOf(gssCodeFromEroApi))
-            given(registerCheckRepository.adminFindPendingEntriesByGssCodes(eq(listOf(gssCodeFromEroApi)))).willReturn(listOf(matchedRegisterCheckEntity))
+            given(registerCheckRepository.adminFindPendingEntriesByGssCodes(eq(listOf(gssCodeFromEroApi)), any())).willReturn(listOf(matchedRegisterCheckEntity))
             given(adminPendingRegisterCheckMapper.registerCheckEntityToAdminPendingRegisterCheckDto(matchedRegisterCheckEntity)).willReturn(expectedRegisterCheckDto)
 
             val expectedPendingRegisterChecks = listOf(expectedRegisterCheckDto)
@@ -367,7 +367,7 @@ internal class RegisterCheckServiceTest {
 
             val expectedGssCodes = listOf(firstGssCodeFromEroApi, secondGssCodeFromEroApi, anotherGssCodeFromEroApi)
             given(retrieveGssCodeService.getGssCodesFromEroId(eq(eroId))).willReturn(expectedGssCodes)
-            given(registerCheckRepository.adminFindPendingEntriesByGssCodes(eq(expectedGssCodes))).willReturn(listOf(firstRegisterCheckEntity, secondRegisterCheckEntity, thirdRegisterCheckEntity))
+            given(registerCheckRepository.adminFindPendingEntriesByGssCodes(eq(expectedGssCodes), any())).willReturn(listOf(firstRegisterCheckEntity, secondRegisterCheckEntity, thirdRegisterCheckEntity))
             given(adminPendingRegisterCheckMapper.registerCheckEntityToAdminPendingRegisterCheckDto(eq(firstRegisterCheckEntity))).willReturn(firstRegisterCheckDto)
             given(adminPendingRegisterCheckMapper.registerCheckEntityToAdminPendingRegisterCheckDto(eq(secondRegisterCheckEntity))).willReturn(secondRegisterCheckDto)
             given(adminPendingRegisterCheckMapper.registerCheckEntityToAdminPendingRegisterCheckDto(eq(thirdRegisterCheckEntity))).willReturn(thirdRegisterCheckDto)

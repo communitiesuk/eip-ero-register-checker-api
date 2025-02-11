@@ -21,6 +21,5 @@ abstract class AdminPendingRegisterCheckMapper {
     abstract fun registerCheckEntityToAdminPendingRegisterCheckDto(registerCheck: RegisterCheck): AdminPendingRegisterCheckDto
 
     @Mapping(target = "applicationId", source = "sourceReference")
-    @Mapping(target = "sourceType", source = "sourceType")
     abstract fun adminPendingRegisterCheckDtoToAdminPendingRegisterCheckModel(pendingRegisterCheckDto: AdminPendingRegisterCheckDto): AdminPendingRegisterCheck
 }

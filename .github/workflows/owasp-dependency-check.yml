@@ -80,7 +80,7 @@ jobs:
                 --data '@slack-notification.json' \
                 ${SLACK_WEBHOOK_URL}
       - name: Save logs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Dependency Analysis Logs
           path: | 

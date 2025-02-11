@@ -19,4 +19,15 @@ class RegisterCheckRepositoryImpl(@PersistenceContext val entityManager: EntityM
             .setMaxResults(limit)
             .resultList
     }
+
+    override fun adminFindPendingEntriesByGssCodes(gssCodes: List<String>, limit: Int): List<RegisterCheck> {
+        val query = """SELECT rc FROM RegisterCheck rc
+            WHERE rc.status = 'PENDING' AND rc.gssCode IN (:gssCodes)
+            ORDER BY rc.dateCreated
+        """
+        return entityManager.createQuery(query, RegisterCheck::class.java)
+            .setParameter("gssCodes", gssCodes)
+            .setMaxResults(limit)
+            .resultList
+    }
 }

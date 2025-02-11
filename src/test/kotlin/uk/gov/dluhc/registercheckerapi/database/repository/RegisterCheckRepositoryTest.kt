@@ -97,6 +97,32 @@ internal class RegisterCheckRepositoryTest : IntegrationTest() {
     }
 
     @Nested
+    inner class AdminFindByGssCodes {
+        @Test
+        fun `should retrieve pending register checks by multiple gss codes`() {
+            // Given
+            val (registerCheck1, _, registerCheck3) = listOf(
+                buildRegisterCheck(gssCode = "E09000020"),
+                buildRegisterCheck(gssCode = "E09000021"),
+                buildRegisterCheck(gssCode = "E09000022"),
+            ).let(registerCheckRepository::saveAll)
+
+            // When
+            val actual = registerCheckRepository.adminFindPendingEntriesByGssCodes(listOf("E09000020", "E09000022"))
+
+            // Then
+            assertThat(actual).isNotNull
+            assertThat(actual.map { it.id }).containsExactlyInAnyOrder(registerCheck1.id, registerCheck3.id)
+            actual.forEach {
+                assertThat(it.id).isNotNull
+                assertThat(it.dateCreated).isNotNull
+                assertThat(it.sourceReference).isNotNull
+                assertThat(it.sourceType).isNotNull
+            }
+        }
+    }
+
+    @Nested
     inner class FindByCorrelationId {
         @Test
         fun `should get pending register check by correlation id`() {

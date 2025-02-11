@@ -40,7 +40,7 @@ internal class RetrieveGssCodeServiceTest {
 
             // When
             val ex = catchThrowableOfType(
-                { retrieveGssCodeService.getGssCodeFromCertificateSerial(certificateSerial) },
+                { retrieveGssCodeService.getGssCodesFromCertificateSerial(certificateSerial) },
                 IerGeneralException::class.java
             )
 
@@ -70,7 +70,7 @@ internal class RetrieveGssCodeServiceTest {
 
             // When
             val ex = catchThrowableOfType(
-                { retrieveGssCodeService.getGssCodeFromCertificateSerial(givenCertificateSerial) },
+                { retrieveGssCodeService.getGssCodesFromCertificateSerial(givenCertificateSerial) },
                 IerEroNotFoundException::class.java
             )
 
@@ -97,7 +97,7 @@ internal class RetrieveGssCodeServiceTest {
             )
 
             // When
-            val actual = retrieveGssCodeService.getGssCodeFromCertificateSerial(certificateSerial)
+            val actual = retrieveGssCodeService.getGssCodesFromCertificateSerial(certificateSerial)
 
             // Then
             assertThat(actual).isNotNull
@@ -125,7 +125,7 @@ internal class RetrieveGssCodeServiceTest {
             )
 
             // When
-            val actual = retrieveGssCodeService.getGssCodeFromCertificateSerial(certificateSerial)
+            val actual = retrieveGssCodeService.getGssCodesFromCertificateSerial(certificateSerial)
 
             // Then
             assertThat(actual).isEqualTo(expectedGssCodes)
@@ -154,7 +154,7 @@ internal class RetrieveGssCodeServiceTest {
             )
 
             // When
-            val actual = retrieveGssCodeService.getGssCodeFromCertificateSerial(certificateSerial)
+            val actual = retrieveGssCodeService.getGssCodesFromCertificateSerial(certificateSerial)
 
             // Then
             assertThat(actual).isEqualTo(expectedGssCodes)

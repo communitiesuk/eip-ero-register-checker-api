@@ -34,7 +34,7 @@ jobs:
         run: ./gradlew clean check --no-daemon
 
       - name: Save logs on test failure
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: Test logs

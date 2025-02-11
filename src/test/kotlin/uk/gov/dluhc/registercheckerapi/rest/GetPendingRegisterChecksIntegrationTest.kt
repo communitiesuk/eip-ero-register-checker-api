@@ -160,7 +160,7 @@ internal class GetPendingRegisterChecksIntegrationTest : IntegrationTest() {
             .hasTimestampNotBefore(earliestExpectedTimeStamp)
             .hasStatus(500)
             .hasError("Internal Server Error")
-            .hasMessage("Error getting eroId for certificate serial")
+            .hasMessage("Error retrieving EROs from IER API")
         wireMockService.verifyIerGetErosCalledOnce()
     }
 

@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.dluhc.registercheckerapi.exception.OptimisticLockingFailureException
+import uk.gov.dluhc.registercheckerapi.mapper.AdminPendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMapper
+import uk.gov.dluhc.registercheckerapi.models.AdminPendingRegisterChecksResponse
 import uk.gov.dluhc.registercheckerapi.models.PendingRegisterChecksResponse
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 import uk.gov.dluhc.registercheckerapi.service.RegisterCheckService
@@ -34,6 +36,7 @@ class RegisterCheckerController(
     private val registerCheckService: RegisterCheckService,
     private val registerCheckRequestValidator: RegisterCheckRequestValidator,
     private val pendingRegisterCheckMapper: PendingRegisterCheckMapper,
+    private val adminPendingRegisterCheckMapper: AdminPendingRegisterCheckMapper,
     private val registerCheckResultMapper: RegisterCheckResultMapper,
     private val objectMapper: ObjectMapper
 ) {
@@ -55,6 +58,18 @@ class RegisterCheckerController(
                     registerCheckRequests = pendingRegisterChecks.map(pendingRegisterCheckMapper::pendingRegisterCheckDtoToPendingRegisterCheckModel)
                 )
             }
+    }
+
+    @GetMapping("/admin/pending-checks/{eroId}")
+    fun adminGetPendingRegisterChecks(
+        @PathVariable eroId: String
+    ): AdminPendingRegisterChecksResponse {
+        logger.info("Getting admin pending register checks for eroId=[$eroId]")
+        return AdminPendingRegisterChecksResponse(
+            pendingRegisterChecks = registerCheckService.adminGetPendingRegisterChecks(eroId).map(
+                adminPendingRegisterCheckMapper::adminPendingRegisterCheckDtoToAdminPendingRegisterCheckModel
+            )
+        )
     }
 
     @PostMapping("/registerchecks/{requestId}")

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.context.request.RequestAttributes.SCOPE_REQUEST
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
+import uk.gov.dluhc.registercheckerapi.client.EroIdNotFoundException
 import uk.gov.dluhc.registercheckerapi.client.IerApiException
 import uk.gov.dluhc.registercheckerapi.client.IerEroNotFoundException
 import uk.gov.dluhc.registercheckerapi.config.ApiRequestErrorAttributes
@@ -41,7 +42,7 @@ class GlobalExceptionHandler(
         e: IerApiException,
         request: WebRequest,
     ): ResponseEntity<Any>? {
-        request.setAttribute(ERROR_MESSAGE, "Error getting eroId for certificate serial", SCOPE_REQUEST)
+        request.setAttribute(ERROR_MESSAGE, "Error retrieving EROs from IER API", SCOPE_REQUEST)
 
         return populateErrorResponseAndHandleExceptionInternal(e, INTERNAL_SERVER_ERROR, request)
     }
@@ -49,6 +50,7 @@ class GlobalExceptionHandler(
     @ExceptionHandler(
         value = [
             IerEroNotFoundException::class,
+            EroIdNotFoundException::class,
             PendingRegisterCheckNotFoundException::class,
         ]
     )

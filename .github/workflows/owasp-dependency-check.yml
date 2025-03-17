@@ -20,7 +20,7 @@ jobs:
           java-version: 17
           cache: gradle
       - name: Run gradle OWASP Dependency Analyzer
-        run: ./gradlew clean dependencyCheckAnalyze --no-daemon 2>error.log
+        run: ./gradlew clean dependencyCheckAnalyze -Dnvd.api.key=${{ secrets.VULNERABILITY_ALERTS_NVD_API_KEY }} --no-daemon 2>error.log
         continue-on-error: true
       - name: Extract CVEs
         run: |

@@ -16,7 +16,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
     id("org.jlleitschuh.gradle.ktlint-idea") version "11.0.0"
     id("org.openapi.generator") version "7.0.1"
-    id("org.owasp.dependencycheck") version "8.2.1"
+    id("org.owasp.dependencycheck") version "12.1.0"
 }
 
 group = "uk.gov.dluhc"
@@ -238,4 +238,19 @@ dependencyCheck {
     analyzers.centralEnabled = true
     format = HTML.name
     suppressionFiles = listOf("owasp.suppressions.xml")
+}
+
+/**
+ * The following is to patch vulnerabilities CVE-2025-25193 and CVE-2025-24970,
+ * which are transitively depended on via:
+ * - org.springframework.boot:spring-boot-starter-webflux -> 3.3.8
+ * - io.awspring.cloud:spring-cloud-aws-starter-sqs -> 3.2.0
+ *
+ * In the future, we should reevaluate whether upgrading the above dependencies will resolve the vulnerability.
+ */
+configurations.all {
+    resolutionStrategy.dependencySubstitution {
+        substitute(module("io.netty:netty-handler")).using(module("io.netty:netty-handler:4.1.118.Final"))
+        substitute(module("io.netty:netty-common")).using(module("io.netty:netty-common:4.1.118.Final"))
+    }
 }

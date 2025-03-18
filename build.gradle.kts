@@ -16,7 +16,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
     id("org.jlleitschuh.gradle.ktlint-idea") version "11.0.0"
     id("org.openapi.generator") version "7.0.1"
-    id("org.owasp.dependencycheck") version "12.1.0"
+    id("org.owasp.dependencycheck") version "10.0.4" // version 11+ causes build failures, see https://github.com/spring-projects/spring-boot/issues/42952#issuecomment-2506304372
 }
 
 group = "uk.gov.dluhc"

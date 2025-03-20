@@ -13,6 +13,7 @@ import uk.gov.dluhc.registercheckerapi.testsupport.TestLogAppender
 import uk.gov.dluhc.registercheckerapi.testsupport.emails.LocalstackEmailMessage
 import uk.gov.dluhc.registercheckerapi.testsupport.emails.buildLocalstackEmailMessage
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.entity.buildRegisterCheck
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset.UTC
 import java.time.temporal.ChronoUnit
@@ -56,16 +57,22 @@ internal class RegisterCheckMonitoringJobIntegrationTest : IntegrationTest() {
         <tr>
             <th>GSS code</th>
             <th>Register check count</th>
+            <th>Date of oldest pending check</th>
+            <th>Date of most recent successful EMS response</th>
         </tr>
         </thead>
         <tbody>
             <tr>
                 <td>$GSS_CODE_1</td>
                 <td>2</td>
+                <td>2025-03-01T09:00:00Z</td>
+                <td>2025-03-01T08:00:00Z</td>
             </tr>
             <tr>
                 <td>$GSS_CODE_2</td>
                 <td>1</td>
+                <td>2025-03-01T09:00:00Z</td>
+                <td>2025-03-01T08:00:00Z</td>
             </tr>
         </tbody>
     </table>
@@ -96,13 +103,17 @@ internal class RegisterCheckMonitoringJobIntegrationTest : IntegrationTest() {
         ).isTrue
         assertThat(
             TestLogAppender.hasLog(
-                "The gss code $GSS_CODE_1 has 2 register checks that have been pending for more than $EXPECTED_MAXIMUM_PENDING_PERIOD.",
+                "The gss code $GSS_CODE_1 has 2 register checks that have been pending for more than $EXPECTED_MAXIMUM_PENDING_PERIOD. " +
+                    "The oldest pending check has been pending since 2025-03-01T09:00:00Z. " +
+                    "The last successful EMS response was at 2025-03-01T08:00:00Z.",
                 Level.INFO
             )
         ).isTrue
         assertThat(
             TestLogAppender.hasLog(
-                "The gss code $GSS_CODE_2 has 1 register checks that have been pending for more than $EXPECTED_MAXIMUM_PENDING_PERIOD.",
+                "The gss code $GSS_CODE_2 has 1 register checks that have been pending for more than $EXPECTED_MAXIMUM_PENDING_PERIOD. " +
+                    "The oldest pending check has been pending since 2025-03-01T09:00:00Z. " +
+                    "The last successful EMS response was at 2025-03-01T08:00:00Z.",
                 Level.INFO
             )
         ).isTrue
@@ -151,7 +162,7 @@ internal class RegisterCheckMonitoringJobIntegrationTest : IntegrationTest() {
      */
     private fun List<RegisterCheck>.setDateCreatedBeforeOneDayAgo() {
         val ids = this.joinToString { "\"${it.id}\"" }
-        val sql = "UPDATE register_check SET date_created = DATE_ADD(NOW(), INTERVAL -2 DAY) WHERE id IN ($ids)"
+        val sql = "UPDATE register_check SET date_created = '2025-03-01 09:00:00' WHERE id IN ($ids)"
         jdbcTemplate.execute(sql)
     }
 
@@ -178,7 +189,11 @@ internal class RegisterCheckMonitoringJobIntegrationTest : IntegrationTest() {
         // Two of GSS_CODE_1's old register checks are in pending state
         buildRegisterCheck(gssCode = GSS_CODE_1, status = CheckStatus.PENDING),
         buildRegisterCheck(gssCode = GSS_CODE_1, status = CheckStatus.PENDING),
-        buildRegisterCheck(gssCode = GSS_CODE_1, status = CheckStatus.EXACT_MATCH),
+        buildRegisterCheck(
+            gssCode = GSS_CODE_1,
+            status = CheckStatus.EXACT_MATCH,
+            matchResultSentAt = LocalDateTime.of(2025, 3, 1, 8, 0, 0).toInstant(UTC)
+        ),
 
         buildRegisterCheck(gssCode = GSS_CODE_2, status = CheckStatus.PENDING),
         buildRegisterCheck(gssCode = GSS_CODE_2, status = CheckStatus.EXACT_MATCH),
@@ -189,7 +204,11 @@ internal class RegisterCheckMonitoringJobIntegrationTest : IntegrationTest() {
         buildRegisterCheck(gssCode = GSS_CODE_2, status = CheckStatus.NOT_STARTED),
         buildRegisterCheck(gssCode = GSS_CODE_2, status = CheckStatus.PARTIAL_MATCH),
         buildRegisterCheck(gssCode = GSS_CODE_2, status = CheckStatus.PENDING_DETERMINATION),
-        buildRegisterCheck(gssCode = GSS_CODE_2, status = CheckStatus.TOO_MANY_MATCHES),
+        buildRegisterCheck(
+            gssCode = GSS_CODE_2,
+            status = CheckStatus.TOO_MANY_MATCHES,
+            matchResultSentAt = LocalDateTime.of(2025, 3, 1, 8, 0, 0).toInstant(UTC)
+        ),
     )
 
     val registerChecksNewerThanOneDay = listOf(

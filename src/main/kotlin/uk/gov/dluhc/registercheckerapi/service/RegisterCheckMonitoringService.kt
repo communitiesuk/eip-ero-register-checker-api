@@ -22,17 +22,23 @@ class RegisterCheckMonitoringService(
     @Transactional(readOnly = true)
     fun monitorPendingRegisterChecks() {
         val createdBefore = Instant.now().minus(expectedMaximumPendingPeriod)
-        val pendingRegisterCheckSummaries =
-            registerCheckRepository.summarisePendingRegisterChecksByGssCode(createdBefore)
-        val stuckRegisterCheckSummaries =
-            pendingRegisterCheckSummaries.filter { !excludedGssCodes.contains(it.gssCode) }
+        val stuckRegisterCheckSummaries = registerCheckRepository
+            .summarisePendingRegisterChecksByGssCode(createdBefore)
+            .filter { !excludedGssCodes.contains(it.gssCode) }
+        val mostRecentResponseTimes = registerCheckRepository
+            .findMostRecentResponseTimeForEachGssCode()
+            .filter { !excludedGssCodes.contains(it.gssCode) }
+            .associateBy { it.gssCode }
+
         val totalStuck = stuckRegisterCheckSummaries.sumOf { it.registerCheckCount }
 
         logger.info { "A total of $totalStuck register checks have been pending for more than $expectedMaximumPendingPeriod." }
         stuckRegisterCheckSummaries.forEach {
             logger.info {
                 "The gss code ${it.gssCode} has ${it.registerCheckCount} register checks " +
-                    "that have been pending for more than $expectedMaximumPendingPeriod."
+                    "that have been pending for more than $expectedMaximumPendingPeriod. " +
+                    "The oldest pending check has been pending since ${it.earliestDateCreated}. " +
+                    "The last successful EMS response was at ${mostRecentResponseTimes[it.gssCode]?.latestMatchResultSentAt ?: "never"}."
             }
         }
 
@@ -41,6 +47,7 @@ class RegisterCheckMonitoringService(
 
             emailService.sendRegisterCheckMonitoringEmail(
                 stuckRegisterCheckSummaries,
+                mostRecentResponseTimes,
                 totalStuck = totalStuck.toString(),
                 expectedMaximumPendingPeriod = "$expectedMaximumPendingHours hours",
             )

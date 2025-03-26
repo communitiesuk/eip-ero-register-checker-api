@@ -35,11 +35,11 @@ At the prompts configure the `code-artifact` profile as follows:
 Note: AWS CLI must be installed on the developer workstation as a pre-requisite.
 
 #### Running Tests
-In order to run the tests successfully, you will first need to set the `LOCALSTACK_API_KEY` environment variable (i.e.
-within your .bash_profile or similar). Then run:
+
 ```
 $ ./gradlew check
 ```
+
 This will run the tests and ktlint. (Be warned, ktlint will hurt your feelings!)
 
 #### Building docker images

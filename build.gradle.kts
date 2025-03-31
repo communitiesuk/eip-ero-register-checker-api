@@ -6,7 +6,7 @@ import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 import java.lang.ProcessBuilder.Redirect
 
 plugins {
-    id("org.springframework.boot") version "3.3.7"
+    id("org.springframework.boot") version "3.4.4"
     id("io.spring.dependency-management") version "1.1.3"
     kotlin("jvm") version "1.9.24"
     kotlin("kapt") version "1.9.24"
@@ -16,7 +16,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
     id("org.jlleitschuh.gradle.ktlint-idea") version "11.0.0"
     id("org.openapi.generator") version "7.0.1"
-    id("org.owasp.dependencycheck") version "10.0.4" // version 11+ causes build failures, see https://github.com/spring-projects/spring-boot/issues/42952#issuecomment-2506304372
+    id("org.owasp.dependencycheck") version "12.1.0" // version 11+ causes build failures, see https://github.com/spring-projects/spring-boot/issues/42952#issuecomment-2506304372
 }
 
 group = "uk.gov.dluhc"

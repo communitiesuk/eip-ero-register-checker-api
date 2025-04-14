@@ -12,6 +12,7 @@ import java.time.Instant
 import java.util.UUID
 
 fun buildRegisterCheck(
+    persisted: Boolean = false,
     correlationId: UUID = UUID.randomUUID(),
     sourceReference: String = UUID.randomUUID().toString(),
     sourceCorrelationId: UUID = UUID.randomUUID(),
@@ -27,7 +28,7 @@ fun buildRegisterCheck(
     historicalSearchEarliestDate: Instant? = Instant.now(),
     createdBy: String = "system",
 ) = RegisterCheck(
-    id = UUID.randomUUID(),
+    id = if (persisted) UUID.randomUUID() else null,
     correlationId = correlationId,
     sourceReference = sourceReference,
     sourceCorrelationId = sourceCorrelationId,
@@ -42,4 +43,13 @@ fun buildRegisterCheck(
     historicalSearch = historicalSearch,
     historicalSearchEarliestDate = historicalSearchEarliestDate,
     createdBy = createdBy,
-)
+).apply {
+    if (!persisted) {
+        stripIdsForIntegrationTests()
+    }
+}
+
+fun RegisterCheck.stripIdsForIntegrationTests() {
+    id = null
+    registerCheckMatches.forEach { it.stripIdsForIntegrationTests() }
+}

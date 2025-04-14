@@ -104,8 +104,7 @@ dependencies {
     implementation("io.awspring.cloud:spring-cloud-aws-starter-sqs")
     implementation("io.awspring.cloud:spring-cloud-aws-starter-s3")
 
-    // AWS signer using SDK V2 library is available at https://mvnrepository.com/artifact/io.github.acm19/aws-request-signing-apache-interceptor/2.1.1
-    implementation("io.github.acm19:aws-request-signing-apache-interceptor:2.3.1")
+    implementation("io.github.acm19:aws-request-signing-apache-interceptor:3.0.0")
     implementation("org.apache.httpcomponents.client5:httpclient5")
 
     // caching

@@ -1,0 +1,30 @@
+title: Statistics property types
+type: object
+description: Repeated property types for statistics fields
+checkStatusType:
+  type: string
+  enum:
+    - PENDING_CHECK
+    - CONFIRMED
+    - REJECTED
+documentSummary:
+  type: object
+  title: DocumentSummary
+  properties:
+    type:
+      type: string
+    status:
+      type: string
+      enum:
+        - PENDING
+        - RECEIVED
+        - NOT_FOUND
+        - ACCEPTED
+        - REJECTED
+identityVerificationType:
+  type: string
+  enum:
+    - NINO
+    - DOCUMENTARY_EVIDENCE
+    - ATTESTATION
+    - LOCAL_DATA_MATCHING

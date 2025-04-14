@@ -1,0 +1,11 @@
+title: Elector type of postal vote applicant
+type: string
+description: >
+  The category of elector of the applicant.
+  Only collected when no national insurance number is provided in postal vote applications.
+enum:
+  - armed-forces
+  - armed-forces-spouse
+  - crown
+  - crown-spouse
+  - other

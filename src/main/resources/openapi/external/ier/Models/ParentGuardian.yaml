@@ -1,0 +1,41 @@
+title: ParentGuardian
+description: >
+  Details of the applicant's parent or guardian used for establishing previous residency. 
+  Only populated when under18WhenLeftUk is true
+type: object
+properties:
+  relation:
+    type: string
+    enum:
+      - parent
+      - guardian
+  firstName:
+    type: string
+    maxLength: 35
+  middleNames:
+    type: string
+    maxLength: 100
+  surname:
+    type: string
+    maxLength: 35
+  previousFirstName:
+    type: string
+    maxLength: 35
+  previousMiddleNames:
+    type: string
+    maxLength: 100
+  previousSurname:
+    type: string
+    maxLength: 35
+  nameChangeReason:
+    type: string
+    maxLength: 500
+  registeredAtGivenAddress:
+    type: string
+    enum:
+      - yes
+      - no
+      - not-sure
+required:
+  - firstName
+  - surname

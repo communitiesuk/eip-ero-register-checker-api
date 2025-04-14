@@ -1,0 +1,88 @@
+title: DeterminedRtvOverseasApplicationMessage
+type: object
+description: 'Message used for EROP to send details of an overseas RTV application to IER after determining the outcome'
+x-api-owner: IER
+x-api-consumer: EROP
+allOf:
+  - $ref: ./CreateRtvOverseasApplicationMessage.yaml
+  - type: object
+    properties:
+      nino:
+        type: string
+        pattern: '^[A-CEGHJ-PR-TW-Za-ceghj-pr-tw-z][\s-]*[A-CEGHJ-NPR-TW-Za-ceghj-npr-tw-z][\s-]*([0-9][\s-]*){6}[A-DFMa-dfm][\s-]{0,1}$'
+        description: National insurance number. Required if 'nonino' is empty.
+      determination:
+        type: string
+        enum:
+          - APPROVED
+          - REJECTED
+      determinedAt:
+        type: string
+        format: date-time
+        description: Time at which the ERO accepted or rejected the application
+      source:
+        description: How the application was received (application channel)
+        type: string
+        enum:
+          - DIGITAL
+          - POST
+          - IN_PERSON
+      applicantEmsId:
+        type: string
+        maxLength: 256
+        description: >
+          EMS applicant ID, comes from the EROP Register Check if successful.
+          Only present if a Register Check was made in EROP during the determination
+          of the application.
+      applicationListedAt:
+        type: string
+        format: date-time
+        description: >
+          Date/Time this record was added to the list of applications.
+          This is equivalent to the date/time this record was created in EROP.
+          Used for establishing the start of the objections period.
+          In standard open-api date-time format.
+      isAnonymousElector:
+        type: boolean
+        description: Whether the applicant is an anonymous elector
+      lastRegistrationVerified:
+        type: boolean
+        description: >
+          Whether the applicants last registration has been verified by the ERO.
+          Only populated if "previouslyRegistered" is "yes"
+      lastResidenceVerified:
+        type: boolean
+        description: >
+          Whether the applicants last UK residence has been verified by the ERO.
+          Only populated if "previouslyRegistered" is "no" or "not-sure"
+      dwpIdentityCheckStatus:
+        description: >
+          Outcome of identity check using the DWP Citizen API.
+          Please use NOT_CHECKED for applications that have not been checked with DWP e.g. because no NINO was provided.
+        type: string
+        enum:
+          - MATCHED
+          - MATCHED_DECEASED
+          - NOT_MATCHED
+          - MULTIPLE_MATCHES
+          - NOT_CHECKED
+      rejectedReasons:
+        title: Rejected Reasons
+        description: >
+          Rejected notes and reasons as provided by the determining ERO in the EROP when rejecting applications.
+          Applications for Welsh language EROs and Welsh Electors may contain reasons in English and/or Welsh.
+          Only applicable to overseas elector applications. Expected to be used in elector communications.
+          The "rejectedReasons" field on OverseasDetailBlock is only present for applications with determination of "rejected"
+        type: object
+        properties:
+          englishReason:
+            $ref: ./RejectedReason.yaml
+          welshReason:
+            $ref: ./RejectedReason.yaml
+    required:
+      - determination
+      - determinedAt
+      - source
+      - applicationListedAt
+      - isAnonymousElector
+      - dwpIdentityCheckStatus

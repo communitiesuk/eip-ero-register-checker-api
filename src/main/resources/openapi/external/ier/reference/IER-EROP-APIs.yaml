@@ -1,20 +1,20 @@
 openapi: 3.0.0
 info:
   title: IER-ERO-APIs
-  version: '1.2'
+  version: '1.5'
   description: Contains a mix of APIs and models for SQS between IER and ERO systems.
   contact:
-    name: Krister Bone
-    email: krister.bone@valtech.com
+    name: Richard Bradley
+    email: Richard.Bradley@softwire.com
 servers:
   - url : 'http://localhost:5000'
-  - url: 'https://erop-api.int.eip.rtv.ierds.uk'
-  - url: 'https://erop-api.test.eip.rtv.ierds.uk'
+  - url: 'https://erop-api.int.rtv.ierds.uk'
+  - url: 'https://erop-api.test.rtv.ierds.uk'
   - url: 'https://erop-api.rtv.ierds.uk'
 paths:
   /eros:
     description: Endpoints relating to EROs
-    parameters: []
+    parameters: [ ]
     get:
       summary: >
         Lists all EROs currently in the system, including their configuration and
@@ -23,11 +23,11 @@ paths:
         '200':
           $ref: '#/components/responses/EROListResponse'
   /ero:
-    description: TODO:EIP1-3901 OBSOLETE -- discuss deprecating with Valtech, in favour of /eros -> activeClientCertificateSerials
-    parameters: []
+    description: TODO:EIP1-10591 this will be obsoleted as part of OS, in favour of, in favour of /eros -> activeClientCertificateSerials
+    parameters: [ ]
     get:
       summary: Get ERO Identifier from Certificate Serial
-      tags: []
+      tags: [ ]
       responses:
         '200':
           $ref: '#/components/responses/EROCertificateMappingResponse'
@@ -42,22 +42,22 @@ paths:
           name: certificateSerial
           description: The serial identifier as provided by the API gateway lambda
   /eroipallowlist:
-    description: TODO:EIP1-3901 OBSOLETE? -- discuss deprecating with Valtech, in favour of /eros -> localAuthorities -> ipAddressCidrs
-    parameters: []
+    description: TODO:EIP1-10591 this will be obsoleted as part of OS, in favour of /eros -> ipAddressCidrs
+    parameters: [ ]
     get:
       summary: Get all allowlisted ERO IP addresses managed in IER admin app
-      tags: []
+      tags: [ ]
       responses:
         '200':
           $ref: '#/components/responses/EROAllowListedIPAddressesResponse'
       operationId: get-ero-allowlisted-ips
       description: Returns all allowlisted IP addresses to restrict use of the Register Checker API
-      parameters: []
+      parameters: [ ]
   /resubmit-photo-invite:
-    parameters: []
+    parameters: [ ]
     post:
-      summary: Notify the frontend that a particular user needs to upload a new photo
-      tags: []
+      summary: Notify IER that a particular user needs to upload a new photo
+      tags: [ ]
       responses:
         '200':
           description: "Success"
@@ -66,15 +66,81 @@ paths:
         '500':
           description: "Error with our service - invite has not been written to our systems"
       operationId: post-follow-up-photo-upload
-      description: Prepares the frontend to allow a user with the given credentials to upload a new photo
+      description: Prepares IER to allow a user with the given credentials to upload a new photo
       requestBody:
         description: A JSON object containing user information to be invited
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ResubmitPhotoInvite'
+    delete:
+      summary: >
+        Notify IER that an invite to upload a new photo should be cancelled. This should be called when the application
+        is no longer in a state to accept a resubmitted photo (e.g. application rejection / new photo received elsewhere).
+        This endpoint is idempotent.
+      tags: [ ]
+      responses:
+        '200':
+          description: "Success"
+        '400':
+          description: "Request invalid"
+        '404':
+          description: "No invite found"
+        '500':
+          description: "Error with our service - invite has not been deleted"
+      operationId: cancel-follow-up-photo-upload
+      description: Cancels invite to no longer allow a user to upload a new photo
+      requestBody:
+        description: A JSON object containing invite information to be cancelled
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelResubmitPhotoInvite'
+  /resubmit-signature-invite:
+    parameters: [ ]
+    post:
+      summary: Notify IER that a particular user needs to upload a new signature
+      tags: [ ]
+      responses:
+        '200':
+          description: "Success"
+        '400':
+          description: "Request invalid"
+        '500':
+          description: "Error with our service - invite has not been written to our systems"
+      operationId: post-follow-up-signature-upload
+      description: Prepares IER to allow a user with the given credentials to upload a new signature
+      requestBody:
+        description: A JSON object containing user information to be invited
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResubmitSignatureInvite'
+    delete:
+      summary: >
+        Notify IER that an invite to upload a new signature should be cancelled. This should be called when the application
+        is no longer in a state to accept a resubmitted signature (e.g. application rejection / new signature received elsewhere).
+        This endpoint is idempotent.
+      tags: [ ]
+      responses:
+        '200':
+          description: "Success"
+        '400':
+          description: "Request invalid"
+        '404':
+          description: "No invite found"
+        '500':
+          description: "Error with our service - invite has not been deleted"
+      operationId: cancel-follow-up-signature-upload
+      description: Cancels invite to no longer allow a user to upload a new signature
+      requestBody:
+        description: A JSON object containing invite information to be cancelled
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelResubmitSignatureInvite'
   /update-voter-card-application-statistics:
-    parameters: []
+    parameters: [ ]
     post:
       summary: Notify the IER admin stats that an application has changed.
       tags: [ ]
@@ -95,21 +161,118 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateVoterCardApplicationStatisticsMessage'
+              oneOf:
+                - $ref: '#/components/schemas/UpdateVoterCardApplicationStatisticsMessage'
+                - $ref: '#/components/schemas/UpdateApplicationDeletedDateStatisticsMessage'
+  /update-postal-application-statistics:
+    parameters: [ ]
+    post:
+      summary: Notify the IER admin stats that a postal application has changed.
+      tags: [ ]
+      responses:
+        '200':
+          description: "Success"
+        '400':
+          description: "Request invalid"
+        '500':
+          description: "Error with our service"
+      operationId: update-postal-application-statistics
+      description: >
+        The ERO Portal should send this message to IER every time a relevant change occurs.
+        The ERO Portal must send all fields every time an application is updated, not just
+        changed fields. (Some fields are nullable, if that information is inapplicable to the application.)
+      requestBody:
+        description: The new state of the application
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/UpdatePostalApplicationStatisticsMessage'
+                - $ref: '#/components/schemas/UpdateApplicationDeletedDateStatisticsMessage'
+  /update-proxy-application-statistics:
+    parameters: [ ]
+    post:
+      summary: Notify the IER admin stats that a proxy application has changed.
+      tags: [ ]
+      responses:
+        '200':
+          description: "Success"
+        '400':
+          description: "Request invalid"
+        '500':
+          description: "Error with our service"
+      operationId: update-proxy-application-statistics
+      description: >
+        The ERO Portal should send this message to IER every time a relevant change occurs.
+        The ERO Portal must send all fields every time an application is updated, not just
+        changed fields. (Some fields are nullable, if that information is inapplicable to the application.)
+      requestBody:
+        description: The new state of the application
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/UpdateProxyApplicationStatisticsMessage'
+                - $ref: '#/components/schemas/UpdateApplicationDeletedDateStatisticsMessage'
+  /update-overseas-application-statistics:
+    parameters: [ ]
+    post:
+      summary: Notify the IER admin stats that an overseas application has changed.
+      tags: [ ]
+      responses:
+        '200':
+          description: "Success"
+        '400':
+          description: "Request invalid"
+        '500':
+          description: "Error with our service"
+      operationId: update-overseas-application-statistics
+      description: >
+        The ERO Portal should send this message to IER every time a relevant change occurs.
+        The ERO Portal must send all fields every time an application is updated, not just
+        changed fields. (Some fields are nullable, if that information is inapplicable to the application.)
+      requestBody:
+        description: The new state of the application
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/UpdateOverseasApplicationStatisticsMessage'
+                - $ref: '#/components/schemas/UpdateApplicationDeletedDateStatisticsMessage'
+
+
 components:
   schemas:
+    PrimaryIdentityDocument:
+      $ref: ../Models/Document/PrimaryIdentityDocument.yaml
     Category1Document:
-      $ref: ../Models/Category1Document.yaml
+      $ref: ../Models/Document/Category1Document.yaml
     Category2Document:
-      $ref: ../Models/Category2Document.yaml
+      $ref: ../Models/Document/Category2Document.yaml
+    ResidencyVerificationDocument:
+      $ref: ../Models/Document/ResidencyVerificationDocument.yaml
+    ParentGuardianDocument:
+      $ref: ../Models/Document/ParentGuardianDocument.yaml
     CreateVoterCardApplicationMessage:
       $ref: ../Models/CreateVoterCardApplicationMessage.yaml
+    UpdateApplicationDeletedDateStatisticsMessage:
+        $ref: ../Models/UpdateApplicationDeletedDateStatisticsMessage.yaml
     UpdateVoterCardApplicationStatisticsMessage:
       $ref: ../Models/UpdateVoterCardApplicationStatisticsMessage.yaml
+    UpdatePostalApplicationStatisticsMessage:
+      $ref: ../Models/UpdatePostalApplicationStatisticsMessage.yaml
+    UpdateProxyApplicationStatisticsMessage:
+      $ref: ../Models/UpdateProxyApplicationStatisticsMessage.yaml
+    UpdateOverseasApplicationStatisticsMessage:
+      $ref: ../Models/UpdateOverseasApplicationStatisticsMessage.yaml
     CreatePostalVoteApplicationMessage:
       $ref: ../Models/CreatePostalVoteApplicationMessage.yaml
     CreateProxyVoteApplicationMessage:
       $ref: ../Models/CreateProxyVoteApplicationMessage.yaml
+    CreateRtvOverseasApplicationMessage:
+      $ref: ../Models/CreateRtvOverseasApplicationMessage.yaml
+    DeterminedRtvOverseasApplicationMessage:
+      $ref: ../Models/DeterminedRtvOverseasApplicationMessage.yaml
     EROAllowListedIPAddresses:
       title: EROAllowListedIPAddresses
       type: array
@@ -154,10 +317,44 @@ components:
         - applicationId
         - photo
         - dateTimeSubmitted
+    ResubmitSignatureMessage:
+      title: ResubmitSignatureMessage
+      description: 'Message describing the resubmission of a Signature for a Postal or Proxy Application. EROP own the queue and the listener implementation (the API). IER are a producer of the message and therefore a consumer of the API'
+      x-api-owner: EROP
+      x-api-consumer: IER
+      type: object
+      properties:
+        applicationId:
+          type: string
+          pattern: '^[a-fA-F\d]{24}$'
+          description: 'The unique IER identifier for this application. A 24 character hex string.'
+        signatureFile:
+          $ref: ../Models/DocumentReference.yaml
+        processedSignature:
+          type: string
+          format: byte
+          description: 'Format is base64 PNG, 1050x300px, monochrome'
+        dateTimeSubmitted:
+          type: string
+          format: date-time
+      required:
+        - applicationId
+        - signature
+        - processedSignature
+        - dateTimeSubmitted
     ResubmitPhotoInvite:
       title: ResubmitPhotoInvite
       type: object
-      description: Contains information for user to be invited to resubmit photo
+      description: |
+        Contains information for user to be invited to resubmit photo 
+        For example: 
+        { 
+          "applicationId": "AB1234567890AB1234563810", 
+          "applicationReference": "V123456382", 
+          "hasDateOfBirth": true, 
+          "dateOfBirth": "2000-01-01", 
+          "gssCode": "E09000032" 
+        }
       properties:
         applicationId:
           type: string
@@ -165,20 +362,93 @@ components:
           description: 'The unique IER identifier for this application. A 24 character hex string.'
         applicationReference:
           type: string
-          description: 'The application reference as known by the citizen. Not guaranteed to be unique.'
-        hasDateOfBirth:
-          type: boolean
+          description: 'The application reference as known by the citizen. Not guaranteed to be unique. Format of [VPR][0-9A-Z]{9}'
         dateOfBirth:
           type: string
           format: date
-          description: 'Must be provided if hasDateOfBirth is true'
+          description: 'Format of YYYY-MM-DD'
         gssCode:
           $ref: ../Models/Primatives/GssCode.yaml
+        hasDateOfBirth:
+          type: boolean
       required:
         - applicationId
         - applicationReference
         - hasDateOfBirth
         - gssCode
+    CancelResubmitPhotoInvite:
+      title: CancelResubmitPhotoInvite
+      type: object
+      description: Contains information so that a users resubmit photo invite can be cancelled
+      properties:
+        applicationReference:
+          type: string
+          description: 'The application reference as known by the citizen. Not guaranteed to be unique.'
+        dateOfBirth:
+          type: string
+          format: date
+        hasDateOfBirth:
+          type: boolean
+      required:
+        - applicationReference
+        - hasDateOfBirth
+    ResubmitSignatureInvite:
+      title: ResubmitSignatureInvite
+      type: object
+      description: |
+        Contains information for user to be invited to resubmit signature
+        For example:
+        {
+          "applicationId": "AB1234567890AB1234563810",
+          "applicationReference": "R123456382",
+          "dateOfBirth": "2000-01-01",
+          "gssCode": "E09000032"
+          "journey": "postal"
+        }
+      properties:
+        applicationId:
+          type: string
+          pattern: '^[a-fA-F\d]{24}$'
+          description: 'The unique IER identifier for this application. A 24 character hex string.'
+        applicationReference:
+          type: string
+          description: 'The application reference as known by the citizen. Not guaranteed to be unique. Format of [VPR][0-9A-Z]{9}'
+        dateOfBirth:
+          type: string
+          format: date
+          description: 'Format of YYYY-MM-DD'
+        gssCode:
+          $ref: ../Models/Primatives/GssCode.yaml
+        journey:
+          type: string
+          pattern: 'postal|proxy'
+          description: 'postal or proxy depending on the service. Must match the application reference'
+      required:
+        - applicationId
+        - applicationReference
+        - dateOfBirth
+        - gssCode
+        - journey
+    CancelResubmitSignatureInvite:
+      title: CancelResubmitSignatureInvite
+      type: object
+      description: Contains information so that a users resubmit signature invite can be cancelled
+      properties:
+        applicationReference:
+          type: string
+          description: 'The application reference as known by the citizen. Not guaranteed to be unique.'
+        dateOfBirth:
+          type: string
+          format: date
+        journey:
+          type: string
+          pattern: 'postal|proxy'
+      required:
+        - applicationReference
+        - dateOfBirth
+        - journey
+    SubmitEroFeedbackMessage:
+      $ref: ../Models/SubmitEroFeedbackMessage.yaml
   responses:
     EROListResponse:
       description: >
@@ -192,7 +462,7 @@ components:
               eros:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ERODetails'
+                  $ref: ../Models/ERODetails.yaml
     EROAllowListedIPAddressesResponse:
       description: List of all ERO allowlisted IP/CIDRs addresses
       content:

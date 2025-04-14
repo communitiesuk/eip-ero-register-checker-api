@@ -6,6 +6,7 @@ import uk.gov.dluhc.registercheckerapi.testsupport.getRandomEmailAddress
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomEroId
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomEroName
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomGssCode
+import uk.gov.dluhc.registercheckerapi.testsupport.getRandomIpV4Address
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomLocalAuthorityName
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomPhoneNumber
 import uk.gov.dluhc.registercheckerapi.testsupport.getRandomWebsiteAddress
@@ -15,11 +16,13 @@ fun buildIerEroDetails(
     eroIdentifier: String = getRandomEroId(),
     gssCode: String = getRandomGssCode(),
     activeClientCertificateSerials: List<String> = listOf(),
+    ipAddressCidrs: String? = getRandomIpV4Address(),
     localAuthorities: List<LocalAuthorityDetails> = listOf(buildIerLocalAuthorityDetails(gssCode = gssCode)),
     name: String? = getRandomEroName()
 ) = ERODetails(
     eroIdentifier = eroIdentifier,
     activeClientCertificateSerials = activeClientCertificateSerials,
+    ipAddressCidrs = ipAddressCidrs,
     localAuthorities = localAuthorities,
     name = name
 )
@@ -57,7 +60,6 @@ fun buildIerLocalAuthorityDetails(
     certificateEmailAddressCy: String? = getRandomEmailAddress(),
     certificateUrlCy: String? = getRandomWebsiteAddress(),
     certificateEroNameCy: String? = null,
-    ipAddressCidrs: String? = null,
 ) = LocalAuthorityDetails(
     gssCode = gssCode,
     name = localAuthorityNameEn,
@@ -79,7 +81,6 @@ fun buildIerLocalAuthorityDetails(
     phoneNumberCymraeg = phoneNumberCy,
     emailAddressCymraeg = emailAddressCy,
     urlCymraeg = urlCy,
-    ipAddressCidrs = ipAddressCidrs,
     nameVac = certificateLocalAuthorityNameEn,
     emailAddressVac = certificateEmailAddressEn,
     urlVac = certificateUrlEn,

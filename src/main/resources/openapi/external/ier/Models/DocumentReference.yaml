@@ -4,7 +4,11 @@ description: 'Describes the uploaded document.'
 properties:
   documentType:
     type: string
-    description: 'The document type. Should be one of Category1Document or Category2Document.'
+    description: |
+      The document type.
+      For VAC applications should be one of Category1Document or Category2Document types.
+      For Postal and Proxy applications can be one of "signature", PrimaryIdentityDocument, Category1Document or Category2Document types.
+      For RTV OE applications can be one of PrimaryIdentityDocument, Category1Document, Category2Document, ResidencyVerificationDocument or ParentGuardianDocument types. (Note that these overlap)
   s3Arn:
     type: string
     description: 'S3 Arn of document, if null check documentRemovedReason.'

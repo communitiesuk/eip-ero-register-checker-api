@@ -1,0 +1,7 @@
+title: Postal Vote duration type
+type: string
+description: Postal Vote duration types
+enum:
+  - specific-election-or-referendum
+  - specific-date-range
+  - three-years

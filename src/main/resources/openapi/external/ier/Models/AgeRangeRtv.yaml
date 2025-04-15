@@ -1,0 +1,8 @@
+title: Age Ranges
+type: string
+description: Age Ranges. Only required for RTV OE applications where DOB not provided
+enum:
+  - 16to17
+  - over18
+  - 18to75
+  - over75

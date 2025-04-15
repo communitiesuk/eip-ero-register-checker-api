@@ -1,0 +1,10 @@
+title: Primary Identity Documents
+type: string
+description: Primary Identity Documents
+## Document types may be duplicated across different document types. If you are changing these, please keep them all in sync
+enum:
+  - passport
+  - eea-issued-id-card
+  - photocard-driving-licence
+  - biometric-identity-document
+  - ni-electoral-identity-card

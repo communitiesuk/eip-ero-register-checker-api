@@ -1,0 +1,50 @@
+title: SubmitEroFeedbackMessage
+x-api-owner: IER
+x-api-consumer: EROP
+type: object
+description: >
+  This message is submitted to our Feedback Ingest SQS queue by the ERO Portal
+  when an ERO user fills in the Feedback questionnaire.
+  
+  The SQS Queue URL and the ARN of a Role that EROP should assume to
+  post to it will be shared separately.
+  
+  This must be kept in sync with EROP's copy at
+  TODO:EIP1-9543 link to EROP's copy when it exists
+properties:
+  source:
+    type: string
+    enum:
+      - erop
+    description: >
+      A fixed value to indicate that the feedback item is from EROP,
+      since this same system processes feedback items from other systems.
+      (The EROP system is trusted to not attempt to subvert this processing.)
+  sessionId:
+    type: string
+    maxLength: 40
+    description: >
+      The users's session id in EROP, if available.
+      Might be useful to correlate with application logs, in some cases.
+  rating:
+    type: integer
+    minimum: 1
+    maximum: 5
+  currentPath:
+    type: string
+    maxLength: 1024
+    description: >
+      The path the ERO user was on before they clicked the feedback link,
+      if available.
+      The EROP UI should strip any query string parameters which may contain
+      sensitive data.
+      It should include any query string parameters which are required to
+      understand the action which the user was taking at the time they left
+      feedback.
+      It may choose to strip any query string parameters which are unimportant
+      in order to make the feedback easier to group by page.
+  comments:
+    type: string
+    maxLength: 1200
+required:
+  - source

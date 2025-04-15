@@ -1,10 +1,10 @@
-title: OverseasAddress
+title: BfpoAddress
 type: object
-description: 'Overseas Address format.'
+description: 'BFPO Address format'
 properties:
-  country:
+  bfpoNumber:
     type: string
-    maxLength: 255
+    maxLength: 7
   addressLine1:
     type: string
     maxLength: 255
@@ -22,4 +22,4 @@ properties:
     maxLength: 255
 required:
   - addressLine1
-  - country
+  - bfpoNumber

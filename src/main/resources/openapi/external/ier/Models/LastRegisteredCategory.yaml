@@ -1,0 +1,13 @@
+title: Last registered category
+type: string
+description: If applicant is previously registered, in which category they were last registered to vote
+enum:
+  - ordinary
+  - overseas
+  - forces
+  - forces-spouse-or-civil-partner
+  - crown
+  - crown-spouse-or-civil-partner
+  - council
+  - council-spouse-or-civil-partner
+  - not-sure

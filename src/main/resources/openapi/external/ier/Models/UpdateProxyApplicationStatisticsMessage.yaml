@@ -8,9 +8,9 @@ description: >
   (Some fields are nullable, if that information is inapplicable to the application.)
 
   IER will process update messages in the order in which they are received. If a single
-  VAC is modified concurrently or in quick succession then EROP should ensure that the
+  Proxy application is modified concurrently or in quick succession then EROP should ensure that the
   update message sent last is the final version.
-title: UpdateVoterCardApplicationStatisticsMessage
+title: UpdateProxyApplicationStatisticsMessage
 type: object
 properties:
   id:
@@ -58,20 +58,26 @@ properties:
     description: >
       true if the address was entered manually vs using an address dropdown
       (false iff the address has a UPRN)
-  applicantRequestedNotPostToRegAddress:
-    type: boolean
-    description: >
-      true if the applicant indicated that they cannot receive their VAC by post
-      at their registered address.
-      This corresponds to `cardIssuingPreferences.cannotPostToAddress`
-  deliveryAddressType:
+  proxyReason:
     type: string
     enum:
-      - REGISTERED
-      - ERO_COLLECTION
-  overseasCountryOfResidence:
+      - overseas
+      - armed-forces
+      - armed-forces-spouse
+      - crown
+      - crown-spouse
+      - air-and-sea
+      - particular-election-or-referendum
+      - disability
+      - educational-course
+      - employment
+      - other
+  proxyVoteType:
     type: string
-    description: 'Country of residence for overseas electors. These should be the full name of the country, in the same format as in frontend/src/services/nationalities.ts'
+    enum:
+      - SPECIFIC_DATE
+      - SPECIFIC_DATE_RANGE
+      - INDEFINITE
   emailProvided:
     type: boolean
   phoneProvided:
@@ -98,19 +104,38 @@ properties:
     description: >
       true if the applicant has been contacted to request further identity documents
       at least once
-  alternativeFormatNeeded:
-    $ref: ./AlternativeFormat.yaml
-    # nullable
-  submittedInWelsh:
-    type: boolean
-  photoRejected:
-    type: boolean
-    description: true if at least one photo rejected
-  photoRequested:
+  signatureRequested:
     type: boolean
     description: >
-      true if the applicant has been contacted to request a new photo
+      true if the applicant has been contacted to request a signature
       at least once
+  signatureProvided:
+    type: boolean
+    description: >
+      This is false if and only if the user applied for a signature waiver, 
+      so a separate field for signature waiver applications is not required.
+  signatureCheckStatus:
+    type: string
+    enum:
+      - PENDING_DETERMINATION
+      - WAIVER_APPROVED
+      - WAIVER_REJECTED
+      - ACCEPTED
+      - REJECTED
+  signatureRejectionReasons:
+    type: array
+    description: 'List of reasons the signatures were rejected.'
+    items:
+      type: string
+      enum:
+        - PARTIALLY_CUT_OFF
+        - TOO_DARK
+        - NOT_IN_FOCUS
+        - HAS_SHADOWS
+        - WRONG_SIZE
+        - OTHER
+  submittedInWelsh:
+    type: boolean
   ninoMatch:
     type: string
     enum:
@@ -124,33 +149,14 @@ properties:
     enum:
       - APPROVED
       - REJECTED
-      - SENT_TO_PRINT
       - RECEIVED
       - IN_PROGRESS
       - ON_HOLD
-  certificateStatus:
-    type: string
-    enum:
-      - PENDING_ASSIGNMENT_TO_BATCH
-      - ASSIGNED_TO_BATCH
-      - SENT_TO_PRINT_PROVIDER
-      - RECEIVED_BY_PRINT_PROVIDER
-      - VALIDATED_BY_PRINT_PROVIDER
-      - IN_PRODUCTION
-      - DISPATCHED
-      - NOT_DELIVERED
-      - PRINT_PROVIDER_VALIDATION_FAILED
-      - PRINT_PROVIDER_PRODUCTION_FAILED
-      - PRINT_PROVIDER_DISPATCH_FAILED
-  certificateReprinted:
-    type: boolean
+      - COMPLETED
   determinationDate:
     type: string
     format: date-time
     description: Time at which the ERO accepted or rejected the application
-  sentToPrintDate:
-    type: string
-    format: date-time
   rejectedReasons:
     type: array
     description: 'List of reasons the application was rejected.'
@@ -158,25 +164,44 @@ properties:
       type: string
       enum:
         - NOT_REGISTERED_TO_VOTE
+        - IDENTITY_NOT_CONFIRMED
+        - NOT_ELIGIBLE_FOR_RESERVED_POLLS
+        - DOB_NOT_PROVIDED
         - INCOMPLETE_APPLICATION
-        - PHOTO_IS_NOT_ACCEPTABLE
-        - NO_RESPONSE_FROM_APPLICANT
-        - INACCURATE_INFORMATION
+        - SIGNATURE_IS_NOT_ACCEPTABLE
+        - PROXY_NOT_REGISTERED_TO_VOTE
+        - PROXY_LIMITS
         - FRAUDULENT_APPLICATION
-        - DUPLICATE_APPLICATION
-        - NO_FRANCHISE_TO_VOTE
         - OTHER_REJECT_REASON
   registerCheckStatus:
     type: string
     enum:
-      # Pending includes rejected: the VAC will be in rejected state; can't tell from
-      # here if that was the ultimate cause
+      - PENDING_CHECK
+      - EXACT_MATCH
+      - PARTIAL_MATCH
+      - NO_MATCH
+      - MULTIPLE_MATCH
+      - TOO_MANY_MATCHES
+      - INSUFFICIENT_DATA
+      - PENDING_DETERMINATION
+      - EXPIRED
+      - NOT_STARTED
+      - PENDING_ID_CHECK
+  registerCheckDeterminationStatus:
+    type: string
+    enum:
+      - ACCEPTED
+      - REJECTED
       - PENDING
-      # All states like "insufficient_data", "partial_match" etc. end up in Manually confirmed
-      - MANUALLY_CONFIRMED
-      - EXACT_AUTO_MATCH
-  temporaryCertificateIssued:
-    type: boolean
+  registerCheckRejectionReason:
+    type: string
+    enum:
+      - INVALID_FRANCHISE
+      - UNABLE_TO_CONFIRM_APPLICANT
+  identityVerificationStatus:
+    $ref: './StatisticsPropertyTypes.yaml#/checkStatusType'
+  identityVerificationType:
+    $ref: './StatisticsPropertyTypes.yaml#/identityVerificationType'
   electorType:
     type: string
     enum:
@@ -185,29 +210,45 @@ properties:
       - OVERSEAS
       - CROWN
       - FORCES
-  identityVerificationStatus:
-    type: string
-    enum:
-      - CONFIRMED
-      - PENDING
   franchiseCode:
     type: string
-  photoCheckStatus:
+  emsStatus:
     type: string
     enum:
-      - NO_PHOTO
-      - PENDING
-      - REQUESTED
-      - ACCEPTED
-      - REJECTED
-      - SKIPPED_FOR_LATER
-  numPhotosProvided:
-    type: integer
-    description: The number of photos associated with an application. This should give some indication of applications with photos rejected, as well as applications without a photo (this should be paper apps only as the online journey requires a photo)
+      - NOT_SENT
+      - SENT
+      - SUCCESS
+      - FAILURE
+  hasPreviousName:
+    type: string
+    enum:
+      - true
+      - false
+      - prefer-not-to-say
+  previousNameProvided:
+    type: boolean
+  proxyAddressPostcode:
+    type: string
+  proxyAddressManual:
+    type: boolean
+  specificElectionDate:
+    type: string
+  electionPeriodStartDate:
+    type: string
+  electionPeriodEndDate:
+    type: string
+  hadHelpWithApplication:
+    type: boolean
+  helperWasOverseas:
+    type: boolean
+  proxyEmailProvided:
+    type: boolean
+  proxyPhoneProvided:
+    type: boolean
   retentionStatus:
     type: string
     description: >
-      Retain means the application will not be automatically deleted at the end of its retention period.
+      Retain means the application will not be automatically deleted at the end of its retention period (12 months).
     enum:
       - RETAIN
       - REMOVE
@@ -221,7 +262,7 @@ properties:
     description: Date at which the application was retained from automatic deletion if the ERO selects to do so.
   bespokeCommunicationsSent:
     type: integer
-    description: The number of bespoke communications that have been sent to the applicant regarding the application..
+    description: The number of bespoke communications that have been sent to the applicant regarding the application.
 required:
   - id
   - applicationReference
@@ -233,12 +274,10 @@ required:
   - registeredWithUnknownDob
   - registeredAddressPostcode
   - registeredAddressManuallyEntered
-  - applicantRequestedNotPostToRegAddress
   - emailProvided
   - phoneProvided
   - submittedInWelsh
   - ninoMatch
   - applicationStatus
   - electorType
-  - numPhotosProvided
   - retentionStatus

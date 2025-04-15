@@ -1,0 +1,15 @@
+title: OverseasApplicationDocumentReference
+type: object
+description: 'Describes the uploaded document'
+allOf:
+  - $ref: ./DocumentReference.yaml
+  - title: OverseasDocumentVerificationTypes
+    type: object
+    properties:
+      overseasDocumentVerificationTypes:
+        type: array
+        description: 'An array of document verification types'
+        items:
+          $ref: ./DocumentVerificationType.yaml
+    required:
+      - documentVerificationTypes

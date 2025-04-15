@@ -2,6 +2,9 @@ title: CreatePostalVoteApplicationMessage
 x-api-owner: IER
 x-api-consumer: EROP
 type: object
+description: >
+  This must be kept in sync with EROP's copy at
+  https://github.com/communitiesuk/eip-ero-postal-applications-api/blob/main/src/main/resources/openapi/sqs/postal-api-sqs-messaging-ier.yaml#L44
 properties:
   id:
     type: string
@@ -17,29 +20,31 @@ properties:
     format: date-time
   firstName:
     type: string
-    maxLength: 255
+    maxLength: 35
   middleNames:
     type: string
-    maxLength: 255
+    maxLength: 100
   surname:
     type: string
-    maxLength: 255
+    maxLength: 35
+  hasPreviousName:
+    $ref: ./HasPreviousName.yaml
+  previousName:
+    $ref: ./PreviousName.yaml
   dateOfBirth:
     type: string
     format: date
-  registeredWithUnknownDob:
-    type: boolean
-  unknownDobReason:
-    type: string
-  ageRange:
-    $ref: ./AgeRange.yaml
   email:
     type: string
     format: email
-    maxLength: 256
+    maxLength: 255
   phoneNumber:
     type: string
     maxLength: 50
+    description: >
+      Contact phone number. Must be a string of no more than 50 characters,
+      containing only numbers or characters which match /[\s+\-_\\()A-Za-z]/.
+      After removing non-numeric characters, it must contain between 5 and 30 digits.
   noContact:
     type: boolean
     default: false
@@ -48,37 +53,67 @@ properties:
     maxLength: 10
   cantSupplyNinoReason:
     type: string
+    maxLength: 500
+  noNinoElectorCategory:
+    $ref: ./PostalElectorType.yaml
   postalVoteType:
-    type: string
-    enum:
-      - SpecificElectionOrReferendum
-      - SpecificDatePeriod
-      - ThreeYears
+    $ref: ../Models/PostalVoteType.yaml
   address:
     $ref: ./Address.yaml
   ballotAddress:
     $ref: ./Address.yaml
   ballotOverseasPostalAddress:
-    $ref: ./Address.yaml
+    $ref: ./OverseasAddress.yaml
+  ballotBfpoPostalAddress:
+    $ref: ./BfpoAddress.yaml
   ballotPostalAddressReason:
     type: string
-    maxLength: 500
+    maxLength: 256
+  postalVoteDate:
+    type: string
+    format: date
+    description: 'This is only populated when PostalVoteType is specific-election-or-referendum'
   postalVoteFrom:
     type: string
     format: date
+    description: 'This is only populated when PostalVoteType is specific-date-range'
   postalVoteTo:
     type: string
     format: date
+    description: 'This is only populated when PostalVoteType is specific-date-range'
   signatureImage:
     type: string
     format: byte
+    description: >
+      The processed signature image to be used on the application.
+      This has been processed by cropping, scaling and thresholding to black & white. Format is base64 PNG, 1050x300px, monochrome.
+      We also send the original uploaded photo in the 'signatureImageFile' field, in case this processing has outputted
+      an unusable image and re-processing in the EROP is needed.
+  signatureImageFile:
+    $ref: ./DocumentReference.yaml
+    description: >
+      The original signature image uploaded by the user.
+      We also send a processed version in the 'signatureImage' field.
+      This can be used in the EROP to re-process the signature if processed signature is unusable.
+  requestedSignatureWaiver:
+    type: boolean
+    description: >
+      Either requestedSignatureWaiver & reasonCannotSignNameConsistently will be provided
+      and signatureImage & signatureImageFile will be omitted OR
+      signatureImage & signatureImageFile will be provided
+      and requestedSignatureWaiver & reasonCannotSignNameConsistently will be omitted.
+  reasonCannotSignNameConsistently:
+    type: string
+    maxLength: 327
+    description: >
+      This is only populated when requestedSignatureWaiver is true.
+      If the user has selected that they cannot read or write, this field is filled with the text "I cannot read or write".
+      Otherwise, the max length comprises 250 characters from a free text field, prefixed with the text 
+      "I have a disability that prevents me from signing or uploading my signature: ".
   identityDocuments:
     type: array
     items:
       $ref: ./DocumentReference.yaml
-  cantUploadDocuments:
-    type: boolean
-    default: false
   submittedInWelsh:
     type: boolean
     default: false
@@ -86,9 +121,15 @@ properties:
     type: string
     maxLength: 45
     description: The IP address of the applicant when completing their application on the IER web application front end. An optional value that if provided may be either an IPv4 or IPv6 address.
-  requestedApplicationCopyViaEmail:
+  isDuplicate:
     type: boolean
-    default: false
+    description: Indicates that the application was detected as a duplicate, but the applicant decided to submit it anyway.
+  hadHelpWithApplication:
+    type: boolean
+    description: Whether the applicant had help with their application. Only populated if requestedSignatureWaiver is true.
+  helperDetails:
+    $ref: ./HelperDetails.yaml
+    description: Populated when hadHelpWithApplication is true.
 required:
   - id
   - gssCode
@@ -96,7 +137,10 @@ required:
   - datetimeSubmitted
   - firstName
   - surname
+  - hasPreviousName
+  - dateOfBirth
   - address
-  - signatureImage
+  - postalVoteType
+  - submittedInWelsh
   - applicantIpAddress
-  - requestedApplicationCopyViaEmail
+  - isDuplicate

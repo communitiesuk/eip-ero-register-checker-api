@@ -1,0 +1,12 @@
+title: Category 1 Documents
+type: string
+description: Category 1 Documents
+## Document types may be duplicated across different document types. If you are changing these, please keep them all in sync
+enum:
+  - birth-certificate
+  - marriage-or-civil-partnership-certificate
+  - adoption-certificate
+  - firearms-certificate
+  - uk-cd-issued-non-photo-card-driving-licence
+  - non-uk-cd-issued-driving-licence
+  - police-bail-sheet

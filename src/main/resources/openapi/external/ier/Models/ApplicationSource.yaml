@@ -1,0 +1,7 @@
+title: Application source
+type: string
+description: How the application was received (application channel)
+enum:
+  - DIGITAL
+  - POST
+  - IN_PERSON

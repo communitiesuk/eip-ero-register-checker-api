@@ -72,10 +72,9 @@ internal class IerApiClientTest {
             .willThrow(HttpClientErrorException(HttpStatus.FORBIDDEN, exceptionMessage))
 
         // When
-        val ex = Assertions.catchThrowableOfType(
-            { ierApiClient.getEros() },
-            IerGeneralException::class.java
-        )
+        val ex = Assertions.catchThrowableOfType(IerGeneralException::class.java) {
+            ierApiClient.getEros()
+        }
 
         // Then
         assertThat(ex.message).isEqualTo(expectedException.message)
@@ -93,10 +92,9 @@ internal class IerApiClientTest {
             .willThrow(HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR))
 
         // When
-        val ex = Assertions.catchThrowableOfType(
-            { ierApiClient.getEros() },
-            IerGeneralException::class.java
-        )
+        val ex = Assertions.catchThrowableOfType(IerGeneralException::class.java) {
+            ierApiClient.getEros()
+        }
 
         // Then
         assertThat(ex.message).isEqualTo(expectedException.message)

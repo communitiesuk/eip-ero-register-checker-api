@@ -39,10 +39,9 @@ internal class RetrieveGssCodeServiceTest {
             given(ierApiClient.getEros()).willThrow(expected)
 
             // When
-            val ex = catchThrowableOfType(
-                { retrieveGssCodeService.getGssCodesFromCertificateSerial(certificateSerial) },
-                IerGeneralException::class.java
-            )
+            val ex = catchThrowableOfType(IerGeneralException::class.java) {
+                retrieveGssCodeService.getGssCodesFromCertificateSerial(certificateSerial)
+            }
 
             // Then
             assertThat(ex).isEqualTo(expected)
@@ -66,13 +65,10 @@ internal class RetrieveGssCodeServiceTest {
                 )
             )
 
-            val expected = IerEroNotFoundException(givenCertificateSerial)
-
             // When
-            val ex = catchThrowableOfType(
-                { retrieveGssCodeService.getGssCodesFromCertificateSerial(givenCertificateSerial) },
-                IerEroNotFoundException::class.java
-            )
+            val ex = catchThrowableOfType(IerEroNotFoundException::class.java) {
+                retrieveGssCodeService.getGssCodesFromCertificateSerial(givenCertificateSerial)
+            }
 
             // Then
             assertThat(ex).isInstanceOf(IerEroNotFoundException::class.java)

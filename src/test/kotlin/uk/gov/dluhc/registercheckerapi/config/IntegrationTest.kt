@@ -9,9 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.cache.CacheManager
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
@@ -65,10 +65,10 @@ internal abstract class IntegrationTest {
     @Autowired
     protected lateinit var sourceTypeMapper: SourceTypeMapper
 
-    @SpyBean(name = "readWriteDataSource")
+    @MockitoSpyBean(name = "readWriteDataSource")
     protected lateinit var readWriteDataSource: HikariDataSource
 
-    @SpyBean(name = "readOnlyDataSource")
+    @MockitoSpyBean(name = "readOnlyDataSource")
     protected lateinit var readOnlyDataSource: HikariDataSource
 
     @Autowired

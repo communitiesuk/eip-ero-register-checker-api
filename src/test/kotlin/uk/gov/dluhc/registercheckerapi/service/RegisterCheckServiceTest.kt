@@ -230,10 +230,9 @@ internal class RegisterCheckServiceTest {
             given(retrieveGssCodeService.getGssCodesFromCertificateSerial(any())).willThrow(expected)
 
             // When
-            val ex = catchThrowableOfType(
-                { registerCheckService.getPendingRegisterChecks(certificateSerial, DEFAULT_PAGE_SIZE) },
-                IerEroNotFoundException::class.java
-            )
+            val ex = catchThrowableOfType(IerEroNotFoundException::class.java) {
+                registerCheckService.getPendingRegisterChecks(certificateSerial, DEFAULT_PAGE_SIZE)
+            }
 
             // Then
             assertThat(ex).isEqualTo(expected)
@@ -250,10 +249,9 @@ internal class RegisterCheckServiceTest {
             given(retrieveGssCodeService.getGssCodesFromCertificateSerial(any())).willThrow(expected)
 
             // When
-            val ex = catchThrowableOfType(
-                { registerCheckService.getPendingRegisterChecks(certificateSerial, DEFAULT_PAGE_SIZE) },
-                IerGeneralException::class.java
-            )
+            val ex = catchThrowableOfType(IerGeneralException::class.java) {
+                registerCheckService.getPendingRegisterChecks(certificateSerial, DEFAULT_PAGE_SIZE)
+            }
 
             // Then
             assertThat(ex).isEqualTo(expected)
@@ -400,10 +398,9 @@ internal class RegisterCheckServiceTest {
             given(retrieveGssCodeService.getGssCodesFromEroId(eq(eroId))).willThrow(expected)
 
             // When
-            val ex = catchThrowableOfType(
-                { registerCheckService.adminGetPendingRegisterChecks(eroId) },
-                EroIdNotFoundException::class.java
-            )
+            val ex = catchThrowableOfType(EroIdNotFoundException::class.java) {
+                registerCheckService.adminGetPendingRegisterChecks(eroId)
+            }
 
             // Then
             assertThat(ex).isEqualTo(expected)
@@ -420,10 +417,9 @@ internal class RegisterCheckServiceTest {
             given(retrieveGssCodeService.getGssCodesFromEroId(eq(eroId))).willThrow(expected)
 
             // When
-            val ex = catchThrowableOfType(
-                { registerCheckService.adminGetPendingRegisterChecks(eroId) },
-                IerGeneralException::class.java
-            )
+            val ex = catchThrowableOfType(IerGeneralException::class.java) {
+                registerCheckService.adminGetPendingRegisterChecks(eroId)
+            }
 
             // Then
             assertThat(ex).isEqualTo(expected)
@@ -497,11 +493,11 @@ internal class RegisterCheckServiceTest {
 
             given(retrieveGssCodeService.getGssCodesFromCertificateSerial(any())).willReturn(listOf(expectedGssCode))
             given(registerCheckRepository.findByCorrelationId(any())).willReturn(null)
+
             // When
-            val ex = catchThrowableOfType(
-                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
-                PendingRegisterCheckNotFoundException::class.java
-            )
+            val ex = catchThrowableOfType(PendingRegisterCheckNotFoundException::class.java) {
+                registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto)
+            }
 
             // Then
             assertThat(ex.message).isEqualTo(expected.message)
@@ -534,10 +530,9 @@ internal class RegisterCheckServiceTest {
             given(retrieveGssCodeService.getGssCodesFromCertificateSerial(any())).willReturn(listOf(expectedGssCode))
 
             // When
-            val ex = catchThrowableOfType(
-                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
-                RegisterCheckUnexpectedStatusException::class.java
-            )
+            val ex = catchThrowableOfType(RegisterCheckUnexpectedStatusException::class.java) {
+                registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto)
+            }
 
             // Then
             assertThat(ex.message).isEqualTo(expected.message)
@@ -616,10 +611,9 @@ internal class RegisterCheckServiceTest {
             given(retrieveGssCodeService.getGssCodesFromCertificateSerial(any())).willReturn(listOf(differentGssCodeFromEroApi))
 
             // When
-            val ex = catchThrowableOfType(
-                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
-                GssCodeMismatchException::class.java
-            )
+            val ex = catchThrowableOfType(GssCodeMismatchException::class.java) {
+                registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto)
+            }
 
             // Then
             assertThat(ex.message).isEqualTo(expected.message)
@@ -637,10 +631,9 @@ internal class RegisterCheckServiceTest {
             given(retrieveGssCodeService.getGssCodesFromCertificateSerial(any())).willThrow(expected)
 
             // When
-            val ex = catchThrowableOfType(
-                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
-                IerEroNotFoundException::class.java
-            )
+            val ex = catchThrowableOfType(IerEroNotFoundException::class.java) {
+                registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto)
+            }
 
             // Then
             assertThat(ex).isEqualTo(expected)
@@ -657,10 +650,9 @@ internal class RegisterCheckServiceTest {
             given(retrieveGssCodeService.getGssCodesFromCertificateSerial(any())).willThrow(expected)
 
             // When
-            val ex = catchThrowableOfType(
-                { registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto) },
-                IerGeneralException::class.java
-            )
+            val ex = catchThrowableOfType(IerGeneralException::class.java) {
+                registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto)
+            }
 
             // Then
             assertThat(ex).isEqualTo(expected)

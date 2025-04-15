@@ -1,0 +1,118 @@
+title: DwpMatchSummary
+type: object
+description: "Results of DWP matching process"
+properties:
+  firstName:
+    description: >
+      Result of DWP matching process for first name.
+
+      * `no-match` - No match achieved 
+      * `match` - Exact match on supplied value 
+      * `alias` - Matched as an alias i.e. Mike supplied but formally known as Michael 
+      * `initials` - Matched first three characters 
+      * `reversed` - Last name and first name were matched swapped, i.e. John Smith was matched as Smith John. 
+      * `alias-reversed` - Last name's alias and first name's alias were matched swapped 
+      * `soundex` - Matched on a soundex algorithm 
+      * `not-applicable` - Identity match was not performed
+    type: string
+    enum:
+      - no-match
+      - match
+      - alias
+      - initials
+      - reversed
+      - alias-reversed
+      - soundex
+      - not-applicable
+  lastName:
+    description: >
+      Result of DWP matching process for last name.
+
+      * `no-match` - No match achieved 
+      * `match` - Exact match on supplied value 
+      * `alias` - Matched as an alias i.e. Mike supplied but formally known as Michael 
+      * `reversed` - Last name and first name were matched swapped, i.e. John Smith was matched as Smith John. 
+      * `alias-reversed` - Last name's alias and first name's alias were matched swapped 
+      * `soundex` - Matched on a soundex algorithm 
+      * `not-applicable` - Identity match was not performed
+    type: string
+    enum:
+      - no-match
+      - match
+      - alias
+      - reversed
+      - alias-reversed
+      - soundex
+      - not-applicable
+  middleName:
+    description: >
+      Result of DWP matching process for middle name(s).
+
+      * `no-match` - No match achieved 
+      * `match` - Exact match on supplied value 
+      * `initials` - Matched on initials 
+      * `not-populated` - Citizen data didn't contain middle name 
+      * `not-applicable` - Identity match was not performed
+    type: string
+    enum:
+      - no-match
+      - match
+      - initials
+      - not-populated
+      - not-applicable
+  dateOfBirth:
+    description: >
+      Result of DWP matching process for date of birth.
+
+      * `no-match` - No match achieved 
+      * `match` - Exact match on supplied value 
+      * `not-applicable` - Identity match was not performed
+    type: string
+    enum:
+      - no-match
+      - match
+      - not-applicable
+  nino:
+    description: >
+      Result of DWP matching process for national insurance number.
+      
+      * `no-match` - No match achieved 
+      * `match` - Exact match on supplied value 
+      * `not-applicable` - Identity match was not performed
+    type: string
+    enum:
+      - no-match
+      - match
+      - not-applicable
+  dateOfDeath:
+    description: >
+      Result of DWP matching process for date of death.
+
+      * `true` - DWP Has a date of death 
+      * `false` - DWP has no date of death 
+      * `not-applicable` - Identity match was not performed
+    type: string
+    enum:
+      - true
+      - false
+      - not-applicable
+  match:
+    description: >
+      Overall result of DWP matching process.
+
+      * `green` - This record is deemed to have matched the minimum criteria 
+      * `red` - This application has failed to match the minimum criteria 
+      * `not-applicable` - Identity match was not performed
+    type: string
+    enum:
+      - green
+      - red
+      - not-applicable
+required:
+  - firstName
+  - lastName
+  - middleName
+  - dateOfBirth
+  - nino
+  - dateOfDeath
+  - match

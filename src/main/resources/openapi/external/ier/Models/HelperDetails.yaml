@@ -1,0 +1,26 @@
+title: ParentGuardian
+description: >
+  Details of the person that has helped the applicant with their application.
+type: object
+properties:
+  firstName:
+    type: string
+    maxLength: 35
+  middleNames:
+    type: string
+    maxLength: 100
+  surname:
+    type: string
+    maxLength: 35
+  address:
+    $ref: ./Address.yaml
+    description: One of this, overseasAddress or bfpoAddress will be populated
+  overseasAddress:
+    $ref: ./OverseasAddress.yaml
+    description: One of this, address or bfpoAddress will be populated
+  bfpoAddress:
+    $ref: ./BfpoAddress.yaml
+    description: One of this, address or overseasAddress will be populated
+required:
+  - firstName
+  - surname

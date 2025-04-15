@@ -1,6 +1,9 @@
 title: CreateVoterCardApplicationMessage
 type: object
-description: 'Message used to create a Voter Card Application, sent from IER to EROP'
+description: >
+  Message used to create a Voter Card Application, sent from IER to EROP
+  This must be kept in sync with EROP's copy at
+  https://github.com/communitiesuk/eip-ero-voter-card-applications-api/blob/main/src/main/resources/openapi/sqs/vca-api-sqs-messaging-ier.yaml#L54
 x-api-owner: IER
 x-api-consumer: EROP
 properties:
@@ -42,6 +45,10 @@ properties:
   phoneNumber:
     type: string
     maxLength: 50
+    description: >
+      Contact phone number. Must be a string of no more than 50 characters,
+      containing only numbers or characters which match /[\s+\-_\\()A-Za-z]/.
+      After removing non-numeric characters, it must contain between 5 and 30 digits.
   noContact:
     type: boolean
     default: false
@@ -50,6 +57,7 @@ properties:
     maxLength: 10
   cantSupplyNinoReason:
     type: string
+    maxLength: 500
   address:
     $ref: ./Address.yaml
   overseasAddress:
@@ -60,9 +68,6 @@ properties:
     type: array
     items:
       $ref: ./DocumentReference.yaml
-  cantUploadDocuments:
-    type: boolean
-    default: false
   photo:
     $ref: ./PhotoReference.yaml
   submittedInWelsh:
@@ -70,11 +75,10 @@ properties:
     default: false
   alternativeFormatNeeded:
     $ref: ./AlternativeFormat.yaml
-    # nullable
   applicantIpAddress:
     type: string
     maxLength: 45
-    description: The IP address of the applicant when completing their application on the IER web application front end. An optional value that if provided may be either an IPv4 or IPv6 address.
+    description: The IP address of the applicant when completing their application on the IER web application front end. May be either an IPv4 or IPv6 address.
   recentlyAppliedToRtv:
     type: boolean
     description: Indicates that the applicant may have a pending register to vote application; the truth of this cannot be guaranteed as it is based on the applicant's answer to a question.
@@ -94,3 +98,4 @@ required:
   - submittedInWelsh
   - recentlyAppliedToRtv
   - isDuplicate
+  - applicantIpAddress

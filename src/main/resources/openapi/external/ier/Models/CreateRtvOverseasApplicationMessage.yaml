@@ -1,0 +1,164 @@
+title: CreateOverseasRtvApplicationMessage
+type: object
+description: 'Message used to create a Register to Vote Application for an overseas elector, sent from IER to EROP'
+x-api-owner: IER
+x-api-consumer: EROP
+properties:
+  id:
+    type: string
+    pattern: '^[a-fA-F\d]{24}$'
+    description: 'The unique IER identifier for this application. A 24 character hex string.'
+  gssCode:
+    $ref: ./Primatives/GssCode.yaml
+  applicationReference:
+    type: string
+    description: 'The application reference as known by the citizen. Not guaranteed to be unique.'
+  datetimeSubmitted:
+    type: string
+    format: date-time
+  firstName:
+    type: string
+    maxLength: 35
+  middleNames:
+    type: string
+    maxLength: 100
+  surname:
+    type: string
+    maxLength: 35
+  previousFirstName:
+    type: string
+    maxLength: 35
+  previousMiddleNames:
+    type: string
+    maxLength: 100
+  previousSurname:
+    type: string
+    maxLength: 35
+  nameChangeReason:
+    type: string
+    maxLength: 500
+  dateOfBirth:
+    type: string
+    format: date
+  cantSupplyDobReason:
+    type: string
+    maxLength: 500
+    description: >
+      The age range of the applicant. Populated if dateOfBirth is not provided.
+  ageRange:
+    description: >
+      The age range of the applicant. Populated if dateOfBirth is not provided.
+      16to17, over18 are used for Scottish / Welsh applications.
+      18to75, over75 are used for English applications.
+    $ref: ./AgeRangeRtv.yaml
+  nino:
+    type: string
+    maxLength: 10
+  cantSupplyNinoReason:
+    type: string
+    maxLength: 500
+  lastAddress:
+    $ref: ./Address.yaml
+    description: 'If previouslyRegistered is yes this field contains the last address the applicant was registered at.
+                  Otherwise, it holds the address at which the applicant last resided in the UK'
+  correspondenceAddress:
+    $ref: ./OverseasAddress.yaml
+  previousAddress:
+    $ref: ./Address.yaml
+    description: >
+      An address the applicant has moved out of in the last 12 months. If their previous address is overseas then this
+      will not be populated and instead previousAddressOverseas will hold the address. They will never both be populated.
+  previousAddressOverseas:
+    $ref: ./OverseasAddress.yaml
+    description: >
+      An overseas address the applicant has moved out of in the last 12 months. If their previous address is domestic
+      then this will not be populated and instead previousAddress will hold the address. They will never both be populated.
+  overseasApplicationDocuments:
+    type: array
+    items:
+      $ref: ./OverseasApplicationDocumentReference.yaml
+  previouslyRegistered:
+    $ref: ./PreviouslyRegistered.yaml
+  lastRegisteredCategory:
+    $ref: ./LastRegisteredCategory.yaml
+    description: 'Only populated when previouslyRegistered is yes'
+  dateLastRegistered:
+    $ref: ./PartialDate.yaml
+    description: 'We only collect this for applications on the basis of past registration. Format is a partial ISO8601 date'
+  dateLeftUk:
+    $ref: ./PartialDate.yaml
+    description: 'We don’t collect this for applications on the basis of past registration but will still collect it for applications on the basis of past residence. Format is a partial ISO8601 date'
+  hasBritishPassport:
+    type: boolean
+  passportNumber:
+    type: string
+    pattern: '^(\d{9}|([A-Z]\s)?\d{6}(\s[A-Z])?)$'
+    description: >
+      Only populated when hasBritishPassport is true
+      Either post-1990 format, eg. "123456789", pre-1990, eg. "123456", "A 123456 A" or "A 123456" or "123456 A"
+  passportIssueLocation:
+    type: string
+    description: 'Only populated when hasBritishPassport is true'
+  passportIssueDate:
+    type: string
+    format: date
+    description: 'Only populated when hasBritishPassport is true'
+  britishCitizenDate:
+    type: string
+    format: date
+    description: 'Only populated when hasBritishPassport is false and applicant said they were not born in the UK'
+  howBecameBritishCitizen:
+    type: string
+    maxLength: 500
+    description: 'Only populated when hasBritishPassport is false and applicant said they were not born in the UK'
+  birthplace:
+    type: string
+    maxLength: 255
+    description: 'Only populated when hasBritishPassport is false and applicant said they were not born in the UK'
+  bornBefore1983:
+    type: boolean
+    description: 'Whether the applicant was born in the UK before 1983'
+  includeInOpenRegister:
+    type: boolean
+  email:
+    type: string
+    format: email
+    maxLength: 255
+  phoneNumber:
+    type: string
+    maxLength: 50
+    description: >
+      Contact phone number. Must be a string of no more than 50 characters,
+      containing only numbers or characters which match /[\s+\-_\\()A-Za-z]/.
+      After removing non-numeric characters, it must contain between 5 and 30 digits.
+  noContact:
+    type: boolean
+    default: false
+  submittedInWelsh:
+    type: boolean
+    default: false
+  applicantIpAddress:
+    type: string
+    maxLength: 45
+    description: > 
+      The IP address of the applicant when completing their application on the IER web application front end. 
+      An optional value that if provided may be either an IPv4 or IPv6 address
+  under18WhenLeftUk:
+    type: boolean
+    default: false
+  parentGuardian:
+    $ref: ./ParentGuardian.yaml
+required:
+  - id
+  - gssCode
+  - applicationReference
+  - datetimeSubmitted
+  - firstName
+  - surname
+  - lastAddress
+  - correspondenceAddress
+  - previouslyRegistered
+  - hasBritishPassport
+  - includeInOpenRegister
+  - submittedInWelsh
+  - applicantIpAddress

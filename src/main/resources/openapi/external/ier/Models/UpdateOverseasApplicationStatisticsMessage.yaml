@@ -1,0 +1,226 @@
+description: >
+    The ERO Portal should send this message to IER via SQS every time a relevant change occurs.
+    (i.e. every time there is an update to an application that would change the value of
+    one of the fields included here).
+    
+    The ERO Portal must send all fields every time an application is updated, not just
+    changed fields.
+    (Some fields are nullable, if that information is inapplicable to the application.)
+    
+    IER will process update messages in the order in which they are received. If a single
+    Proxy application is modified concurrently or in quick succession then EROP should ensure that the
+    update message sent last is the final version.
+title: UpdateOverseasApplicationStatisticsMessage
+type: object
+properties:
+    id:
+        type: string
+        pattern: '^[a-fA-F\d]{24}$'
+        description: 'The unique IER identifier for this application. A 24 character hex string.'
+    applicationReference:
+        type: string
+        description: The reference number for this application.
+    source:
+        $ref: ./ApplicationSource.yaml
+    gssCode:
+        $ref: ./Primatives/GssCode.yaml
+    datetimeSubmitted:
+        type: string
+        format: date-time
+        description: >
+            Time the applicant completed the web front end journey for source=DIGITAL, or
+            the time at which the paper application was received by post or by hand.
+    datetimeCreatedInErop:
+        type: string
+        format: date-time
+        description: >
+            Time the application was received by EROP over SQS for source=DIGITAL, or the
+            time the ERO did the data entry for a paper application.
+    ninoProvided:
+        type: boolean
+    registeredWithUnknownDob:
+        type: boolean
+    age:
+        type: integer
+        description: >
+            The age in years of the applicant at the time of the application.
+            The "dateOfBirth" is not stored in aggregate statistics, for privacy.
+            This will be null if the application was made with unknown dateOfBirth:
+            in that case, ageRange should be provided instead.
+    previouslyRegisteredAddressPostcode:
+        type: string
+        description: 'Postcode of the UK address where citizen was previously registered to vote'
+    previouslyRegisteredAddressManuallyEntered:
+        type: boolean
+        description: >
+            true if the address was entered manually vs using an address dropdown
+            (false iff the address has a UPRN)
+    overseasAddressCountry:
+        type: string
+        description: 'Country of Overseas electors address'
+    retentionStatus:
+        type: string
+        description: >
+            Retain means the application will not be automatically deleted at the end of its retention period (12 months).
+        enum:
+            - REMOVE
+            - RETAIN
+    previouslyRegisteredOverseasIerdsFormat:
+        type: string
+        enum:
+            - true
+            - false
+            - not-sure
+    overseasApplicationType:
+        type: string
+        enum:
+            - REGISTER
+            - RESIDENCY
+            - UNDER_18
+    emailProvided:
+        type: boolean
+    phoneProvided:
+        type: boolean
+    identityDocuments:
+        type: array
+        description: 'List of identity documents provided by user.'
+        items:
+            $ref: './StatisticsPropertyTypes.yaml#/documentSummary'
+    previousAddressDocuments:
+        type: array
+        description: 'List of address documents provided by user.'
+        items:
+            $ref: './StatisticsPropertyTypes.yaml#/documentSummary'
+    parentGuardianDocuments:
+        type: array
+        description: 'List of address documents provided by user.'
+        items:
+            $ref: './StatisticsPropertyTypes.yaml#/documentSummary'
+    submittedInWelsh:
+        type: boolean
+    ninoMatch:
+        type: string
+        description: The status of the nino match. This is stored in the nino_match column, currently max 20 chars. Don't add a new entry here longer than that.
+        enum:
+            - Pending
+            - Matched
+            - InsufficientData
+            - MatchedDeceased
+            - NotMatched
+    applicationStatus:
+        type: string
+        description: The status of the application. This is stored in the application_status column, currently max 20 chars. Don't add a new entry here longer than that.
+        enum:
+            - APPROVED
+            - REJECTED
+            - RECEIVED
+            - IN_PROGRESS
+            - ON_HOLD
+            - COMPLETED
+    determinationDate:
+        type: string
+        format: date-time
+        description: Time at which the ERO accepted or rejected the application
+    rejectedReasons:
+        type: array
+        description: 'List of reasons the application was rejected.'
+        items:
+            type: string
+            enum:
+                - ALREADY_REGISTERED_AS_OE
+                - CANNOT_CONFIRM_APPLICANT_IS_BRITISH_CITIZEN
+                - CANNOT_CONFIRM_CONNECTION_WITH_PARENT
+                - CANNOT_CONFIRM_IDENTITY
+                - CANNOT_CONFIRM_QUALIFYING_UK_ADDRESS
+                - DUPLICATE_APPLICATION
+                - FRAUDULENT_APPLICATION
+                - INACCURATE_INFORMATION
+                - OTHER_REJECT_REASON
+    includeInOpenRegister:
+        type: boolean
+    lastRegisteredCategory:
+        type: string
+        description: The last registered category of the applicant. This is stored in the last_registered_category column, currently max 40 chars. Don't add a new entry here longer than that.
+        enum:
+            - ORDINARY
+            - OVERSEAS
+            - SERVICE
+            - NOT_SURE
+            - CROWN
+            - CROWN_SPOUSE_OR_CIVIL_PARTNER
+            - FORCES
+            - FORCES_SPOUSE_OR_CIVIL_PARTNER
+            - COUNCIL
+            - COUNCIL_SPOUSE_OR_CIVIL_PARTNER
+    hasBritishPassport:
+        type: boolean
+    votingPreference:
+        type: string
+        enum:
+            - PROXY
+            - POSTAL
+            - NOT_SPECIFIED
+    identityVerificationStatus:
+        $ref: './StatisticsPropertyTypes.yaml#/checkStatusType'
+    identityVerificationType:
+        $ref: './StatisticsPropertyTypes.yaml#/identityVerificationType'
+    franchiseCode:
+        type: string
+    historicalRegisterStatus:
+        $ref: './StatisticsPropertyTypes.yaml#/checkStatusType'
+    dwpAddressCheckStatus:
+        $ref: './StatisticsPropertyTypes.yaml#/checkStatusType'
+    localDataCheckStatus:
+        $ref: './StatisticsPropertyTypes.yaml#/checkStatusType'
+    attestationCheckStatus:
+        $ref: './StatisticsPropertyTypes.yaml#/checkStatusType'
+    documentaryEvidenceCheckStatus:
+        $ref: './StatisticsPropertyTypes.yaml#/checkStatusType'
+    historicalRegisterType:
+        type: string
+        enum:
+            - DIGITAL
+            - PAPER
+    previousLastName:
+        type: boolean
+    bornBefore1983:
+        type: boolean
+    contactMethod:
+        type: string
+        enum:
+            - contact-by-post
+            - contact-by-phone
+            - contact-by-email
+    dateLeftUk:
+        type: string
+        pattern: '^\d\d\d\d$'
+        description: Year the applicant left the UK.
+    dateLastRegistered:
+        type: string
+        pattern: '^\d\d\d\d$'
+        description: Year the applicant was last registered to vote in the UK.
+    applicationFirstOpened:
+        type: string
+        format: date-time
+        description: Time the application was first opened in the EROP.
+    applicationRetainedFrom:
+        type: string
+        format: date-time
+        description: Date at which the application was retained from automatic deletion if the ERO selects to do so.
+required:
+    - id
+    - applicationReference
+    - source
+    - gssCode
+    - datetimeSubmitted
+    - datetimeCreatedInErop
+    - ninoProvided
+    - registeredWithUnknownDob
+    - previouslyRegisteredAddressPostcode
+    - previouslyRegisteredAddressManuallyEntered
+    - emailProvided
+    - phoneProvided
+    - submittedInWelsh
+    - ninoMatch
+    - applicationStatus
+    - retentionStatus

@@ -1,0 +1,8 @@
+title: Parent guardian documents
+type: string
+description: Document types used to show connection to a parent or guardian in the case of under 18 previous residency RTV OE applications
+## Document types may be duplicated across different document types. If you are changing these, please keep them all in sync
+enum:
+  - guardianship-proof
+  ## This document types is also in Category1Document and should be kept in sync
+  - birth-certificate

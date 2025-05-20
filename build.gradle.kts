@@ -200,7 +200,7 @@ tasks.withType<BootBuildImage> {
     buildpacks.set(
         listOf(
             "urn:cnb:builder:paketo-buildpacks/java",
-            "gcr.io/paketo-buildpacks/health-checker",
+            "docker.io/paketobuildpacks/health-checker",
         )
     )
 }

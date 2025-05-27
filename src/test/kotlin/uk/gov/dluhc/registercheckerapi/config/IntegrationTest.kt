@@ -18,6 +18,7 @@ import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckReposito
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckResultDataRepository
 import uk.gov.dluhc.registercheckerapi.database.repository.VotingArrangementRepository
 import uk.gov.dluhc.registercheckerapi.mapper.SourceTypeMapper
+import uk.gov.dluhc.registercheckerapi.service.ReplicationMessagingService
 import uk.gov.dluhc.registercheckerapi.testsupport.TestLogAppender
 import uk.gov.dluhc.registercheckerapi.testsupport.WiremockService
 import uk.gov.dluhc.registercheckerapi.testsupport.emails.EmailMessagesSentClient
@@ -85,6 +86,9 @@ internal abstract class IntegrationTest {
 
     @Value("\${caching.time-to-live}")
     protected lateinit var timeToLive: Duration
+
+    @Autowired
+    protected lateinit var replicationMessagingService: ReplicationMessagingService
 
     companion object {
         @JvmStatic

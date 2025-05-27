@@ -9,6 +9,7 @@ import uk.gov.dluhc.messagingsupport.MessageListener
 import uk.gov.dluhc.registercheckerapi.messaging.mapper.RegisterCheckRemovalMapper
 import uk.gov.dluhc.registercheckerapi.messaging.models.RemoveRegisterCheckDataMessage
 import uk.gov.dluhc.registercheckerapi.service.RegisterCheckRemovalService
+import uk.gov.dluhc.registercheckerapi.service.ReplicationMessagingService
 
 private val logger = KotlinLogging.logger { }
 
@@ -18,6 +19,7 @@ private val logger = KotlinLogging.logger { }
 @Component
 class RemoveRegisterCheckDataMessageListener(
     private val registerCheckRemovalService: RegisterCheckRemovalService,
+    private val replicationMessagingService: ReplicationMessagingService,
     private val mapper: RegisterCheckRemovalMapper
 ) : MessageListener<RemoveRegisterCheckDataMessage> {
 
@@ -30,6 +32,11 @@ class RemoveRegisterCheckDataMessageListener(
                     "sourceReference: [$sourceReference]"
             }
             registerCheckRemovalService.removeRegisterCheckData(mapper.toRemovalDto(this))
+            val removeDataMessage = RemoveRegisterCheckDataMessage(
+                sourceType,
+                sourceReference,
+            )
+            replicationMessagingService.forwardRemoveRegisterCheckDataMessage(removeDataMessage)
         }
     }
 }

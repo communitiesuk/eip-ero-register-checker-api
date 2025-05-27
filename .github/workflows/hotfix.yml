@@ -1,4 +1,4 @@
-name: "Hotfix: Tag and deploy to Test"
+name: "Hotfix: Build, tag, and push hotfix image"
 
 on:
   push:
@@ -58,25 +58,14 @@ jobs:
       - name: Push version tag
         run: |
           tag=${{ steps.bump-semver.outputs.new_version }}
-          message='${{ github.event.head_commit.message }}'
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          git tag -a "${tag}" -m "${message}"
+          git tag "${tag}"
           git push origin "${tag}"
 
   build-and-push:
     needs: tag
     uses: ./.github/workflows/build-and-push.yml
     with:
-      version: ${{ needs.tag.outputs.version }}
-    secrets: inherit
-
-  deploy:
-    needs:
-      - tag
-      - build-and-push
-    uses: ./.github/workflows/deploy.yml
-    with:
-      deploy_environment: test
       version: ${{ needs.tag.outputs.version }}
     secrets: inherit

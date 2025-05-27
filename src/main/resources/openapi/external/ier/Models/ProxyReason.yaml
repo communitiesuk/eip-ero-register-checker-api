@@ -1,10 +1,21 @@
-title: Proxy Vote reason
+title: Reason applicant is applying for a proxy vote
 type: string
-description: Proxy Vote reason
+description: >
+  Used for the proxy vote reason in proxy applications.
+  This mainly reflects the type of voter. The non-"other" types listed here qualify
+  for a proxy vote due to their status. Applicants who answer "other" here will need
+  to provide a justification in `proxyVoteReasonAdditionalText`.
+  Applicants who answer "educational-course", "employment" or "disability" are only
+  able to apply for a proxy vote on a single day. To apply for a proxy vote for a longer
+  period, they must apply via paper form.
 enum:
   - overseas
   - armed-forces
   - armed-forces-spouse
   - crown
   - crown-spouse
+  - air-and-sea
+  - educational-course
+  - employment
+  - disability
   - other

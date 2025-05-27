@@ -13,12 +13,14 @@ import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheck
 import uk.gov.dluhc.registercheckerapi.database.entity.RegisterCheckResultData
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckRepository
 import uk.gov.dluhc.registercheckerapi.database.repository.RegisterCheckResultDataRepository
+import uk.gov.dluhc.registercheckerapi.dto.AdminPendingRegisterCheckDto
 import uk.gov.dluhc.registercheckerapi.dto.PendingRegisterCheckDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckResultDto
 import uk.gov.dluhc.registercheckerapi.dto.RegisterCheckStatus
 import uk.gov.dluhc.registercheckerapi.exception.GssCodeMismatchException
 import uk.gov.dluhc.registercheckerapi.exception.PendingRegisterCheckNotFoundException
 import uk.gov.dluhc.registercheckerapi.exception.RegisterCheckUnexpectedStatusException
+import uk.gov.dluhc.registercheckerapi.mapper.AdminPendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMapper
 import uk.gov.dluhc.registercheckerapi.messaging.MessageQueueResolver
@@ -33,6 +35,7 @@ class RegisterCheckService(
     private val registerCheckRepository: RegisterCheckRepository,
     private val registerCheckResultDataRepository: RegisterCheckResultDataRepository,
     private val pendingRegisterCheckMapper: PendingRegisterCheckMapper,
+    private val adminPendingRegisterCheckMapper: AdminPendingRegisterCheckMapper,
     private val registerCheckResultMapper: RegisterCheckResultMapper,
     private val registerCheckResultMessageMapper: RegisterCheckResultMessageMapper,
     private val messageQueueResolver: MessageQueueResolver,
@@ -41,9 +44,16 @@ class RegisterCheckService(
 
     @Transactional(readOnly = true)
     fun getPendingRegisterChecks(certificateSerial: String, pageSize: Int): List<PendingRegisterCheckDto> {
-        val gssCodes = retrieveGssCodeService.getGssCodeFromCertificateSerial(certificateSerial)
+        val gssCodes = retrieveGssCodeService.getGssCodesFromCertificateSerial(certificateSerial)
         return registerCheckRepository.findPendingEntriesByGssCodes(gssCodes, pageSize)
             .map(pendingRegisterCheckMapper::registerCheckEntityToPendingRegisterCheckDto)
+    }
+
+    @Transactional(readOnly = true)
+    fun adminGetPendingRegisterChecks(eroId: String): List<AdminPendingRegisterCheckDto> {
+        val gssCodes = retrieveGssCodeService.getGssCodesFromEroId(eroId)
+        return registerCheckRepository.adminFindPendingEntriesByGssCodes(gssCodes)
+            .map(adminPendingRegisterCheckMapper::registerCheckEntityToAdminPendingRegisterCheckDto)
     }
 
     @Transactional
@@ -148,7 +158,7 @@ class RegisterCheckService(
                 .also { logger.warn { it.message } }
 
     private fun validateGssCodeMatch(certificateSerial: String, requestGssCode: String) {
-        if (requestGssCode !in retrieveGssCodeService.getGssCodeFromCertificateSerial(certificateSerial))
+        if (requestGssCode !in retrieveGssCodeService.getGssCodesFromCertificateSerial(certificateSerial))
             throw GssCodeMismatchException(certificateSerial, requestGssCode)
                 .also { logger.warn { it.message } }
     }

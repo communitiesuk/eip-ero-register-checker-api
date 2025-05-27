@@ -1,0 +1,7 @@
+title: Previously registered
+type: string
+description: Indicates whether the applicant is previously registered, if no/not-sure then they are applying on the bases of previous residence.
+enum:
+  - yes
+  - no
+  - not-sure

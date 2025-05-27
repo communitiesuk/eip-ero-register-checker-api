@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet author="sam.cappleman-lynes@softwire.com" id="0016_add_gss_code_match_result_sent_at_index_to_register_check"
+               context="ddl">
+
+        <createIndex tableName="register_check"
+                     indexName="gss_code_match_result_sent_at_index">
+            <column name="gss_code"/>
+            <column name="match_result_sent_at"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex tableName="register_check"
+                       indexName="gss_code_match_result_sent_at_index"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

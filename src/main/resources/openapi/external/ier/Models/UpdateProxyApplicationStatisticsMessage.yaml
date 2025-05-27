@@ -1,0 +1,283 @@
+description: >
+  The ERO Portal should send this message to IER via SQS every time a relevant change occurs.
+  (i.e. every time there is an update to an application that would change the value of
+  one of the fields included here).
+
+  The ERO Portal must send all fields every time an application is updated, not just
+  changed fields.
+  (Some fields are nullable, if that information is inapplicable to the application.)
+
+  IER will process update messages in the order in which they are received. If a single
+  Proxy application is modified concurrently or in quick succession then EROP should ensure that the
+  update message sent last is the final version.
+title: UpdateProxyApplicationStatisticsMessage
+type: object
+properties:
+  id:
+    type: string
+    pattern: '^[a-fA-F\d]{24}$'
+    description: 'The unique IER identifier for this application. A 24 character hex string.'
+  applicationReference:
+    type: string
+    description: The reference number for this application.
+  source:
+    $ref: ./ApplicationSource.yaml
+  gssCode:
+    $ref: ./Primatives/GssCode.yaml
+  datetimeSubmitted:
+    type: string
+    format: date-time
+    description: >
+      Time the applicant completed the web front end journey for source=DIGITAL, or
+      the time at which the paper application was received by post or by hand.
+  datetimeCreatedInErop:
+    type: string
+    format: date-time
+    description: >
+      Time the application was recevied by EROP over SQS for source=DIGITAL, or the
+      time the ERO did the data entry for a paper application.
+  ninoProvided:
+    type: boolean
+  registeredWithUnknownDob:
+    type: boolean
+  age:
+    type: integer
+    description: >
+      The age in years of the applicant at the time of the application.
+      The "dateOfBirth" is not stored in aggregate statistics, for privacy.
+      This will be null if the application was made with unknown dateOfBirth:
+      in that case, ageRange should be provided instead.
+  ageRange:
+    $ref: ./AgeRange.yaml
+    # Only required for applications where DOB not known
+  registeredAddressPostcode:
+    type: string
+    description: 'Postcode of the UK address where citizen is registered to vote'
+  registeredAddressManuallyEntered:
+    type: boolean
+    description: >
+      true if the address was entered manually vs using an address dropdown
+      (false iff the address has a UPRN)
+  proxyReason:
+    type: string
+    enum:
+      - overseas
+      - armed-forces
+      - armed-forces-spouse
+      - crown
+      - crown-spouse
+      - air-and-sea
+      - particular-election-or-referendum
+      - disability
+      - educational-course
+      - employment
+      - other
+  proxyVoteType:
+    type: string
+    enum:
+      - SPECIFIC_DATE
+      - SPECIFIC_DATE_RANGE
+      - INDEFINITE
+  emailProvided:
+    type: boolean
+  phoneProvided:
+    type: boolean
+  identityDocuments:
+    type: array
+    description: 'List of identity documents provided by user.'
+    items:
+      type: object
+      title: IdentityDocumentSummary
+      properties:
+        type:
+          type: string
+        status:
+          type: string
+          enum:
+            - PENDING
+            - RECEIVED
+            - NOT_FOUND
+            - ACCEPTED
+            - REJECTED
+  identityDocumentsRequested:
+    type: boolean
+    description: >
+      true if the applicant has been contacted to request further identity documents
+      at least once
+  signatureRequested:
+    type: boolean
+    description: >
+      true if the applicant has been contacted to request a signature
+      at least once
+  signatureProvided:
+    type: boolean
+    description: >
+      This is false if and only if the user applied for a signature waiver, 
+      so a separate field for signature waiver applications is not required.
+  signatureCheckStatus:
+    type: string
+    enum:
+      - PENDING_DETERMINATION
+      - WAIVER_APPROVED
+      - WAIVER_REJECTED
+      - ACCEPTED
+      - REJECTED
+  signatureRejectionReasons:
+    type: array
+    description: 'List of reasons the signatures were rejected.'
+    items:
+      type: string
+      enum:
+        - PARTIALLY_CUT_OFF
+        - TOO_DARK
+        - NOT_IN_FOCUS
+        - HAS_SHADOWS
+        - WRONG_SIZE
+        - OTHER
+  submittedInWelsh:
+    type: boolean
+  ninoMatch:
+    type: string
+    enum:
+      - Pending
+      - Matched
+      - InsufficientData
+      - MatchedDeceased
+      - NotMatched
+  applicationStatus:
+    type: string
+    enum:
+      - APPROVED
+      - REJECTED
+      - RECEIVED
+      - IN_PROGRESS
+      - ON_HOLD
+      - COMPLETED
+  determinationDate:
+    type: string
+    format: date-time
+    description: Time at which the ERO accepted or rejected the application
+  rejectedReasons:
+    type: array
+    description: 'List of reasons the application was rejected.'
+    items:
+      type: string
+      enum:
+        - NOT_REGISTERED_TO_VOTE
+        - IDENTITY_NOT_CONFIRMED
+        - NOT_ELIGIBLE_FOR_RESERVED_POLLS
+        - DOB_NOT_PROVIDED
+        - INCOMPLETE_APPLICATION
+        - SIGNATURE_IS_NOT_ACCEPTABLE
+        - PROXY_NOT_REGISTERED_TO_VOTE
+        - PROXY_LIMITS
+        - FRAUDULENT_APPLICATION
+        - OTHER_REJECT_REASON
+  registerCheckStatus:
+    type: string
+    enum:
+      - PENDING_CHECK
+      - EXACT_MATCH
+      - PARTIAL_MATCH
+      - NO_MATCH
+      - MULTIPLE_MATCH
+      - TOO_MANY_MATCHES
+      - INSUFFICIENT_DATA
+      - PENDING_DETERMINATION
+      - EXPIRED
+      - NOT_STARTED
+      - PENDING_ID_CHECK
+  registerCheckDeterminationStatus:
+    type: string
+    enum:
+      - ACCEPTED
+      - REJECTED
+      - PENDING
+  registerCheckRejectionReason:
+    type: string
+    enum:
+      - INVALID_FRANCHISE
+      - UNABLE_TO_CONFIRM_APPLICANT
+  identityVerificationStatus:
+    $ref: './StatisticsPropertyTypes.yaml#/checkStatusType'
+  identityVerificationType:
+    $ref: './StatisticsPropertyTypes.yaml#/identityVerificationType'
+  electorType:
+    type: string
+    enum:
+      - ORDINARY
+      - ANONYMOUS
+      - OVERSEAS
+      - CROWN
+      - FORCES
+  franchiseCode:
+    type: string
+  emsStatus:
+    type: string
+    enum:
+      - NOT_SENT
+      - SENT
+      - SUCCESS
+      - FAILURE
+  hasPreviousName:
+    type: string
+    enum:
+      - true
+      - false
+      - prefer-not-to-say
+  previousNameProvided:
+    type: boolean
+  proxyAddressPostcode:
+    type: string
+  proxyAddressManual:
+    type: boolean
+  specificElectionDate:
+    type: string
+  electionPeriodStartDate:
+    type: string
+  electionPeriodEndDate:
+    type: string
+  hadHelpWithApplication:
+    type: boolean
+  helperWasOverseas:
+    type: boolean
+  proxyEmailProvided:
+    type: boolean
+  proxyPhoneProvided:
+    type: boolean
+  retentionStatus:
+    type: string
+    description: >
+      Retain means the application will not be automatically deleted at the end of its retention period (12 months).
+    enum:
+      - RETAIN
+      - REMOVE
+  applicationFirstOpened:
+    type: string
+    format: date-time
+    description: Time the application was first opened in the EROP.
+  applicationRetainedFrom:
+    type: string
+    format: date-time
+    description: Date at which the application was retained from automatic deletion if the ERO selects to do so.
+  bespokeCommunicationsSent:
+    type: integer
+    description: The number of bespoke communications that have been sent to the applicant regarding the application.
+required:
+  - id
+  - applicationReference
+  - source
+  - gssCode
+  - datetimeSubmitted
+  - datetimeCreatedInErop
+  - ninoProvided
+  - registeredWithUnknownDob
+  - registeredAddressPostcode
+  - registeredAddressManuallyEntered
+  - emailProvided
+  - phoneProvided
+  - submittedInWelsh
+  - ninoMatch
+  - applicationStatus
+  - electorType
+  - retentionStatus

@@ -1,0 +1,7 @@
+title: HasPreviousName
+type: string
+description: If elector has had any previous names
+enum:
+  - yes
+  - no
+  - prefer-not-to-say

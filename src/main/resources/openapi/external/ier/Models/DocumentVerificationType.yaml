@@ -1,0 +1,7 @@
+title: Document verification type
+type: string
+description: 'The type of verification the document is to be used for'
+enum:
+- identity
+- qualifying-address
+- parent-guardian

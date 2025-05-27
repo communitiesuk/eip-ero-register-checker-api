@@ -31,10 +31,9 @@ internal class RegisterCheckRequestValidatorTest {
             val expected = RequestIdMismatchException(requestId, correlationId)
 
             // When
-            val ex = catchThrowableOfType(
-                { registerCheckRequestValidator.validateRequestBody("123456789", registerCheckResultDto) },
-                RequestIdMismatchException::class.java
-            )
+            val ex = catchThrowableOfType(RequestIdMismatchException::class.java) {
+                registerCheckRequestValidator.validateRequestBody("123456789", registerCheckResultDto)
+            }
 
             // Then
             assertThat(ex.message).isEqualTo(expected.message)
@@ -55,10 +54,9 @@ internal class RegisterCheckRequestValidatorTest {
             val expected = RegisterCheckMatchCountMismatchException("Request [registerCheckMatches] array must be null or empty for [registerCheckMatchCount:$matchCount] in body payload")
 
             // When
-            val ex = catchThrowableOfType(
-                { registerCheckRequestValidator.validateRequestBody("123456789", registerCheckResultDto) },
-                RegisterCheckMatchCountMismatchException::class.java
-            )
+            val ex = catchThrowableOfType(RegisterCheckMatchCountMismatchException::class.java) {
+                registerCheckRequestValidator.validateRequestBody("123456789", registerCheckResultDto)
+            }
 
             // Then
             assertThat(ex.message).isEqualTo(expected.message)
@@ -136,10 +134,9 @@ internal class RegisterCheckRequestValidatorTest {
             val expected = RegisterCheckMatchCountMismatchException("Request [registerCheckMatches:1] array size must be same as [registerCheckMatchCount:$matchCount] in body payload")
 
             // When
-            val ex = catchThrowableOfType(
-                { registerCheckRequestValidator.validateRequestBody("123456789", registerCheckResultDto) },
-                RegisterCheckMatchCountMismatchException::class.java
-            )
+            val ex = catchThrowableOfType(RegisterCheckMatchCountMismatchException::class.java) {
+                registerCheckRequestValidator.validateRequestBody("123456789", registerCheckResultDto)
+            }
 
             // Then
             assertThat(ex.message).isEqualTo(expected.message)
@@ -160,10 +157,9 @@ internal class RegisterCheckRequestValidatorTest {
             val expected = RegisterCheckMatchCountMismatchException("Request [registerCheckMatches] array must be null or empty for [registerCheckMatchCount:$matchCount] in body payload")
 
             // When
-            val ex = catchThrowableOfType(
-                { registerCheckRequestValidator.validateRequestBody("123456789", registerCheckResultDto) },
-                RegisterCheckMatchCountMismatchException::class.java
-            )
+            val ex = catchThrowableOfType(RegisterCheckMatchCountMismatchException::class.java) {
+                registerCheckRequestValidator.validateRequestBody("123456789", registerCheckResultDto)
+            }
 
             // Then
             assertThat(ex.message).isEqualTo(expected.message)

@@ -1,6 +1,6 @@
 title: OverseasAddress
 type: object
-description: 'Overseas Address format. (TODO:EIP1-725 confirm required fields, change to match IER)'
+description: 'Overseas Address format.'
 properties:
   country:
     type: string
@@ -21,4 +21,5 @@ properties:
     type: string
     maxLength: 255
 required:
+  - addressLine1
   - country

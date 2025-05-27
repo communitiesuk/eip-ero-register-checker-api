@@ -6,7 +6,7 @@ import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 import java.lang.ProcessBuilder.Redirect
 
 plugins {
-    id("org.springframework.boot") version "3.3.5"
+    id("org.springframework.boot") version "3.4.5"
     id("io.spring.dependency-management") version "1.1.3"
     kotlin("jvm") version "1.9.24"
     kotlin("kapt") version "1.9.24"
@@ -16,7 +16,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
     id("org.jlleitschuh.gradle.ktlint-idea") version "11.0.0"
     id("org.openapi.generator") version "7.0.1"
-    id("org.owasp.dependencycheck") version "8.2.1"
+    id("org.owasp.dependencycheck") version "12.1.1"
 }
 
 group = "uk.gov.dluhc"
@@ -104,8 +104,7 @@ dependencies {
     implementation("io.awspring.cloud:spring-cloud-aws-starter-sqs")
     implementation("io.awspring.cloud:spring-cloud-aws-starter-s3")
 
-    // AWS signer using SDK V2 library is available at https://mvnrepository.com/artifact/io.github.acm19/aws-request-signing-apache-interceptor/2.1.1
-    implementation("io.github.acm19:aws-request-signing-apache-interceptor:2.3.1")
+    implementation("io.github.acm19:aws-request-signing-apache-interceptor:3.0.0")
     implementation("org.apache.httpcomponents.client5:httpclient5")
 
     // caching
@@ -196,11 +195,12 @@ tasks.withType<KtLintCheckTask> {
 }
 
 tasks.withType<BootBuildImage> {
+    builder.set("paketobuildpacks/builder-jammy-base")
     environment.set(mapOf("BP_HEALTH_CHECKER_ENABLED" to "true"))
     buildpacks.set(
         listOf(
             "urn:cnb:builder:paketo-buildpacks/java",
-            "gcr.io/paketo-buildpacks/health-checker",
+            "docker.io/paketobuildpacks/health-checker",
         )
     )
 }

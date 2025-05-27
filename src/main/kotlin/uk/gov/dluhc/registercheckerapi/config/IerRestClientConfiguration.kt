@@ -14,7 +14,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestTemplate
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
-import software.amazon.awssdk.auth.signer.Aws4Signer
+import software.amazon.awssdk.http.auth.aws.signer.AwsV4HttpSigner
 import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain
 import software.amazon.awssdk.services.sts.StsClient
 import software.amazon.awssdk.services.sts.auth.StsAssumeRoleCredentialsProvider
@@ -29,6 +29,7 @@ import uk.gov.dluhc.logging.rest.CorrelationIdRestTemplateClientHttpRequestInter
 class IerRestClientConfiguration(
     @Value("\${api.ier.base.url}") private val ierApiBaseUrl: String,
     @Value("\${api.ier.sts.assume.role}") private val ierStsAssumeRole: String,
+    @Value("\${api.ier.sts.assume.role.external-id}") private val ierStsAssumeRoleExternalId: String,
     private val correlationIdRestTemplateClientHttpRequestInterceptor: CorrelationIdRestTemplateClientHttpRequestInterceptor,
 ) {
 
@@ -65,6 +66,7 @@ class IerRestClientConfiguration(
                 AssumeRoleRequest.builder()
                     .roleArn(ierStsAssumeRole)
                     .roleSessionName(STS_SESSION_NAME)
+                    .externalId(ierStsAssumeRoleExternalId)
                     .build()
             )
             .stsClient(stsClient)
@@ -74,7 +76,7 @@ class IerRestClientConfiguration(
             .addRequestInterceptorLast(
                 AwsRequestSigningApacheV5Interceptor(
                     API_GATEWAY_SERVICE_NAME,
-                    Aws4Signer.create(),
+                    AwsV4HttpSigner.create(),
                     ierApiSecurityTokenProvider,
                     DefaultAwsRegionProviderChain().region,
                 )

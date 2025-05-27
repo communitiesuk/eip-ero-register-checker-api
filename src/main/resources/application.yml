@@ -27,6 +27,7 @@ api:
   ier:
     base.url: ${API_IER_BASE_URL}
     sts.assume.role: ${API_IER_STS_ASSUME_ROLE}
+    sts.assume.role.external-id: ${API_IER_STS_ASSUME_ROLE_EXTERNAL_ID}
 
 sqs:
   ems-cidr-update-queue-name: ${SQS_EMS_CIDR_UPDATE_QUEUE_NAME}

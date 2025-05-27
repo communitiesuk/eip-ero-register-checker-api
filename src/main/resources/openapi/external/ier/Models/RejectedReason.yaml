@@ -1,0 +1,50 @@
+title: Rejected Reason
+description: ERO supplied rejection notes and list of specific reasons for rejected applications.
+type: object
+properties:
+  notes:
+    type: string
+    description: Field for EROs to provide additional notes and should be included in comms to the Elector if present.
+    maxLength: 4000
+  reasonList:
+    type: array
+    description: The list of reasons the ERO rejected the application.
+    items:
+      title: Rejected Reason Item
+      description: Contains electors friendly text and ERO's preference if the reason should be included in comms.
+      type: object
+      properties:
+        electorReason:
+          description: Elector friendly reason text.
+          type: string
+          maxLength: 500
+        type:
+          type: string
+          description: >
+            A static value that can be used by EMSs to add additional business logic if needed.
+            The current values are below but may change overtime, hence this is not an enforced restricted list / enum.
+            Should we add a new 'type' or revise one, we would not want EMSs to require a deployment.
+            As such these values should not be used for business logic in processing applications, 
+            but could be used for aggregations of rejection reasons across applications.
+            * already-registered-as-oe
+            * british-citizenship-not-confirmed
+            * identity-not-confirmed
+            * parent-guardian-relationship-not-confirmed
+            * qualifying-address-not-confirmed
+            * fraudulent-application (should not be included in elector comms)
+            * incomplete-application
+            * other (should not be included in elector comms)
+          maxLength: 50
+        includeInComms:
+          type: boolean
+          description: >
+            Indicates whether this reason should be included in comms to the Elector and this field is sufficient alone - 
+            EMS implementations do not need to consider the type as well.
+            This is false for any reason that should not be included in comms.
+          default: true
+      required:
+        - electorReason
+        - type
+        - includeInComms
+required:
+  - reasonList

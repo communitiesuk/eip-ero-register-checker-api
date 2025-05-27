@@ -1,0 +1,26 @@
+title: Residency verification documents
+type: string
+description: Document types used to verify previous residency in the UK for RTV OE applications
+## Document types may be duplicated across different document types. If you are changing these, please keep them all in sync
+enum:
+ - instrument-of-court-appointment
+ - power-of-attorney-letter
+ - letter-from-hmrc
+ - rent-book-from-local-authority
+ - educational-institution-letter
+ - student-loans-company-letter
+ - address-proof-of-title
+ - solicitor-proof-of-purchase-letter
+ - insurance-provider-letter
+ - alternative-proof-of-residency
+ - reference-or-payslip-issued-by-employer
+ - letter-confirming-state-pension
+ ## These document types are also in Category2Document and should be kept in sync
+ - bank-or-building-society-statement-or-confirmation-letter
+ - p45-or-p60-form
+ - statement-of-or-entitlement-to-benefits
+ - council-tax-statement-or-demand-letter
+ - credit-card-statement
+ - utility-bill
+ ## These document types are also in PrimaryIdentityDocument and should be kept in sync
+ - photocard-driving-licence

@@ -16,6 +16,8 @@ fun getRandomWebsiteAddress(): String = "https://www.${getRandomEroId().replaceS
 
 fun getRandomPhoneNumber(): String = faker.phoneNumber().cellPhone()
 
+fun getRandomIpV4Address(): String = faker.internet().ipV4Address()
+
 fun getDifferentRandomEroId(refEroId: String): String {
     var differentEroId = getRandomEroId()
     while (refEroId == differentEroId) {

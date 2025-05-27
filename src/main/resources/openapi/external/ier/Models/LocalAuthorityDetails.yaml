@@ -103,12 +103,6 @@ properties:
     description: Public facing URL of their website for Welsh applicants
     type: string
     maxLength: 255
-  ipAddressCidrs:
-    description: >
-      Newline separated list of IPv4 CIDRs from which this Local Authority
-      may access the EMS API.
-    type: string
-    maxLength: 2047
   nameVac:
     description: The name printed on the physical Voter Authority Certificate. 
       Must be the legal name of the issuing LA. This name will not necessarily match up 
@@ -177,6 +171,12 @@ properties:
       Optional; if not set, ‘Electoral Registration Officer’ (in welsh) will be printed.
     type: string
     maxLength: 50
+  ipAddressCidrs: #TODO: EROPSPT-440 Backwards compatability change, remove in subsequent release
+    description: >
+      Newline separated list of IPv4 CIDRs from which this Local Authority
+      may access the EMS API.
+    type: string
+    maxLength: 2047
 
 required:
   - gssCode

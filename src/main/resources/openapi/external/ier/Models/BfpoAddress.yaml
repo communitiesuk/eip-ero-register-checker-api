@@ -1,0 +1,25 @@
+title: BfpoAddress
+type: object
+description: 'BFPO Address format'
+properties:
+  bfpoNumber:
+    type: string
+    maxLength: 7
+  addressLine1:
+    type: string
+    maxLength: 255
+  addressLine2:
+    type: string
+    maxLength: 255
+  addressLine3:
+    type: string
+    maxLength: 255
+  addressLine4:
+    type: string
+    maxLength: 255
+  addressLine5:
+    type: string
+    maxLength: 255
+required:
+  - addressLine1
+  - bfpoNumber

@@ -8,6 +8,7 @@ import uk.gov.dluhc.registercheckerapi.models.SourceSystem
 import uk.gov.dluhc.registercheckerapi.database.entity.SourceType as SourceTypeEntityEnum
 import uk.gov.dluhc.registercheckerapi.dto.SourceType as SourceTypeDtoEnum
 import uk.gov.dluhc.registercheckerapi.messaging.models.SourceType as SourceTypeSqsEnum
+import uk.gov.dluhc.registercheckerapi.models.SourceType as SourceTypeApi
 
 @Mapper
 interface SourceTypeMapper {
@@ -37,4 +38,6 @@ interface SourceTypeMapper {
     @ValueMapping(target = "EROP", source = "OVERSEAS_VOTE")
     @ValueMapping(target = "EROP", source = "APPLICATIONS_API")
     fun sourceTypeDtoToSourceSystem(sourceType: SourceType): SourceSystem
+
+    fun sourceTypeDtoToSourceTypeModel(sourceType: SourceType): SourceTypeApi
 }

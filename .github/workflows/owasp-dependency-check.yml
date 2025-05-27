@@ -20,8 +20,9 @@ jobs:
           java-version: 17
           cache: gradle
       - name: Run gradle OWASP Dependency Analyzer
-        run: ./gradlew clean dependencyCheckAnalyze --no-daemon 2>error.log
+        run: ./gradlew clean dependencyCheckAnalyze -Dnvd.api.key=${{ secrets.VULNERABILITY_ALERTS_NVD_API_KEY }} --no-daemon 2>error.log
         continue-on-error: true
+        timeout-minutes: 30
       - name: Extract CVEs
         run: |
           # Get the list of CVE reference numbers as a markdown list, extracted from the file from gradle stderr
@@ -80,7 +81,7 @@ jobs:
                 --data '@slack-notification.json' \
                 ${SLACK_WEBHOOK_URL}
       - name: Save logs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Dependency Analysis Logs
           path: | 

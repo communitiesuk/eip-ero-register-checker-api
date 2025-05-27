@@ -12,6 +12,7 @@ import java.time.Instant
 import java.util.UUID
 
 fun buildRegisterCheck(
+    persisted: Boolean = false,
     correlationId: UUID = UUID.randomUUID(),
     sourceReference: String = UUID.randomUUID().toString(),
     sourceCorrelationId: UUID = UUID.randomUUID(),
@@ -19,6 +20,7 @@ fun buildRegisterCheck(
     gssCode: String = "E09000021",
     status: CheckStatus = PENDING,
     matchCount: Int = 0,
+    matchResultSentAt: Instant? = null,
     registerCheckMatches: MutableList<RegisterCheckMatch> = mutableListOf(),
     personalDetail: PersonalDetail = buildPersonalDetail(),
     emsElectorId: String = randomAlphanumeric(30),
@@ -26,7 +28,7 @@ fun buildRegisterCheck(
     historicalSearchEarliestDate: Instant? = Instant.now(),
     createdBy: String = "system",
 ) = RegisterCheck(
-    id = UUID.randomUUID(),
+    id = if (persisted) UUID.randomUUID() else null,
     correlationId = correlationId,
     sourceReference = sourceReference,
     sourceCorrelationId = sourceCorrelationId,
@@ -34,10 +36,20 @@ fun buildRegisterCheck(
     gssCode = gssCode,
     status = status,
     matchCount = matchCount,
+    matchResultSentAt = matchResultSentAt,
     registerCheckMatches = registerCheckMatches,
     personalDetail = personalDetail,
     emsElectorId = emsElectorId,
     historicalSearch = historicalSearch,
     historicalSearchEarliestDate = historicalSearchEarliestDate,
     createdBy = createdBy,
-)
+).apply {
+    if (!persisted) {
+        stripIdsForIntegrationTests()
+    }
+}
+
+fun RegisterCheck.stripIdsForIntegrationTests() {
+    id = null
+    registerCheckMatches.forEach { it.stripIdsForIntegrationTests() }
+}

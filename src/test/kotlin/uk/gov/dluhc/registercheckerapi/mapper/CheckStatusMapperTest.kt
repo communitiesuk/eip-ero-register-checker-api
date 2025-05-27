@@ -79,10 +79,9 @@ internal class CheckStatusMapperTest {
             // Given
 
             // When
-            val ex = Assertions.catchThrowableOfType(
-                { mapper.toRegisterCheckResultEnum(source) },
-                IllegalArgumentException::class.java
-            )
+            val ex = Assertions.catchThrowableOfType(IllegalArgumentException::class.java) {
+                mapper.toRegisterCheckResultEnum(source)
+            }
 
             // Then
             assertThat(ex).isInstanceOf(IllegalArgumentException::class.java)

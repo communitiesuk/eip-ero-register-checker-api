@@ -24,6 +24,12 @@ properties:
     items:
       type: string
       maxLength: 255
+  ipAddressCidrs:
+    description: >
+      Newline separated list of IPv4 CIDRs from which this ERO
+      may access the EMS API.
+    type: string
+    maxLength: 2047
   localAuthorities:
     description: >
       The list of Local Authorities currently managed by this ERO.

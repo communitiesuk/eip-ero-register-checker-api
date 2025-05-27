@@ -1,0 +1,18 @@
+title: PreviousName
+type: object
+description: >
+  All name fields optional - elector can indicate that they have a previous name and then leave it blank.
+  For OAVA services: this will be the elector's most recent previous name.
+  For RTV OE:
+  If the user was previously registered: this will be the elector's name at the time of their previous registration.
+  If the user was previously resident: this will be the elector's name at the time they left the UK.
+properties:
+  firstName:
+    type: string
+    maxLength: 35
+  middleNames:
+    type: string
+    maxLength: 100
+  lastName:
+    type: string
+    maxLength: 35

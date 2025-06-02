@@ -9,6 +9,7 @@ import uk.gov.dluhc.messagingsupport.MessageListener
 import uk.gov.dluhc.registercheckerapi.messaging.mapper.InitiateRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckMessage
 import uk.gov.dluhc.registercheckerapi.service.RegisterCheckService
+import uk.gov.dluhc.registercheckerapi.service.ReplicationMessagingService
 
 private val logger = KotlinLogging.logger { }
 
@@ -18,7 +19,8 @@ private val logger = KotlinLogging.logger { }
 @Component
 class InitiateRegisterCheckMessageListener(
     private val registerCheckService: RegisterCheckService,
-    private val mapper: InitiateRegisterCheckMapper
+    private val mapper: InitiateRegisterCheckMapper,
+    private val replicationMessagingService: ReplicationMessagingService,
 ) :
     MessageListener<InitiateRegisterCheckMessage> {
 
@@ -32,6 +34,7 @@ class InitiateRegisterCheckMessageListener(
             }
             val pendingRegisterCheckDto = mapper.initiateCheckMessageToPendingRegisterCheckDto(this)
             registerCheckService.save(pendingRegisterCheckDto)
+            replicationMessagingService.forwardInitiateRegisterCheckMessage(request = payload)
         }
     }
 }

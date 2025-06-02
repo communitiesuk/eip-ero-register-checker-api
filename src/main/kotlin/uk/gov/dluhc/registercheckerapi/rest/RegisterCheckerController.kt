@@ -19,10 +19,12 @@ import uk.gov.dluhc.registercheckerapi.exception.OptimisticLockingFailureExcepti
 import uk.gov.dluhc.registercheckerapi.mapper.AdminPendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.mapper.PendingRegisterCheckMapper
 import uk.gov.dluhc.registercheckerapi.mapper.RegisterCheckResultMapper
+import uk.gov.dluhc.registercheckerapi.messaging.models.PendingRegisterCheckArchiveMessage
 import uk.gov.dluhc.registercheckerapi.models.AdminPendingRegisterChecksResponse
 import uk.gov.dluhc.registercheckerapi.models.PendingRegisterChecksResponse
 import uk.gov.dluhc.registercheckerapi.models.RegisterCheckResultRequest
 import uk.gov.dluhc.registercheckerapi.service.RegisterCheckService
+import uk.gov.dluhc.registercheckerapi.service.ReplicationMessagingService
 import uk.gov.dluhc.registercheckerapi.validator.RegisterCheckRequestValidator
 import java.util.UUID
 
@@ -38,7 +40,8 @@ class RegisterCheckerController(
     private val pendingRegisterCheckMapper: PendingRegisterCheckMapper,
     private val adminPendingRegisterCheckMapper: AdminPendingRegisterCheckMapper,
     private val registerCheckResultMapper: RegisterCheckResultMapper,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val replicationMessagingService: ReplicationMessagingService,
 ) {
 
     @GetMapping("/registerchecks")
@@ -93,6 +96,8 @@ class RegisterCheckerController(
         try {
             val registerCheck = registerCheckService.updatePendingRegisterCheck(certificateSerial, registerCheckResultDto)
             registerCheckService.sendConfirmRegisterCheckResultMessage(registerCheck)
+            val pendingRegisterCheckArchiveMessage = PendingRegisterCheckArchiveMessage(registerCheck.correlationId)
+            replicationMessagingService.sendArchiveRegisterCheckMessage(pendingRegisterCheckArchiveMessage)
         } catch (e: ObjectOptimisticLockingFailureException) {
             throw (OptimisticLockingFailureException(registerCheckResultDto.correlationId)).also {
                 logger.warn { "Register check with correlationId:[${registerCheckResultDto.correlationId}] had an optimistic locking failure" }

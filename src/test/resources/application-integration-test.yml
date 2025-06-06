@@ -72,3 +72,5 @@ email:
     email-body-template: email-templates/pending-register-checks.html
     recipients: recipient1@domain.com,recipient2@domain.com
 
+feature-toggles:
+  enable-register-check-to-ems-message-forwarding: true

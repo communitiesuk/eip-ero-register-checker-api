@@ -3,6 +3,7 @@ package uk.gov.dluhc.registercheckerapi.service
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import uk.gov.dluhc.messagingsupport.MessageQueue
+import uk.gov.dluhc.registercheckerapi.config.FeatureToggleConfiguration
 import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.PendingRegisterCheckArchiveMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.RemoveRegisterCheckDataMessage
@@ -12,17 +13,18 @@ class ReplicationMessagingService(
     @Qualifier("forwardInitiateRegisterCheckQueue") private val initiateCheckMessageQueue: MessageQueue<InitiateRegisterCheckMessage>,
     @Qualifier("sendRegisterCheckArchiveMessageQueue") private val archiveRegisterCheckMessageQueue: MessageQueue<PendingRegisterCheckArchiveMessage>,
     @Qualifier("forwardRemoveRegisterCheckDataMessageQueue") private val removeRegisterCheckDataMessageQueue: MessageQueue<RemoveRegisterCheckDataMessage>,
+    private val featureToggleConfiguration: FeatureToggleConfiguration,
 ) {
 
     fun forwardInitiateRegisterCheckMessage(request: InitiateRegisterCheckMessage) {
-        initiateCheckMessageQueue.submit(request)
+        if (featureToggleConfiguration.enableRegisterCheckToEmsMessageForwarding) initiateCheckMessageQueue.submit(request)
     }
 
     fun sendArchiveRegisterCheckMessage(request: PendingRegisterCheckArchiveMessage) {
-        archiveRegisterCheckMessageQueue.submit(request)
+        if (featureToggleConfiguration.enableRegisterCheckToEmsMessageForwarding) archiveRegisterCheckMessageQueue.submit(request)
     }
 
     fun forwardRemoveRegisterCheckDataMessage(request: RemoveRegisterCheckDataMessage) {
-        removeRegisterCheckDataMessageQueue.submit(request)
+        if (featureToggleConfiguration.enableRegisterCheckToEmsMessageForwarding) removeRegisterCheckDataMessageQueue.submit(request)
     }
 }

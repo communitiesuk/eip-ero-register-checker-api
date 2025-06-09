@@ -2,7 +2,6 @@ package uk.gov.dluhc.registercheckerapi.messaging
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.given
@@ -33,8 +32,15 @@ class ReplicationMessagingServiceTest {
     @Mock
     private lateinit var featureToggleConfiguration: FeatureToggleConfiguration
 
-    @InjectMocks
-    private lateinit var replicationMessagingService: ReplicationMessagingService
+    // Inject mocks does not work in this case as all the message queues are seen as being the same type
+    private val replicationMessagingService: ReplicationMessagingService by lazy {
+        ReplicationMessagingService(
+            initiateCheckMessageQueue,
+            archiveRegisterCheckMessageQueue,
+            removeRegisterCheckDataMessageQueue,
+            featureToggleConfiguration,
+        )
+    }
 
     @Test
     fun `should forward initiate register check message if flag is on`() {

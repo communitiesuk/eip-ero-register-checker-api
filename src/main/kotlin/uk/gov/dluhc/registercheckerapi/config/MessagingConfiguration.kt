@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.gov.dluhc.messagingsupport.MessageQueue
 import uk.gov.dluhc.messagingsupport.MessagingConfigurationHelper
-import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckMessage
+import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckForwardingMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.PendingRegisterCheckArchiveMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckResultMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.RemoveRegisterCheckDataMessage
@@ -63,7 +63,7 @@ class MessagingConfiguration {
 
     @Bean(name = ["forwardInitiateRegisterCheckQueue"])
     fun forwardInitiateRegisterCheckQueue(sqsTemplate: SqsTemplate) =
-        MessageQueue<InitiateRegisterCheckMessage>(forwardInitiateRegisterCheckQueueName, sqsTemplate)
+        MessageQueue<InitiateRegisterCheckForwardingMessage>(forwardInitiateRegisterCheckQueueName, sqsTemplate)
 
     @Bean(name = ["sendRegisterCheckArchiveMessageQueue"])
     fun sendRegisterCheckArchiveMessageQueue(sqsTemplate: SqsTemplate) =

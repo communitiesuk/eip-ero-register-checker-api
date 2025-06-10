@@ -34,7 +34,8 @@ class InitiateRegisterCheckMessageListener(
             }
             val pendingRegisterCheckDto = mapper.initiateCheckMessageToPendingRegisterCheckDto(this)
             registerCheckService.save(pendingRegisterCheckDto)
-            replicationMessagingService.forwardInitiateRegisterCheckMessage(request = payload)
+            val registerCheckForwardingMessage = mapper.initiateCheckToInitiateCheckForwardingMessage(this, pendingRegisterCheckDto.correlationId)
+            replicationMessagingService.forwardInitiateRegisterCheckMessage(request = registerCheckForwardingMessage)
         }
     }
 }

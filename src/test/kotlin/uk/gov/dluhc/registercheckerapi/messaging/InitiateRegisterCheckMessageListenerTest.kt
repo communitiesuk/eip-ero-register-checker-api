@@ -12,6 +12,7 @@ import uk.gov.dluhc.registercheckerapi.messaging.mapper.InitiateRegisterCheckMap
 import uk.gov.dluhc.registercheckerapi.service.RegisterCheckService
 import uk.gov.dluhc.registercheckerapi.service.ReplicationMessagingService
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.dto.buildPendingRegisterCheckDto
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildInitiateRegisterCheckForwardingMessageFromPayload
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildInitiateRegisterCheckMessage
 
 @ExtendWith(MockitoExtension::class)
@@ -34,8 +35,10 @@ class InitiateRegisterCheckMessageListenerTest {
         // Given
         val payload = buildInitiateRegisterCheckMessage()
         val buildPendingRegisterCheckDto = buildPendingRegisterCheckDto()
+        val forwardingMessage = buildInitiateRegisterCheckForwardingMessageFromPayload(correlationId = buildPendingRegisterCheckDto.correlationId, payload = payload)
 
         given(mapper.initiateCheckMessageToPendingRegisterCheckDto(any())).willReturn(buildPendingRegisterCheckDto)
+        given(mapper.initiateCheckToInitiateCheckForwardingMessage(payload, buildPendingRegisterCheckDto.correlationId)).willReturn(forwardingMessage)
 
         // When
         objectUnderTest.handleMessage(payload)
@@ -43,6 +46,6 @@ class InitiateRegisterCheckMessageListenerTest {
         // Then
         verify(mapper).initiateCheckMessageToPendingRegisterCheckDto(payload)
         verify(registerCheckService).save(any())
-        verify(replicationMessagingService).forwardInitiateRegisterCheckMessage(payload)
+        verify(replicationMessagingService).forwardInitiateRegisterCheckMessage(forwardingMessage)
     }
 }

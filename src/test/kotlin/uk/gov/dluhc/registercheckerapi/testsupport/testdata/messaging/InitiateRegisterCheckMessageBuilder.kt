@@ -2,6 +2,7 @@ package uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging
 
 import net.datafaker.providers.base.Address
 import org.apache.commons.lang3.RandomStringUtils
+import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckForwardingMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckAddress
 import uk.gov.dluhc.registercheckerapi.messaging.models.RegisterCheckPersonalDetail
@@ -20,6 +21,43 @@ fun buildInitiateRegisterCheckMessage(
     emsElectorId: String = RandomStringUtils.randomAlphanumeric(30),
     historicalSearch: Boolean = false,
 ) = InitiateRegisterCheckMessage(
+    sourceType = sourceType,
+    sourceReference = sourceReference,
+    sourceCorrelationId = sourceCorrelationId,
+    requestedBy = requestedBy,
+    gssCode = gssCode,
+    personalDetail = personalDetail,
+    emsElectorId = emsElectorId,
+    historicalSearch = historicalSearch,
+)
+
+fun buildInitiateRegisterCheckForwardingMessageFromPayload(
+    correlationId: UUID = UUID.randomUUID(),
+    payload: InitiateRegisterCheckMessage,
+) = InitiateRegisterCheckForwardingMessage(
+    correlationId = correlationId,
+    sourceType = payload.sourceType,
+    sourceReference = payload.sourceReference,
+    sourceCorrelationId = payload.sourceCorrelationId,
+    requestedBy = payload.requestedBy,
+    gssCode = payload.gssCode,
+    personalDetail = payload.personalDetail,
+    emsElectorId = payload.emsElectorId,
+    historicalSearch = payload.historicalSearch,
+)
+
+fun buildInitiateRegisterCheckForwardingMessage(
+    correlationId: UUID = UUID.randomUUID(),
+    sourceType: SourceType = SourceType.VOTER_MINUS_CARD,
+    sourceReference: String = "VPIOKNHPBP",
+    sourceCorrelationId: UUID = UUID.randomUUID(),
+    requestedBy: String = "system",
+    gssCode: String = "E123456789",
+    personalDetail: RegisterCheckPersonalDetail = buildRegisterCheckPersonalDetail(),
+    emsElectorId: String = RandomStringUtils.randomAlphanumeric(30),
+    historicalSearch: Boolean = false,
+) = InitiateRegisterCheckForwardingMessage(
+    correlationId = correlationId,
     sourceType = sourceType,
     sourceReference = sourceReference,
     sourceCorrelationId = sourceCorrelationId,

@@ -9,11 +9,11 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import uk.gov.dluhc.messagingsupport.MessageQueue
 import uk.gov.dluhc.registercheckerapi.config.FeatureToggleConfiguration
-import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckMessage
+import uk.gov.dluhc.registercheckerapi.messaging.models.InitiateRegisterCheckForwardingMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.PendingRegisterCheckArchiveMessage
 import uk.gov.dluhc.registercheckerapi.messaging.models.RemoveRegisterCheckDataMessage
 import uk.gov.dluhc.registercheckerapi.service.ReplicationMessagingService
-import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildInitiateRegisterCheckMessage
+import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildInitiateRegisterCheckForwardingMessage
 import uk.gov.dluhc.registercheckerapi.testsupport.testdata.messaging.buildRemoveRegisterCheckDataMessage
 import java.util.UUID
 
@@ -21,7 +21,7 @@ import java.util.UUID
 class ReplicationMessagingServiceTest {
 
     @Mock
-    private lateinit var initiateCheckMessageQueue: MessageQueue<InitiateRegisterCheckMessage>
+    private lateinit var initiateCheckMessageQueue: MessageQueue<InitiateRegisterCheckForwardingMessage>
 
     @Mock
     private lateinit var archiveRegisterCheckMessageQueue: MessageQueue<PendingRegisterCheckArchiveMessage>
@@ -45,7 +45,7 @@ class ReplicationMessagingServiceTest {
     @Test
     fun `should forward initiate register check message if flag is on`() {
         // Given
-        val request = buildInitiateRegisterCheckMessage()
+        val request = buildInitiateRegisterCheckForwardingMessage()
 
         given(featureToggleConfiguration.enableRegisterCheckToEmsMessageForwarding).willReturn(true)
 
@@ -59,7 +59,7 @@ class ReplicationMessagingServiceTest {
     @Test
     fun `should not forward initiate register check message if flag is off`() {
         // Given
-        val request = buildInitiateRegisterCheckMessage()
+        val request = buildInitiateRegisterCheckForwardingMessage()
 
         given(featureToggleConfiguration.enableRegisterCheckToEmsMessageForwarding).willReturn(false)
 

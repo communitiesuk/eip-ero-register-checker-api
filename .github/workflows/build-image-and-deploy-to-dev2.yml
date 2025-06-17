@@ -1,0 +1,19 @@
+name: Build image and deploy to dev2 on merge to main
+
+on:
+  push:
+    branches:
+      - main
+
+# Each environment can only have one active deployment so prevent concurrent runs.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  build-image-and-deploy-to-dev2:
+    uses: communitiesuk/eip-ero-shared-workflows/.github/workflows/build-image-and-deploy-to-dev2.yml@main
+    with:
+      image_name: eip-ero-${{ vars.app_name }}
+      ecr_repo: ${{ vars.app_name }}-repo
+      app_name_dev2_prefix: dev2-reg-check-api # `reg-check-api` is hardcoded here, unlike other repos
+    secrets: inherit

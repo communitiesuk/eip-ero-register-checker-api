@@ -1,4 +1,4 @@
-name: Build a tagged version and push to ECR
+name: Build a tagged version and deploy to ECR
 
 on:
   workflow_dispatch:
@@ -6,7 +6,10 @@ on:
 jobs:
   deploy:
     if: startsWith(github.ref, 'refs/tags/v')
-    uses: ./.github/workflows/build-and-push.yml
+    uses: communitiesuk/eip-ero-shared-workflows/.github/workflows/build-and-push.yml@main
     with:
-      version: ${{github.ref_name}}
+      version: ${{ github.ref_name }}
+      image_name: eip-ero-${{ vars.app_name }}
+      ecr_repo: ${{ vars.app_name }}-repo
+      preprod_deploy_environment: dev2 # All envs can use dev2 GitHub role
     secrets: inherit

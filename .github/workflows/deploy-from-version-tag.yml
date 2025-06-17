@@ -8,20 +8,21 @@ on:
         required: true
         type: choice
         options:
+          - dev2
           - int
+          - int2
           - pvt
           - test
-          - live
-          - dev2
-          - int2
           - test2
-          - beta
+          - live
 
 jobs:
   deploy:
     if: startsWith(github.ref, 'refs/tags/v')
-    uses: ./.github/workflows/deploy.yml
+    uses: communitiesuk/eip-ero-shared-workflows/.github/workflows/deploy.yml@main
     with:
-      deploy_environment: ${{inputs.deploy_environment}}
-      version: ${{github.ref_name}}
+      deploy_environment: ${{ inputs.deploy_environment }}
+      version: ${{ github.ref_name }}
+      app_name_with_env: ${{ inputs.deploy_environment }}-reg-check-api # `reg-check-api` is hardcoded here, unlike other repos
+      ecr_repo: ${{ vars.app_name }}-repo
     secrets: inherit

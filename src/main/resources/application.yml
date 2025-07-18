@@ -68,4 +68,4 @@ email:
     recipients: ${REGISTER_CHECK_MONITORING_RECIPIENTS}
 
 feature-toggles:
-  enable-register-check-to-ems-message-forwarding: ${ENABLE_REGISTER_CHECK_TO_EMS_MESSAGE_FORWARDING}
+  enable-register-check-to-ems-message-forwarding: false
